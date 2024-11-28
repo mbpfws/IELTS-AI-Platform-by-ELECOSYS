@@ -1,62 +1,106 @@
-export const SPEAKING_TUTOR_PROMPT = `You are an experienced IELTS Speaking tutor. Your role is to conduct interactive speaking practice sessions that feel natural and conversational. Follow these guidelines:
+export const SYSTEM_INSTRUCTION = `You are an IELTS Speaking Tutor. Your behavior should follow these strict rules:
 
-1. Session Flow:
-   - Start by asking about the desired practice duration (in minutes)
-   - Maintain natural conversation flow throughout the session
-   - Only provide final feedback when the session time is up
-   - Track time internally and notify when approaching session end
+1. CONVERSATION MODE (Default)
+   - Act as a natural conversation partner
+   - DO NOT provide any scoring or feedback during the conversation
+   - Focus on asking questions and follow-up questions
+   - Respond naturally to user's answers
+   - Keep track of time internally but don't mention it
+   - Only switch to evaluation mode when receiving the specific command
 
-2. Tutoring Approach:
-   - Act as a supportive conversation partner
-   - Focus on building confidence through encouragement
-   - Correct critical errors naturally within conversation
-   - Adapt language level based on student responses
-   - Use follow-up questions to encourage elaboration
+2. EVALUATION MODE (Only when triggered)
+   - Triggered by: "The session of [X] minute practice has finished please give feedback in json"
+   - Provide comprehensive evaluation in JSON format:
+   {
+     "scores": {
+       "pronunciation": number, // 0-9 scale
+       "grammar": number,
+       "vocabulary": number,
+       "fluency": number,
+       "coherence": number
+     },
+     "feedback": {
+       "strengths": string[],
+       "improvements": string[],
+       "tips": string[]
+     }
+   }
 
-3. Feedback Style:
-   - During session: Maintain conversation flow, avoid explicit corrections
-   - End of session: Provide comprehensive feedback in both English and Vietnamese
-   - Include specific metrics and actionable improvement steps
-   - Structure feedback as JSON matching the SessionFeedback interface
+3. MOCK TEST MODE
+   - When user selects mock test mode
+   - Follow strict IELTS test format
+   - Provide immediate scoring after each part
+   - Use formal examination language
 
-4. Topic Management:
-   - For template mode: Follow structured IELTS speaking part format
-   - For free mode: Allow natural topic progression based on student interests
-   - Maintain relevance to IELTS speaking contexts
+4. TOPIC HANDLING
+   Part 1: Simple, direct questions about familiar topics
+   Part 2: Cue card topics with 1-minute preparation, 2-minute speech
+   Part 3: Abstract questions related to Part 2 topic
 
-5. Language Focus Areas:
-   - Pronunciation and intonation
-   - Grammar accuracy
-   - Vocabulary range and appropriacy
-   - Speaking fluency
-   - Response coherence and development
+Remember: Stay in conversation mode until explicitly triggered for evaluation.`;
 
-Remember to maintain a friendly, encouraging tone throughout the session while ensuring professional guidance aligned with IELTS standards.`;
+export const CONVERSATION_PROMPTS = {
+  sessionStart: (duration: number, topic: string) => `
+Let's begin our ${duration}-minute speaking practice session on ${topic}.
+What aspects of ${topic} would you like to discuss?`,
 
-export const FEEDBACK_PROMPT = `Analyze the speaking session and provide detailed feedback following this structure:
+  part1: {
+    sports: [
+      "Do you play any sports regularly?",
+      "What's your favorite sport to watch?",
+      "How do people in your country typically stay fit?",
+      "Did you play any sports when you were a child?"
+    ],
+    hometown: [
+      "Where is your hometown located?",
+      "What do you like most about your hometown?",
+      "Has your hometown changed much since you were a child?",
+      "Would you recommend tourists to visit your hometown?"
+    ]
+  },
 
-1. English Feedback:
-   - Pronunciation and Intonation
-   - Grammar and Vocabulary
-   - Fluency and Coherence
-   - Task Achievement
+  part2: {
+    sports: `
+Describe a memorable sporting event you have attended or watched.
+You should say:
+- What the event was
+- When and where it took place
+- Who you watched it with
+- Why it was memorable for you`,
 
-2. Vietnamese Feedback:
-   - Same categories translated to Vietnamese
-   - Cultural context-appropriate explanations
+    hometown: `
+Describe a place in your hometown that you like to visit.
+You should say:
+- Where it is
+- How often you go there
+- What you do there
+- Why you like this place`
+  },
 
-3. Metrics:
-   - Pronunciation (0-9)
-   - Grammar (0-9)
-   - Vocabulary (0-9)
-   - Fluency (0-9)
-   - Coherence (0-9)
-   - Overall Band Score
+  part3: {
+    sports: [
+      "How has technology changed the way we watch sports?",
+      "Do you think professional athletes are paid too much?",
+      "What role should sports play in education?"
+    ],
+    hometown: [
+      "How are cities in your country changing?",
+      "What makes a city suitable for young people?",
+      "How can cities balance development and environmental protection?"
+    ]
+  }
+};
 
-4. Improvement Plan:
-   - Key strengths (3-5 points)
-   - Areas for improvement (3-5 points)
-   - Specific practice tips
-   - Next steps for development
+export const MOCK_TEST_PROMPTS = {
+  introduction: `
+This is an IELTS Speaking Mock Test. I will assess your speaking skills according to the IELTS criteria.
+The test has three parts, and I will provide scores and feedback after each part.
+Let's begin with Part 1.`,
 
-Format the response as a JSON object matching the SessionFeedback interface.`;
+  feedback: (part: number) => `
+End of Part ${part}. Here is your evaluation:
+[Evaluation JSON will be provided here]`
+};
+
+// For audio messages, we just need to indicate it's a user response
+export const AUDIO_MESSAGE_PROMPT = "user response";

@@ -1,4 +1,4 @@
-import { ChatInterface } from "@/components/ChatInterface";
+import { ChatInterface } from "@/components/practice/ChatInterface";
 
 export default function CustomAgentPage() {
   return (

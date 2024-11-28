@@ -6,7 +6,7 @@ import { Card } from "@/components/ui/card";
 import { Mic, Square, Loader2 } from 'lucide-react';
 import { Switch } from "@/components/ui/switch";
 import { Label } from "@/components/ui/label";
-import { AudioService } from '@/services/audioService';
+import { audioService } from '@/services/audioService';
 
 interface AudioRecorderProps {
   onAnalysisComplete: (response: string) => void;
@@ -31,7 +31,6 @@ export default function AudioRecorder({
   const sourceRef = useRef<MediaStreamAudioSourceNode | null>(null);
   const streamRef = useRef<MediaStream | null>(null);
   const [localProcessing, setLocalProcessing] = useState(false);
-  const audioService = new AudioService();
 
   const startRecording = async () => {
     try {

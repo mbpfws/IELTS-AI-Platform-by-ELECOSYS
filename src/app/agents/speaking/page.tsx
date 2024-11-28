@@ -14,6 +14,7 @@ import { useToast } from "@/components/ui/use-toast";
 import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
 import { Label } from "@/components/ui/label";
 import { Input } from "@/components/ui/input";
+import { SessionTimer } from '@/components/speaking/SessionTimer';
 
 export default function SpeakingAgentPage() {
   const [activeTab, setActiveTab] = useState<string>("chat");
@@ -24,32 +25,69 @@ export default function SpeakingAgentPage() {
   const [selectedTemplate, setSelectedTemplate] = useState<any | null>(null);
   const [showDurationDialog, setShowDurationDialog] = useState(false);
   const [sessionDuration, setSessionDuration] = useState(15); // Default 15 minutes
+  const [sessionActive, setSessionActive] = useState(false);
+  const [feedback, setFeedback] = useState(null);
   const { toast } = useToast();
   const userId = "test-user"; // TODO: Replace with actual user ID
 
   useEffect(() => {
-    // Load initial welcome message
-    const welcomeMessage: Message = {
-      role: "assistant",
-      content: "Xin chào! Tôi là trợ lý luyện nói IELTS của bạn. Hãy bắt đầu bằng cách chọn thời gian cho phiên luyện tập của chúng ta nhé!",
+    // Initialize session when duration is set
+    const initializeSession = async () => {
+      try {
+        const session = await speakingService.startSession(userId, sessionDuration);
+        setCurrentSession(session);
+        
+        // Welcome message will be added by the service
+        setMessages(session.messages || []);
+      } catch (error) {
+        console.error('Error initializing session:', error);
+        toast({
+          title: "Error",
+          description: "Failed to start session. Please try again.",
+          variant: "destructive",
+        });
+      }
     };
-    setMessages([welcomeMessage]);
-    setShowDurationDialog(true);
-  }, []);
+
+    if (sessionDuration && !showDurationDialog) {
+      initializeSession();
+    }
+  }, [sessionDuration, showDurationDialog, userId]);
 
   const handleSendMessage = async (content: string) => {
+    if (!content.trim() || !currentSession) return;
+
     try {
       setIsProcessing(true);
-      const userMessage: Message = { role: "user", content };
-      setMessages((prev) => [...prev, userMessage]);
+      const userMessage: Message = { 
+        role: "user", 
+        content,
+        sessionId: currentSession.id,
+        timestamp: Date.now()
+      };
+      
+      setMessages(currentMessages => {
+        const updatedMessages = Array.isArray(currentMessages) ? [...currentMessages] : [];
+        return [...updatedMessages, userMessage];
+      });
 
       const response = await speakingService.sendMessage(content);
-      const assistantMessage: Message = { role: "assistant", content: response };
-      setMessages((prev) => [...prev, assistantMessage]);
+      const assistantMessage: Message = { 
+        role: "assistant", 
+        content: response,
+        sessionId: currentSession.id,
+        timestamp: Date.now()
+      };
+      
+      setMessages(currentMessages => {
+        const updatedMessages = Array.isArray(currentMessages) ? [...currentMessages] : [];
+        return [...updatedMessages, assistantMessage];
+      });
     } catch (error) {
+      console.error('Error sending message:', error);
       toast({
-        title: "Lỗi",
-        description: "Không thể gửi tin nhắn. Vui lòng thử lại sau.",
+        title: "Error",
+        description: "Failed to send message. Please try again.",
         variant: "destructive",
       });
     } finally {
@@ -105,6 +143,7 @@ export default function SpeakingAgentPage() {
     setSelectedTemplate(null);
     setMessages([]);
     setActiveTab("templates");
+    setShowDurationDialog(true);
   };
 
   const handleTemplateSelect = async (template: any) => {
@@ -150,6 +189,7 @@ export default function SpeakingAgentPage() {
     }
 
     setShowDurationDialog(false);
+    setSessionActive(true);
     try {
       const session = speakingService.startSession(userId, sessionDuration);
       setCurrentSession(session);
@@ -161,6 +201,69 @@ export default function SpeakingAgentPage() {
         variant: "destructive",
       });
     }
+  };
+
+  const handleSend = async () => {
+    if (!input.trim() && !audioUrl) return;
+
+    try {
+      setIsProcessing(true);
+      const newMessage: Message = {
+        role: 'user',
+        content: input || 'Audio message sent',
+        audioUrl: audioUrl
+      };
+
+      // Add 30% buffer time to the session duration
+      const adjustedDuration = Math.floor(sessionDuration * 1.3);
+      
+      const response = await fetch('/api/speaking/chat', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          message: newMessage,
+          sessionId: currentSession?.id,
+          duration: adjustedDuration
+        }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to send message');
+      }
+
+      const data = await response.json();
+      
+      try {
+        if (data.metrics) {
+          setMetrics(data.metrics);
+        }
+      } catch (err) {
+        // Just log the error without showing it to the user
+        if (process.env.NODE_ENV === 'development') {
+          console.log('Metrics not available yet:', err);
+        }
+      }
+
+      setMessages(prev => [...prev, newMessage, data.message]);
+      setInput('');
+      setAudioUrl('');
+      
+    } catch (error) {
+      toast({
+        title: "Lỗi",
+        description: "Không thể gửi tin nhắn. Vui lòng thử lại sau.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  const handleSessionEnd = (sessionFeedback: any) => {
+    setSessionActive(false);
+    setFeedback(sessionFeedback);
   };
 
   return (
@@ -214,6 +317,15 @@ export default function SpeakingAgentPage() {
 
               {/* Chat Interface */}
               <div className="bg-white dark:bg-gray-800 rounded-2xl shadow-[inset_-12px_-8px_40px_#46464620]">
+                {sessionActive && (
+                  <div className="mb-4">
+                    <SessionTimer 
+                      duration={sessionDuration}
+                      onTimeEnd={handleSessionEnd}
+                      isActive={sessionActive}
+                    />
+                  </div>
+                )}
                 <DefaultChat
                   messages={messages}
                   onSendMessage={handleSendMessage}

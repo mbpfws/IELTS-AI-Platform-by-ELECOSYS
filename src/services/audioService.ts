@@ -1,36 +1,39 @@
-import { GoogleGenerativeAI } from "@google/generative-ai";
+import { GoogleGenerativeAI } from '@google/generative-ai';
 
-export class AudioService {
+const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+if (!apiKey) {
+  throw new Error('Missing NEXT_PUBLIC_GEMINI_API_KEY environment variable');
+}
+
+class AudioService {
+  private static instance: AudioService;
   private genAI: GoogleGenerativeAI;
 
-  constructor() {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error('Gemini API key not found');
-    }
+  private constructor() {
     this.genAI = new GoogleGenerativeAI(apiKey);
   }
 
-  async analyzeAudio(audioBlob: Blob): Promise<string> {
+  public static getInstance(): AudioService {
+    if (!AudioService.instance) {
+      AudioService.instance = new AudioService();
+    }
+    return AudioService.instance;
+  }
+
+  async processAudio(audioBlob: Blob, mode: 'conversation' | 'scoring' = 'conversation'): Promise<string> {
     try {
-      // Convert Blob to Base64
+      // Convert audio blob to base64
       const base64Audio = await this.blobToBase64(audioBlob);
 
       // Initialize model
       const model = this.genAI.getGenerativeModel({
-        model: "gemini-1.5-pro-latest",
+        model: "learnlm-1.5-pro-experimental",
       });
 
-      // Generate content using the audio file
-      const result = await model.generateContent([
-        {
-          inlineData: {
-            mimeType: "audio/wav",
-            data: base64Audio
-          }
-        },
-        { 
-          text: `Please analyze this speaking response and provide feedback in both English and Vietnamese. Focus on:
+      // Different prompts for different modes
+      const prompt = mode === 'conversation' 
+        ? 'Please transcribe this audio and respond naturally as a conversation partner.'
+        : `Please analyze this speaking response and provide feedback in both English and Vietnamese. Focus on:
           1. Pronunciation and Intonation
           2. Grammar and Vocabulary
           3. Fluency and Coherence
@@ -52,25 +55,34 @@ export class AudioService {
               "tips": string[]
             },
             "nextSteps": string[]
-          }`
+          }`;
+
+      // Generate content
+      const result = await model.generateContent([
+        {
+          inlineData: {
+            mimeType: "audio/wav",
+            data: base64Audio
+          }
         },
+        { text: prompt }
       ]);
 
       return result.response.text();
     } catch (error) {
-      console.error('Error analyzing audio:', error);
+      console.error('Error processing audio:', error);
       throw error;
     }
   }
 
-  private blobToBase64(blob: Blob): Promise<string> {
+  private async blobToBase64(blob: Blob): Promise<string> {
     return new Promise((resolve, reject) => {
       const reader = new FileReader();
       reader.onloadend = () => {
         if (typeof reader.result === 'string') {
           // Remove data URL prefix (e.g., "data:audio/wav;base64,")
-          const base64Data = reader.result.split(',')[1];
-          resolve(base64Data);
+          const base64 = reader.result.split(',')[1];
+          resolve(base64);
         } else {
           reject(new Error('Failed to convert blob to base64'));
         }
@@ -80,3 +92,5 @@ export class AudioService {
     });
   }
 }
+
+export const audioService = AudioService.getInstance();

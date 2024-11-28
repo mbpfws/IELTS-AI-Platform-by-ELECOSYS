@@ -2,6 +2,7 @@ import { Template } from '@/types/template';
 
 const interactiveInstructions = `
 **Response Parameters**:
+Must all the time, prioritize reponding to match the users' actual speech. Not all speech is for marking or giving feedback. 
 - Maximum response length: 2500 tokens
 - Focus on concise, clear explanations
 - Prioritize essential feedback

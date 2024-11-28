@@ -1,49 +1,110 @@
 import { SpeakingSession, SpeakingHistory, Message, SpeakingMetrics } from '@/types/speakingSession';
+import { geminiService } from './geminiService';
+import { audioService } from './audioService';
 
-class SpeakingService {
+class MessageQueue {
+  private queue: Message[] = [];
+  private processing = false;
+
+  async enqueue(message: Message) {
+    this.queue.push(message);
+    if (!this.processing) {
+      await this.processQueue();
+    }
+  }
+
+  private async processQueue() {
+    if (this.queue.length === 0) {
+      this.processing = false;
+      return;
+    }
+
+    this.processing = true;
+    const message = this.queue.shift()!;
+    
+    try {
+      await this.processMessage(message);
+    } catch (error) {
+      console.error('Error processing message:', error);
+    }
+
+    await this.processQueue();
+  }
+
+  private async processMessage(message: Message) {
+    const response = await fetch('/api/speaking/chat', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        message,
+        sessionId: message.sessionId,
+      }),
+    });
+
+    if (!response.ok) {
+      throw new Error('Failed to process message');
+    }
+
+    return response.json();
+  }
+}
+
+export class SpeakingService {
   private static instance: SpeakingService;
+  private messageQueue: MessageQueue;
   private currentSession: SpeakingSession | null = null;
+  private processingQueue: Array<() => Promise<void>> = [];
+  private isProcessing = false;
 
-  private constructor() {}
+  private constructor() {
+    this.messageQueue = new MessageQueue();
+  }
 
-  static getInstance(): SpeakingService {
+  public static getInstance(): SpeakingService {
     if (!SpeakingService.instance) {
       SpeakingService.instance = new SpeakingService();
     }
     return SpeakingService.instance;
   }
 
-  // Session Management
-  startSession(userId: string, duration: number, mode: 'free' | 'template' = 'free', templateId?: string): SpeakingSession {
-    const sessionId = `speaking_${Date.now()}`;
-    this.currentSession = {
-      id: sessionId,
-      userId,
-      mode,
-      templateId,
-      startTime: Date.now(),
-      duration: duration * 60 * 1000, // Convert minutes to milliseconds
-      messages: [],
-      audioUrls: [],
-      metrics: {
-        pronunciation: 0,
-        grammar: 0,
-        vocabulary: 0,
-        fluency: 0,
-        coherence: 0
-      }
-    };
+  async startSession(userId: string, duration: number, mode: 'free' | 'template' = 'free', templateId?: string): Promise<SpeakingSession> {
+    try {
+      const sessionId = `speaking_${Date.now()}`;
+      this.currentSession = {
+        id: sessionId,
+        userId,
+        mode,
+        templateId,
+        startTime: Date.now(),
+        duration: duration * 60 * 1000, // Convert minutes to milliseconds
+        messages: [],
+        audioUrls: [],
+        metrics: {
+          pronunciation: 0,
+          grammar: 0,
+          vocabulary: 0,
+          fluency: 0,
+          coherence: 0
+        }
+      };
 
-    // Initialize session with welcome message
-    const welcomeMessage = this.getWelcomeMessage(duration);
-    this.addMessage({
-      role: 'assistant',
-      content: welcomeMessage
-    });
+      // Initialize session with welcome message
+      const welcomeMessage = this.getWelcomeMessage(duration);
+      await this.addMessage({
+        role: 'assistant',
+        content: welcomeMessage,
+        sessionId
+      });
 
-    // Save to local storage
-    this.saveSession(this.currentSession);
-    return this.currentSession;
+      // Save to local storage
+      this.saveSession(this.currentSession);
+      return this.currentSession;
+    } catch (error) {
+      console.error('Error starting session:', error);
+      throw error;
+    }
   }
 
   private getWelcomeMessage(duration: number): string {
@@ -59,59 +120,74 @@ Tôi sẽ đóng vai trò là người đối thoại và hướng dẫn bạn. 
 Bạn muốn bắt đầu với chủ đề nào?`;
   }
 
-  private getRemainingTime(): number {
-    if (!this.currentSession) return 0;
-    const elapsed = Date.now() - this.currentSession.startTime;
-    return Math.max(0, this.currentSession.duration - elapsed);
+  async sendMessage(content: string, audioUrl?: string): Promise<string> {
+    // Add to processing queue
+    return new Promise((resolve, reject) => {
+      this.processingQueue.push(async () => {
+        try {
+          if (!this.currentSession) {
+            throw new Error('No active session');
+          }
+
+          if (this.isSessionExpired()) {
+            // Generate and save final feedback
+            const feedback = await this.generateFeedback();
+            this.endSession(feedback);
+            
+            return `Phiên luyện tập đã kết thúc. Dưới đây là nhận xét chi tiết của tôi:
+
+${JSON.stringify(feedback, null, 2)}`;
+          }
+
+          // Add user message
+          this.addMessage({
+            role: 'user',
+            content
+          });
+
+          // Get AI response
+          const response = await geminiService.generateChat([{
+            role: 'assistant',
+            content: this.getWelcomeMessage(this.currentSession.duration / (60 * 1000))
+          }, {
+            role: 'user',
+            content
+          }]);
+          
+          // Add AI message
+          this.addMessage({
+            role: 'assistant',
+            content: response
+          });
+
+          resolve(response);
+        } catch (error) {
+          reject(error);
+        }
+      });
+
+      this.processQueue();
+    });
   }
 
-  private isSessionExpired(): boolean {
-    return this.getRemainingTime() <= 0;
-  }
-
-  async sendMessage(content: string): Promise<string> {
+  async sendAudio(audioBlob: Blob) {
     if (!this.currentSession) {
       throw new Error('No active session');
     }
 
-    if (this.isSessionExpired()) {
-      // Generate and save final feedback
-      const feedback = await this.generateFeedback();
-      this.endSession(feedback);
-      
-      return `Phiên luyện tập đã kết thúc. Dưới đây là nhận xét chi tiết của tôi:
+    try {
+      // Check if session is about to end
+      const timeLeft = (this.currentSession.startTime + this.currentSession.duration) - Date.now();
+      const mode = timeLeft <= 60000 ? 'scoring' : 'conversation'; // Switch to scoring mode in last minute
 
-${JSON.stringify(feedback, null, 2)}`;
+      const response = await audioService.processAudio(audioBlob, mode);
+      const assistantMessage = { role: 'assistant', content: response };
+      this.addMessage(assistantMessage);
+      return assistantMessage;
+    } catch (error) {
+      console.error('Error sending audio:', error);
+      throw error;
     }
-
-    // Add user message
-    this.addMessage({
-      role: 'user',
-      content
-    });
-
-    // Get AI response
-    const response = await this.generateTutoringResponse(content);
-    
-    // Add AI message
-    this.addMessage({
-      role: 'assistant',
-      content: response
-    });
-
-    return response;
-  }
-
-  private async generateTutoringResponse(userMessage: string): Promise<string> {
-    // TODO: Integrate with actual AI service
-    // For now, return a simple response
-    const remainingMinutes = Math.ceil(this.getRemainingTime() / (60 * 1000));
-    
-    if (remainingMinutes <= 2) {
-      return `Chúng ta còn ${remainingMinutes} phút. Hãy tiếp tục cuộc trò chuyện và tôi sẽ đưa ra nhận xét chi tiết vào cuối phiên.`;
-    }
-
-    return "Interesting point! Could you elaborate more on that?";
   }
 
   private async generateFeedback(): Promise<any> {
@@ -436,6 +512,36 @@ Provide detailed feedback and scores following IELTS criteria.
     const sessions = this.getSessions(userId);
     return sessions[sessionId] || null;
   }
+
+  private async processQueue() {
+    if (this.isProcessing || this.processingQueue.length === 0) {
+      return;
+    }
+
+    this.isProcessing = true;
+    try {
+      const task = this.processingQueue.shift();
+      if (task) {
+        await task();
+      }
+    } finally {
+      this.isProcessing = false;
+      if (this.processingQueue.length > 0) {
+        this.processQueue();
+      }
+    }
+  }
+
+  private getRemainingTime(): number {
+    if (!this.currentSession) return 0;
+    const elapsed = Date.now() - this.currentSession.startTime;
+    return Math.max(0, this.currentSession.duration - elapsed);
+  }
+
+  private isSessionExpired(): boolean {
+    return this.getRemainingTime() <= 0;
+  }
 }
 
+// Export a singleton instance
 export const speakingService = SpeakingService.getInstance();
