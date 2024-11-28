@@ -1,0 +1,5 @@
+{
+  "/agents/speaking/page": "app/agents/speaking/page.js",
+  "/page": "app/page.js",
+  "/agents/writing/page": "app/agents/writing/page.js"
+}
