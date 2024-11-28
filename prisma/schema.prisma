@@ -8,13 +8,14 @@ generator client {
 }
 
 model User {
-  id        String   @id @default(uuid())
-  email     String   @unique
-  name      String?
-  agents    Agent[]
-  chats     Chat[]
-  createdAt DateTime @default(now())
-  updatedAt DateTime @updatedAt
+  id              String            @id @default(uuid())
+  email           String            @unique
+  name            String?
+  agents          Agent[]
+  chats           Chat[]
+  speakingSessions SpeakingSession[]
+  createdAt       DateTime          @default(now())
+  updatedAt       DateTime          @updatedAt
 }
 
 model Agent {
@@ -51,4 +52,66 @@ model Message {
   chat      Chat     @relation(fields: [chatId], references: [id])
   chatId    String
   createdAt DateTime @default(now())
+}
+
+model SpeakingSession {
+  id            String    @id @default(uuid())
+  user          User      @relation(fields: [userId], references: [id])
+  userId        String
+  duration      Int       // Duration in minutes
+  startTime     DateTime  @default(now())
+  endTime       DateTime?
+  metrics       SpeakingMetrics?
+  messages      SpeakingMessage[]
+  recordings    AudioRecording[]
+  feedback      SpeakingFeedback?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}
+
+model SpeakingMessage {
+  id              String          @id @default(uuid())
+  content         String
+  role            String          // 'user' or 'assistant'
+  session         SpeakingSession @relation(fields: [sessionId], references: [id])
+  sessionId       String
+  responseTime    Int?            // Response time in milliseconds
+  wordCount       Int?
+  createdAt       DateTime        @default(now())
+}
+
+model AudioRecording {
+  id              String          @id @default(uuid())
+  url             String
+  duration        Int             // Duration in seconds
+  session         SpeakingSession @relation(fields: [sessionId], references: [id])
+  sessionId       String
+  createdAt       DateTime        @default(now())
+}
+
+model SpeakingMetrics {
+  id              String          @id @default(uuid())
+  session         SpeakingSession @relation(fields: [sessionId], references: [id])
+  sessionId       String          @unique
+  pronunciation   Float
+  grammar         Float
+  vocabulary      Float 
+  fluency         Float
+  coherence       Float
+  averageResponseTime Float
+  totalMessages   Int
+  uniqueWords     Int
+  createdAt       DateTime        @default(now())
+  updatedAt       DateTime        @updatedAt
+}
+
+model SpeakingFeedback {
+  id              String          @id @default(uuid())
+  session         SpeakingSession @relation(fields: [sessionId], references: [id])
+  sessionId       String          @unique
+  strengths       String          // JSON string array
+  weaknesses      String          // JSON string array
+  suggestions     String          // JSON string array
+  overallComment  String
+  createdAt       DateTime        @default(now())
 }

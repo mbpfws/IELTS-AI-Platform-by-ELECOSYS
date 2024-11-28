@@ -11,6 +11,9 @@ import SessionSidebar from "@/components/speaking/SessionSidebar";
 import DefaultChat from "@/components/speaking/DefaultChat";
 import AudioRecorder from "@/components/speaking/AudioRecorder";
 import { useToast } from "@/components/ui/use-toast";
+import { Dialog, DialogContent, DialogHeader, DialogTitle, DialogDescription, DialogFooter } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
+import { Input } from "@/components/ui/input";
 
 export default function SpeakingAgentPage() {
   const [activeTab, setActiveTab] = useState<string>("chat");
@@ -19,6 +22,8 @@ export default function SpeakingAgentPage() {
   const [isProcessing, setIsProcessing] = useState(false);
   const [isHandsFree, setIsHandsFree] = useState(false);
   const [selectedTemplate, setSelectedTemplate] = useState<any | null>(null);
+  const [showDurationDialog, setShowDurationDialog] = useState(false);
+  const [sessionDuration, setSessionDuration] = useState(15); // Default 15 minutes
   const { toast } = useToast();
   const userId = "test-user"; // TODO: Replace with actual user ID
 
@@ -26,9 +31,10 @@ export default function SpeakingAgentPage() {
     // Load initial welcome message
     const welcomeMessage: Message = {
       role: "assistant",
-      content: "Xin chào! Tôi là trợ lý luyện nói IELTS của bạn. Bạn có thể bắt đầu một phiên luyện tập mới hoặc xem lại các phiên trước đó. Bạn cần giúp đỡ gì?",
+      content: "Xin chào! Tôi là trợ lý luyện nói IELTS của bạn. Hãy bắt đầu bằng cách chọn thời gian cho phiên luyện tập của chúng ta nhé!",
     };
     setMessages([welcomeMessage]);
+    setShowDurationDialog(true);
   }, []);
 
   const handleSendMessage = async (content: string) => {
@@ -131,6 +137,30 @@ export default function SpeakingAgentPage() {
 
     await handleSendMessage(initialMessage);
     setActiveTab("chat");
+  };
+
+  const handleStartSession = async () => {
+    if (sessionDuration < 5 || sessionDuration > 30) {
+      toast({
+        title: "Lỗi",
+        description: "Thời gian luyện tập phải từ 5-30 phút",
+        variant: "destructive",
+      });
+      return;
+    }
+
+    setShowDurationDialog(false);
+    try {
+      const session = speakingService.startSession(userId, sessionDuration);
+      setCurrentSession(session);
+      setMessages(session.messages);
+    } catch (error) {
+      toast({
+        title: "Lỗi",
+        description: "Không thể bắt đầu phiên luyện tập. Vui lòng thử lại sau.",
+        variant: "destructive",
+      });
+    }
   };
 
   return (
@@ -294,6 +324,38 @@ export default function SpeakingAgentPage() {
           )}
         </div>
       </div>
+
+      <Dialog open={showDurationDialog} onOpenChange={setShowDurationDialog}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Chọn thời gian luyện tập</DialogTitle>
+            <DialogDescription>
+              Bạn muốn dành bao nhiêu phút cho phiên luyện tập này? (5-30 phút)
+            </DialogDescription>
+          </DialogHeader>
+          
+          <div className="grid gap-4 py-4">
+            <div className="grid grid-cols-4 items-center gap-4">
+              <Label htmlFor="duration" className="text-right">
+                Thời gian (phút)
+              </Label>
+              <Input
+                id="duration"
+                type="number"
+                min={5}
+                max={30}
+                value={sessionDuration}
+                onChange={(e) => setSessionDuration(parseInt(e.target.value))}
+                className="col-span-3"
+              />
+            </div>
+          </div>
+
+          <DialogFooter>
+            <Button onClick={handleStartSession}>Bắt đầu</Button>
+          </DialogFooter>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
