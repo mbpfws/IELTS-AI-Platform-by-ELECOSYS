@@ -6,6 +6,7 @@ import { ChatInterface } from './ChatInterface';
 import { SessionTimer } from './SessionTimer';
 import { FeedbackPanel } from './FeedbackPanel';
 import { RecordButton } from './RecordButton';
+import { Message as GlobalMessage } from '../../types';
 
 const StyledPaper = styled(Paper)(({ theme }) => ({
   padding: theme.spacing(3),
@@ -43,13 +44,9 @@ export const SpeakingPractice: React.FC = () => {
   const [duration, setDuration] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
-  const [messages, setMessages] = useState<Array<{
-    role: 'user' | 'tutor';
-    content: string;
-    timestamp: Date;
-  }>>([]);
+  const [messages, setMessages] = useState<GlobalMessage[]>([]);
 
-  const tutorService = useRef(new TutorService());
+  const tutorService = useRef(TutorService.getInstance());
 
   const handleStartSession = async (selectedDuration: number) => {
     setDuration(selectedDuration);
@@ -64,19 +61,22 @@ export const SpeakingPractice: React.FC = () => {
 
     // Add initial tutor message
     setMessages([{
-      role: 'tutor',
-      content: 'Hello! I\'m your IELTS Speaking tutor. Let\'s begin our practice session. How are you feeling today?',
-      timestamp: new Date()
+      role: 'assistant',
+      content: 'Hello! I\'m your IELTS Speaking assistant. Let\'s begin our practice session. How are you feeling today?',
+      timestamp: Date.now(),
+      contentType: 'text'
     }]);
   };
 
   const handleUserMessage = async (message: string) => {
     // Add user message
-    setMessages(prev => [...prev, {
+    const newMessage: GlobalMessage = {
       role: 'user',
       content: message,
-      timestamp: new Date()
-    }]);
+      timestamp: Date.now(),
+      contentType: 'text'
+    };
+    setMessages(prev => [...prev, newMessage]);
 
     // Get tutor response
     const feedback = tutorService.current.provideFeedback(message);
@@ -84,9 +84,10 @@ export const SpeakingPractice: React.FC = () => {
 
     // Add tutor response
     setMessages(prev => [...prev, {
-      role: 'tutor',
+      role: 'assistant',
       content: nextQuestion,
-      timestamp: new Date()
+      timestamp: Date.now(),
+      contentType: 'text'
     }]);
   };
 
@@ -94,6 +95,14 @@ export const SpeakingPractice: React.FC = () => {
     const finalFeedback = tutorService.current.endSession();
     // Show final feedback modal/panel
   };
+
+  const mapToChatMessage = (msg: GlobalMessage) => ({
+    role: msg.role === 'system' ? 'assistant' : msg.role,
+    content: msg.content,
+    timestamp: msg.timestamp
+  });
+
+  const chatMessages = messages.map(mapToChatMessage);
 
   useEffect(() => {
     let timer: NodeJS.Timeout;
@@ -144,14 +153,14 @@ export const SpeakingPractice: React.FC = () => {
         <Box display="flex" alignItems="center" mb={3}>
           <TutorAvatar src="/tutor-avatar.png" />
           <Box>
-            <Typography variant="h5">IELTS Speaking Tutor</Typography>
+            <Typography variant="h5">IELTS Speaking Assistant</Typography>
             <SessionTimer timeRemaining={timeRemaining} />
           </Box>
         </Box>
 
         <ChatContainer>
           <ChatInterface 
-            messages={messages}
+            messages={chatMessages}
             onSendMessage={handleUserMessage}
           />
         </ChatContainer>

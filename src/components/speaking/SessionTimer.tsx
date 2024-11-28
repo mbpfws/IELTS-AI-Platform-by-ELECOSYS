@@ -1,57 +1,54 @@
-import React, { useEffect, useState } from 'react';
-import { Card, CardContent } from '../ui/card';
+'use client';
+
+import { useEffect, useState } from 'react';
+import { practiceService } from '@/services/practiceService';
 import { Progress } from '../ui/progress';
+import { Card, CardContent } from '../ui/card';
 
 interface SessionTimerProps {
-  duration: number; // Duration in minutes
-  onTimeEnd?: () => void;
-  isActive?: boolean;
+  onSessionEnd?: () => void;
 }
 
-export function SessionTimer({ duration, onTimeEnd, isActive = true }: SessionTimerProps) {
-  const [timeLeft, setTimeLeft] = useState(duration * 60); // Convert to seconds
+export function SessionTimer({ onSessionEnd }: SessionTimerProps) {
+  const [timeRemaining, setTimeRemaining] = useState<number>(0);
   const [progress, setProgress] = useState(100);
 
   useEffect(() => {
-    if (!isActive) return;
-
     const timer = setInterval(() => {
-      setTimeLeft((prev) => {
-        if (prev <= 1) {
+      const remaining = practiceService.getTimeRemaining();
+      setTimeRemaining(remaining);
+
+      const session = practiceService.getCurrentSession();
+      if (session) {
+        const duration = session.duration * 60 * 1000; // Convert minutes to milliseconds
+        const elapsed = Date.now() - session.startTime;
+        const progressValue = Math.max(0, Math.min(100, ((duration - elapsed) / duration) * 100));
+        setProgress(progressValue);
+
+        if (elapsed >= duration && onSessionEnd) {
+          onSessionEnd();
           clearInterval(timer);
-          onTimeEnd?.();
-          return 0;
         }
-        return prev - 1;
-      });
+      }
     }, 1000);
 
     return () => clearInterval(timer);
-  }, [isActive, onTimeEnd]);
+  }, [onSessionEnd]);
 
-  useEffect(() => {
-    const totalSeconds = duration * 60;
-    const progressPercent = (timeLeft / totalSeconds) * 100;
-    setProgress(progressPercent);
-  }, [timeLeft, duration]);
-
-  const minutes = Math.floor(timeLeft / 60);
-  const seconds = timeLeft % 60;
-
-  const getTimeColor = () => {
-    if (progress > 50) return 'text-green-600';
-    if (progress > 20) return 'text-yellow-600';
-    return 'text-red-600';
+  const formatTime = (ms: number) => {
+    const minutes = Math.floor(ms / (60 * 1000));
+    const seconds = Math.floor((ms % (60 * 1000)) / 1000);
+    return `${minutes}:${seconds.toString().padStart(2, '0')}`;
   };
 
   return (
-    <Card className="w-full">
-      <CardContent className="p-4">
-        <div className="flex flex-col space-y-2">
-          <div className="flex justify-between items-center">
-            <span className="text-sm font-medium">Thời gian còn lại</span>
-            <span className={`text-lg font-bold ${getTimeColor()}`}>
-              {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
+    <Card>
+      <CardContent className="py-4">
+        <div className="space-y-2">
+          <div className="flex justify-between text-sm">
+            <span className="font-medium">Session Progress</span>
+            <span className={timeRemaining <= 60000 ? 'text-red-500 font-medium' : ''}>
+              {formatTime(timeRemaining)}
             </span>
           </div>
           <Progress value={progress} />

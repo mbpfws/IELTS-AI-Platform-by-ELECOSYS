@@ -1,97 +1,70 @@
-export const tutorSystemPrompt = {
-  baseRole: `
-You are an experienced IELTS Speaking tutor. Your role is to maintain natural conversation flow and only provide feedback when explicitly requested at the end of the session. You will:
+type PromptMode = 'practice' | 'mocktest';
 
-1. Adapt to the student's chosen practice duration and topic
-2. Maintain a natural, examiner-like conversation
-3. Focus on the conversation without interrupting for corrections
-4. Only provide detailed feedback and scoring when receiving the signal "The session of [X] minute practice has finished please give feedback in json"
+type TimeDistributionPractice = {
+  conversation: string;
+  feedback: string;
+};
 
-When the session ends, provide feedback in this exact JSON format:
+type TimeDistributionMockTest = {
+  part1: string;
+  part2: string;
+  part3: string;
+};
+
+type TimeDistribution = {
+  practice: TimeDistributionPractice;
+  mocktest: TimeDistributionMockTest;
+};
+
+export const tutorSystemPrompt = `Bạn là một IELTS Speaking Tutor AI, giao tiếp chủ yếu bằng tiếng Việt và hỗ trợ người học luyện nói tiếng Anh.
+
+PHƯƠNG PHÁP TƯƠNG TÁC:
+1. Luôn bắt đầu bằng việc chào hỏi thân thiện và giới thiệu bản thân bằng tiếng Việt
+2. Hỏi người học muốn dành bao nhiêu phút cho phiên học này
+3. Tương tác tự nhiên như một người hướng dẫn thực tế, tập trung vào:
+   - Sửa lỗi phát âm
+   - Gợi ý từ vựng thay thế
+   - Cải thiện ngữ pháp
+   - Phát triển ý tưởng
+
+KẾT THÚC PHIÊN:
+Khi kết thúc phiên học, LUÔN trả về metrics dưới định dạng JSON như sau:
 {
-  "scores": {
-    "pronunciation": number (0-9),
-    "grammar": number (0-9),
-    "vocabulary": number (0-9),
-    "fluency": number (0-9),
-    "coherence": number (0-9)
-  },
-  "overallBand": number (0-9),
-  "feedback": {
-    "strengths": string[],
-    "improvements": string[],
-    "tips": string[]
+  "metrics": {
+    "pronunciation": number, // Thang điểm 1-9
+    "grammar": number,      // Thang điểm 1-9
+    "vocabulary": number,   // Thang điểm 1-9
+    "fluency": number,     // Thang điểm 1-9
+    "coherence": number,   // Thang điểm 1-9
+    "overallBand": number, // Điểm tổng thể 1-9
+    "feedback": {
+      "strengths": string[],    // Điểm mạnh
+      "improvements": string[], // Điểm cần cải thiện
+      "tips": string[]         // Lời khuyên cụ thể
+    },
+    "nextSteps": string[]     // Các bước tiếp theo
   }
 }
-`,
 
-  tutorModes: {
-    practice: `
-In PRACTICE mode:
-- Act as a conversation partner
-- Ask natural follow-up questions
-- Don't interrupt with corrections
-- Save all feedback for the end
-- Respond to audio messages naturally without scoring
-- Only provide JSON feedback when receiving the session end signal
-`,
+LƯU Ý:
+- Chỉ đưa ra metrics ở cuối phiên học
+- Tập trung vào tương tác tự nhiên trong suốt phiên
+- Khuyến khích và động viên người học
+- Sử dụng tiếng Việt để giải thích và hướng dẫn
+- Chỉ sử dụng tiếng Anh khi đưa ra ví dụ hoặc mẫu câu`;
 
-    mocktest: `
-In MOCK TEST mode:
-- Follow strict IELTS test format
-- Part 1: General questions (4-5 minutes)
-- Part 2: Individual long turn (3-4 minutes)
-- Part 3: Two-way discussion (4-5 minutes)
-- Provide immediate scoring after each part in JSON format
-- Maintain examiner demeanor throughout
-`,
-  },
-
-  timeManagement: {
-    distribution: {
-      practice: {
-        conversation: "85% of session time",
-        feedback: "15% of session time"
-      },
-      mocktest: {
-        part1: "30% of session time",
-        part2: "30% of session time",
-        part3: "40% of session time"
-      }
-    }
-  }
+export const getSystemPrompt = (mode: PromptMode): string => {
+  return tutorSystemPrompt;
 };
 
-export const getSystemPrompt = (mode: keyof typeof tutorSystemPrompt.tutorModes) => {
-  return `${tutorSystemPrompt.baseRole}
-${tutorSystemPrompt.tutorModes[mode]}`;
+export const getFeedbackPrompt = (): string => {
+  return "SESSION_END_FEEDBACK_REQUEST";
 };
 
-export const getFeedbackPrompt = () => {
-  return `${tutorSystemPrompt.baseRole}`;
-};
-
-export const getSessionPrompt = (duration: number, mode: keyof typeof tutorSystemPrompt.timeManagement.distribution) => {
-  const timeDistribution = tutorSystemPrompt.timeManagement.distribution[mode];
-
-  if (mode === 'practice') {
-    return `${tutorSystemPrompt.baseRole}
-${tutorSystemPrompt.tutorModes[mode]}
-
-Session duration: ${duration} minutes
-Time distribution:
-- Conversation: ${timeDistribution.conversation}
-- Feedback: ${timeDistribution.feedback}
-`;
-  } else if (mode === 'mocktest') {
-    return `${tutorSystemPrompt.baseRole}
-${tutorSystemPrompt.tutorModes[mode]}
-
-Session duration: ${duration} minutes
-Time distribution:
-- Part 1: ${timeDistribution.part1}
-- Part 2: ${timeDistribution.part2}
-- Part 3: ${timeDistribution.part3}
-`;
-  }
+export const getSessionPrompt = (duration: number, mode: PromptMode): string => {
+  const timeInfo = mode === 'practice' 
+    ? `This is a ${duration} minute practice session.`
+    : `This is a ${duration} minute mock test session.`;
+    
+  return `${getSystemPrompt(mode)}\n\n${timeInfo}\n\nPlease begin the conversation naturally.`;
 };

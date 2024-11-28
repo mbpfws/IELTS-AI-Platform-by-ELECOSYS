@@ -1,5 +1,7 @@
 // Part 1 Questions - 50 topics
-export const part1Questions = {
+export const part1Questions: { 
+  [key: string]: string[] 
+} = {
   // Personal Information
   "speaking_part1_intro": [
     "Can you tell me your full name?",
@@ -69,6 +71,14 @@ export const part1Questions = {
     "Has the weather changed much in your country recently?",
   ],
 
+  "speaking_part1_holidays": [
+    "What is your favorite holiday?",
+    "How do you celebrate it?",
+    "Do you prefer traveling or staying home during holidays?",
+    "What holiday traditions does your family have?",
+    "What was the most memorable holiday you had?",
+  ],
+
   // Food & Eating Habits
   "speaking_part1_food": [
     "What's your favorite food?",
@@ -112,6 +122,7 @@ export const part1Questions = {
     "How has technology changed the way you communicate?",
     "Do you think technology has made life easier or more complicated?",
     "What new technology would you like to learn about?",
+    "How often do you use social media?",
   ],
 
   // Books
@@ -211,51 +222,6 @@ export const part1Questions = {
     "How do you spend time with your family on weekends?",
     "What was the best weekend you ever had?",
     "Do you have any weekend traditions?",
-  ],
-
-  // Holidays
-  "speaking_part1_holidays": [
-    "What is your favorite holiday?",
-    "How do you celebrate it?",
-    "Do you prefer traveling or staying home during holidays?",
-    "What holiday traditions does your family have?",
-    "What was the most memorable holiday you had?",
-  ],
-
-  // Seasons
-  "speaking_part1_seasons": [
-    "What is your favorite season?",
-    "How does the weather affect your activities?",
-    "Do you prefer hot or cold weather?",
-    "What do you like to do in the summer?",
-    "What do you like to do in the winter?",
-  ],
-
-  // Technology
-  "speaking_part1_technology": [
-    "How has technology changed the way you work?",
-    "What is your favorite gadget?",
-    "Do you think technology has made life easier or more complicated?",
-    "What new technology would you like to learn about?",
-    "How often do you use social media?",
-  ],
-
-  // Environment
-  "speaking_part1_environment": [
-    "What do you do to help the environment?",
-    "Do you think recycling is important?",
-    "What are some environmental problems in your area?",
-    "How can people be encouraged to protect the environment?",
-    "What is your opinion on climate change?",
-  ],
-
-  // Festivals
-  "speaking_part1_festivals": [
-    "What is your favorite festival?",
-    "How do you celebrate it?",
-    "What festivals are popular in your country?",
-    "Have you ever participated in a festival abroad?",
-    "What do you like most about festivals?",
   ],
 
   // And many more Part 1 topics...

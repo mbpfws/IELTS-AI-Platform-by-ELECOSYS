@@ -1,4 +1,4 @@
-import { Template } from '@/types/template';
+import { Template, IELTSBand } from '@/types/template';
 
 const interactiveInstructions = `
 **Response Parameters**:
@@ -155,7 +155,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'B2',
-    targetBand: '6.0-7.0',
+    targetBand: '6.0-7.0' as IELTSBand,
     taskType: 'task2',
     criteria: ['task_response', 'coherence_cohesion', 'lexical_resource', 'grammatical_range'],
     topics: ['environment', 'climate_change', 'pollution', 'sustainability'],
@@ -223,7 +223,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'B1',
-    targetBand: '5.0-6.0',
+    targetBand: '5.0-6.0' as IELTSBand,
     taskType: 'task1',
     criteria: ['task_response', 'lexical_resource'],
     topics: ['data_analysis', 'academic_writing', 'statistics'],
@@ -291,7 +291,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'C1',
-    targetBand: '7.0-8.0',
+    targetBand: '7.0-8.0' as IELTSBand,
     taskType: 'task2',
     criteria: ['grammatical_range', 'coherence_cohesion'],
     topics: ['grammar', 'sentence_structure', 'academic_writing'],
@@ -359,7 +359,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'B2',
-    targetBand: '6.0-7.0',
+    targetBand: '6.0-7.0' as IELTSBand,
     taskType: 'task2',
     criteria: ['lexical_resource'],
     topics: ['vocabulary', 'academic_writing'],
@@ -427,7 +427,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'B2',
-    targetBand: '6.0-7.0',
+    targetBand: '6.0-7.0' as IELTSBand,
     taskType: 'task2',
     criteria: ['task_response', 'coherence_cohesion', 'lexical_resource', 'grammatical_range'],
     topics: ['education', 'academic_systems'],
@@ -495,7 +495,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'B1',
-    targetBand: '5.0-6.0',
+    targetBand: '5.0-6.0' as IELTSBand,
     taskType: 'task1',
     criteria: ['task_response', 'lexical_resource'],
     topics: ['processes', 'technical_writing'],
@@ -563,7 +563,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'B2',
-    targetBand: '6.0-7.0',
+    targetBand: '6.0-7.0' as IELTSBand,
     taskType: 'task2',
     criteria: ['coherence_cohesion'],
     topics: ['essay_structure', 'organization'],
@@ -631,7 +631,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'C1',
-    targetBand: '7.0-8.0',
+    targetBand: '7.0-8.0' as IELTSBand,
     taskType: 'task2',
     criteria: ['task_response', 'lexical_resource'],
     topics: ['technology', 'society'],
@@ -699,7 +699,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'A2',
-    targetBand: '4.0-5.0',
+    targetBand: '4.0-5.0' as IELTSBand,
     taskType: 'task2',
     criteria: ['task_response', 'coherence_cohesion'],
     topics: ['essay_basics', 'writing_fundamentals'],
@@ -767,7 +767,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'B1',
-    targetBand: '5.0-6.0',
+    targetBand: '5.0-6.0' as IELTSBand,
     taskType: 'task1',
     criteria: ['task_response', 'lexical_resource'],
     topics: ['maps', 'urban_development'],
@@ -835,7 +835,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'C1',
-    targetBand: '7.0-8.0',
+    targetBand: '7.0-8.0' as IELTSBand,
     taskType: 'task2',
     criteria: ['task_response'],
     topics: ['essay_analysis', 'complex_writing'],
@@ -903,7 +903,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'B2',
-    targetBand: '6.0-7.0',
+    targetBand: '6.0-7.0' as IELTSBand,
     taskType: 'task2',
     criteria: ['task_response', 'lexical_resource'],
     topics: ['health', 'lifestyle'],
@@ -971,7 +971,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'C1',
-    targetBand: '7.0-8.0',
+    targetBand: '7.0-8.0' as IELTSBand,
     taskType: 'task1',
     criteria: ['task_response', 'coherence_cohesion'],
     topics: ['data_comparison', 'analysis'],
@@ -1039,7 +1039,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'B2',
-    targetBand: '6.0-7.0',
+    targetBand: '6.0-7.0' as IELTSBand,
     taskType: 'task2',
     criteria: ['task_response', 'coherence_cohesion'],
     topics: ['opinions', 'arguments'],
@@ -1107,7 +1107,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'B2',
-    targetBand: '6.0-7.0',
+    targetBand: '6.0-7.0' as IELTSBand,
     taskType: 'task1',
     criteria: ['task_response', 'lexical_resource'],
     topics: ['time_series', 'trends'],
@@ -1175,7 +1175,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'C1',
-    targetBand: '7.0-8.0',
+    targetBand: '7.0-8.0' as IELTSBand,
     taskType: 'task2',
     criteria: ['task_response', 'coherence_cohesion'],
     topics: ['problems', 'solutions'],
@@ -1243,7 +1243,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'C1',
-    targetBand: '7.0-8.0',
+    targetBand: '7.0-8.0' as IELTSBand,
     taskType: 'task2',
     criteria: ['task_response', 'lexical_resource'],
     topics: ['global_issues', 'international_relations'],
@@ -1311,7 +1311,7 @@ Remember to:
 - Provide regular progress updates
 - Generate detailed session metrics`,
     level: 'B2',
-    targetBand: '6.0-7.0',
+    targetBand: '6.0-7.0' as IELTSBand,
     taskType: 'task2',
     criteria: ['coherence_cohesion', 'lexical_resource'],
     topics: ['comparison', 'contrast'],

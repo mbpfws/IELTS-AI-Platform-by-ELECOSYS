@@ -8,14 +8,15 @@ import MicIcon from '@mui/icons-material/Mic';
 import { format } from 'date-fns';
 
 interface Message {
-  role: 'user' | 'tutor';
+  role: 'user' | 'assistant';
   content: string;
-  timestamp: Date;
+  timestamp: number;
 }
 
 interface ChatInterfaceProps {
   messages: Message[];
   onSendMessage: (message: string) => void;
+  agentType?: string;
 }
 
 const MessageContainer = styled(Box)(({ theme }) => ({
@@ -61,7 +62,7 @@ const InputContainer = styled(Box)(({ theme }) => ({
   borderTop: `1px solid ${theme.palette.divider}`,
 }));
 
-export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMessage }) => {
+export const ChatInterface: React.FC<ChatInterfaceProps> = ({ messages, onSendMessage, agentType }) => {
   const [input, setInput] = useState('');
   const messagesEndRef = useRef<null | HTMLDivElement>(null);
 

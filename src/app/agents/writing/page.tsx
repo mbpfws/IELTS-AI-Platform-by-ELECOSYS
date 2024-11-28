@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { useRouter } from 'next/navigation';
 
 export default function WritingAgentPage() {
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | undefined>(undefined);
   const [sessionId, setSessionId] = useState<string>('');
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
@@ -116,7 +116,7 @@ Remember to:
           <Button
             variant="outline"
             className="mb-4"
-            onClick={() => setSelectedTemplate(null)}
+            onClick={() => setSelectedTemplate(undefined)}
           >
             ← Quay lại danh sách mẫu
           </Button>
@@ -137,7 +137,7 @@ Remember to:
             key={sessionId}
             agentType="writing"
             systemInstruction={selectedTemplate.systemPrompt || defaultSystemInstruction}
-            templatePrompt={selectedTemplate.prompt}
+            templatePrompt={selectedTemplate.description}
             sessionId={sessionId}
             customConfig={{
               temperature: 0.7,

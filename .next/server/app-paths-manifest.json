@@ -4,9 +4,10 @@
   "/api/speaking/metrics/current/route": "app/api/speaking/metrics/current/route.js",
   "/api/speaking/metrics/history/route": "app/api/speaking/metrics/history/route.js",
   "/api/speaking/stats/total/route": "app/api/speaking/stats/total/route.js",
-  "/agents/custom/page": "app/agents/custom/page.js",
   "/agents/create/page": "app/agents/create/page.js",
+  "/agents/custom/page": "app/agents/custom/page.js",
   "/agents/speaking/page": "app/agents/speaking/page.js",
   "/agents/writing/page": "app/agents/writing/page.js",
+  "/agents/speaking/results/page": "app/agents/speaking/results/page.js",
   "/page": "app/page.js"
 }

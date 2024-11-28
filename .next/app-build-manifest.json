@@ -1,0 +1,112 @@
+{
+  "pages": {
+    "/_not-found/page": [
+      "static/chunks/webpack-9daf4869b89cf009.js",
+      "static/chunks/4bd1b696-aebc84fafbe54b5e.js",
+      "static/chunks/517-f5a3b8a85697061c.js",
+      "static/chunks/main-app-24aacd1af0075fa4.js",
+      "static/chunks/app/_not-found/page-106d1dd7648717ad.js"
+    ],
+    "/layout": [
+      "static/chunks/webpack-9daf4869b89cf009.js",
+      "static/chunks/4bd1b696-aebc84fafbe54b5e.js",
+      "static/chunks/517-f5a3b8a85697061c.js",
+      "static/chunks/main-app-24aacd1af0075fa4.js",
+      "static/css/c2eb2cf68d7da3fe.css",
+      "static/chunks/365-9a091b55b8c6507a.js",
+      "static/chunks/679-27e429d3f75a1dce.js",
+      "static/chunks/396-de981aff7785b3fb.js",
+      "static/chunks/app/layout-150c0ae72dd0eb63.js"
+    ],
+    "/api/speaking/chat/route": [
+      "static/chunks/webpack-9daf4869b89cf009.js",
+      "static/chunks/4bd1b696-aebc84fafbe54b5e.js",
+      "static/chunks/517-f5a3b8a85697061c.js",
+      "static/chunks/main-app-24aacd1af0075fa4.js",
+      "static/chunks/app/api/speaking/chat/route-433ff0e479fffa84.js"
+    ],
+    "/api/speaking/metrics/current/route": [
+      "static/chunks/webpack-9daf4869b89cf009.js",
+      "static/chunks/4bd1b696-aebc84fafbe54b5e.js",
+      "static/chunks/517-f5a3b8a85697061c.js",
+      "static/chunks/main-app-24aacd1af0075fa4.js",
+      "static/chunks/app/api/speaking/metrics/current/route-0e0f441802f7e728.js"
+    ],
+    "/api/speaking/metrics/history/route": [
+      "static/chunks/webpack-9daf4869b89cf009.js",
+      "static/chunks/4bd1b696-aebc84fafbe54b5e.js",
+      "static/chunks/517-f5a3b8a85697061c.js",
+      "static/chunks/main-app-24aacd1af0075fa4.js",
+      "static/chunks/app/api/speaking/metrics/history/route-c4e9475ee4a021e8.js"
+    ],
+    "/api/speaking/stats/total/route": [
+      "static/chunks/webpack-9daf4869b89cf009.js",
+      "static/chunks/4bd1b696-aebc84fafbe54b5e.js",
+      "static/chunks/517-f5a3b8a85697061c.js",
+      "static/chunks/main-app-24aacd1af0075fa4.js",
+      "static/chunks/app/api/speaking/stats/total/route-fa5f6c6d120190fb.js"
+    ],
+    "/agents/create/page": [
+      "static/chunks/webpack-9daf4869b89cf009.js",
+      "static/chunks/4bd1b696-aebc84fafbe54b5e.js",
+      "static/chunks/517-f5a3b8a85697061c.js",
+      "static/chunks/main-app-24aacd1af0075fa4.js",
+      "static/chunks/365-9a091b55b8c6507a.js",
+      "static/chunks/679-27e429d3f75a1dce.js",
+      "static/chunks/271-9e8d824c68a2418d.js",
+      "static/chunks/639-4721ba36e003b7b9.js",
+      "static/chunks/app/agents/create/page-82b556dc8fb662ba.js"
+    ],
+    "/agents/custom/page": [
+      "static/chunks/webpack-9daf4869b89cf009.js",
+      "static/chunks/4bd1b696-aebc84fafbe54b5e.js",
+      "static/chunks/517-f5a3b8a85697061c.js",
+      "static/chunks/main-app-24aacd1af0075fa4.js",
+      "static/chunks/788-82880fed6d618cf4.js",
+      "static/chunks/242-c1722a72d246cb4e.js",
+      "static/chunks/app/agents/custom/page-6ad29b08e8031296.js"
+    ],
+    "/agents/speaking/page": [
+      "static/chunks/webpack-9daf4869b89cf009.js",
+      "static/chunks/4bd1b696-aebc84fafbe54b5e.js",
+      "static/chunks/517-f5a3b8a85697061c.js",
+      "static/chunks/main-app-24aacd1af0075fa4.js",
+      "static/chunks/8e1d74a4-9535cc5e3a9e8061.js",
+      "static/chunks/365-9a091b55b8c6507a.js",
+      "static/chunks/679-27e429d3f75a1dce.js",
+      "static/chunks/910-dee082d5958e5eee.js",
+      "static/chunks/271-9e8d824c68a2418d.js",
+      "static/chunks/788-82880fed6d618cf4.js",
+      "static/chunks/644-55ebf830ae8d6239.js",
+      "static/chunks/app/agents/speaking/page-735db462564e9fde.js"
+    ],
+    "/agents/writing/page": [
+      "static/chunks/webpack-9daf4869b89cf009.js",
+      "static/chunks/4bd1b696-aebc84fafbe54b5e.js",
+      "static/chunks/517-f5a3b8a85697061c.js",
+      "static/chunks/main-app-24aacd1af0075fa4.js",
+      "static/chunks/ee560e2c-7aa47c460986ff23.js",
+      "static/chunks/365-9a091b55b8c6507a.js",
+      "static/chunks/910-dee082d5958e5eee.js",
+      "static/chunks/499-1430096d85196620.js",
+      "static/chunks/app/agents/writing/page-171a370fcd0215c9.js"
+    ],
+    "/agents/speaking/results/page": [
+      "static/chunks/webpack-9daf4869b89cf009.js",
+      "static/chunks/4bd1b696-aebc84fafbe54b5e.js",
+      "static/chunks/517-f5a3b8a85697061c.js",
+      "static/chunks/main-app-24aacd1af0075fa4.js",
+      "static/chunks/365-9a091b55b8c6507a.js",
+      "static/chunks/app/agents/speaking/results/page-f9a2683d41b6940f.js"
+    ],
+    "/page": [
+      "static/chunks/webpack-9daf4869b89cf009.js",
+      "static/chunks/4bd1b696-aebc84fafbe54b5e.js",
+      "static/chunks/517-f5a3b8a85697061c.js",
+      "static/chunks/main-app-24aacd1af0075fa4.js",
+      "static/chunks/365-9a091b55b8c6507a.js",
+      "static/chunks/396-de981aff7785b3fb.js",
+      "static/chunks/app/page-d2d33ffcdc005113.js"
+    ]
+  }
+}

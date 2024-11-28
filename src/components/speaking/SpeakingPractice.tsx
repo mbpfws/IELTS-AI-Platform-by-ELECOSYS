@@ -5,7 +5,7 @@ import MicIcon from '@mui/icons-material/Mic';
 import SendIcon from '@mui/icons-material/Send';
 import { useToast } from '@/components/ui/use-toast';
 import { Message } from '@/types/speakingSession';
-import { AudioRecorder } from '@/components/speaking/AudioRecorder';
+import AudioRecorder from '@/components/speaking/AudioRecorder';
 import { SessionTimer } from './SessionTimer';
 
 const ChatContainer = styled(Box)(({ theme }) => ({
@@ -74,7 +74,7 @@ export const SpeakingPractice = ({
 }: SpeakingPracticeProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
-  const [isRecording, setIsRecording] = useState(false);
+  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [handsFreeMode, setHandsFreeMode] = useState(false);
   const [sessionActive, setSessionActive] = useState(true);
@@ -115,36 +115,32 @@ export const SpeakingPractice = ({
   }, [topic, level, targetBand, part, duration, mode]);
 
   const handleSend = async () => {
-    if (!input.trim() && !audioUrl) return;
+    if (!input.trim() && !audioBlob) return;
     if (isProcessing) return;
 
     try {
       setIsProcessing(true);
-      const newMessage: Message = {
-        role: 'user',
-        content: input || 'Audio message sent',
-        audioUrl: audioUrl
-      };
 
-      const response = await fetch('/api/speaking/chat', {
+      // Send message through practice service
+      await fetch('/api/speaking/chat', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          message: newMessage,
+          message: {
+            role: 'user',
+            content: input || 'Audio message sent',
+            audioUrl: audioUrl
+          },
           duration,
           mode
         }),
       });
 
-      if (!response.ok) {
-        throw new Error('Failed to send message');
-      }
-
-      const data = await response.json();
-      setMessages(prev => [...prev, newMessage, data.message]);
+      // Clear input states
       setInput('');
+      setAudioBlob(null);
       setAudioUrl(null);
 
     } catch (error) {
@@ -158,32 +154,14 @@ export const SpeakingPractice = ({
     }
   };
 
-  const handleAudioSubmit = async (audioBlob: Blob) => {
-    if (!sessionActive) return;
+  const handleAudioRecording = async (blob: Blob) => {
+    setAudioBlob(blob);
+    setAudioUrl(URL.createObjectURL(blob));
+  };
 
-    try {
-      setIsProcessing(true);
-      await fetch('/api/speaking/send-audio', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          audioBlob,
-          duration,
-          mode
-        }),
-      });
-    } catch (error) {
-      console.error('Error sending audio:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to send audio. Please try again.',
-        variant: 'destructive',
-      });
-    } finally {
-      setIsProcessing(false);
-    }
+  const handleAudioSubmit = async () => {
+    if (!audioBlob || !sessionActive) return;
+    await handleSend();
   };
 
   const handleSessionEnd = async () => {
@@ -223,9 +201,7 @@ export const SpeakingPractice = ({
   return (
     <Box>
       <SessionTimer 
-        duration={duration} 
-        onTimeEnd={handleSessionEnd}
-        isActive={sessionActive}
+        onSessionEnd={handleSessionEnd}
       />
       
       <StatsCard>
@@ -264,8 +240,8 @@ export const SpeakingPractice = ({
           />
           
           <IconButton 
-            color={isRecording ? 'error' : 'primary'}
-            onClick={() => setIsRecording(!isRecording)}
+            color={!!audioBlob ? 'error' : 'primary'}
+            onClick={handleAudioSubmit}
           >
             <MicIcon />
           </IconButton>
@@ -290,16 +266,12 @@ export const SpeakingPractice = ({
         </InputArea>
       </ChatContainer>
 
-      {isRecording && (
+      {!!audioBlob && (
         <AudioRecorder
-          onRecordingComplete={(url) => {
-            setAudioUrl(url);
-            if (handsFreeMode) {
-              handleSend();
-            }
-          }}
-          onRecordingStop={() => setIsRecording(false)}
+          onRecordingComplete={handleAudioRecording}
+          onRecordingStop={() => setAudioBlob(null)}
           disabled={!sessionActive || isProcessing}
+          audioBlob={audioBlob}
         />
       )}
     </Box>

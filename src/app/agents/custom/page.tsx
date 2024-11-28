@@ -1,6 +1,24 @@
+'use client';
+
+import { useState } from "react";
 import { ChatInterface } from "@/components/practice/ChatInterface";
+import { Message } from "@/types/speakingSession";
 
 export default function CustomAgentPage() {
+  const [messages, setMessages] = useState<Message[]>([]);
+
+  const handleSendMessage = async (message: string) => {
+    // Add user message to the chat
+    const userMessage: Message = {
+      role: 'user',
+      content: message,
+      timestamp: Date.now()
+    };
+    setMessages(prev => [...prev, userMessage]);
+
+    // TODO: Add API call to handle the message and get response
+  };
+
   return (
     <div className="container mx-auto">
       <div className="mb-8">
@@ -11,7 +29,11 @@ export default function CustomAgentPage() {
         </p>
       </div>
       
-      <ChatInterface agentType="custom" />
+      <ChatInterface 
+        messages={messages}
+        onSendMessage={handleSendMessage}
+        agentType="custom" 
+      />
     </div>
   );
 }

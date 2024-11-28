@@ -59,12 +59,19 @@ export const SpeakingTemplates = () => {
     setTabValue(newValue);
   };
 
-  const startPractice = (topic: string, type: 'tutor' | 'template') => {
-    if (type === 'tutor') {
-      const session = practiceService.startSession('tutor', 15);
-      navigate('/practice', { state: { topic, sessionId: session.id } });
-    } else {
-      navigate('/templates/practice', { state: { topic } });
+  const handleStartPractice = async (topic: string, type: 'tutor' | 'template') => {
+    try {
+      if (type === 'tutor') {
+        const session = await practiceService.startSession('tutor', 15);
+        if (session && session.id) {
+          navigate('/practice', { state: { topic, sessionId: session.id } });
+        }
+      } else {
+        navigate('/templates/practice', { state: { topic } });
+      }
+    } catch (error) {
+      console.error('Failed to start practice session:', error);
+      // TODO: Show error message to user
     }
   };
 
@@ -95,14 +102,14 @@ export const SpeakingTemplates = () => {
             <Button
               startIcon={<PlayCircleOutlineIcon />}
               variant="outlined"
-              onClick={() => startPractice(key, 'template')}
+              onClick={() => handleStartPractice(key, 'template')}
             >
               Practice with Template
             </Button>
             <Button
               startIcon={<ChatIcon />}
               variant="contained"
-              onClick={() => startPractice(key, 'tutor')}
+              onClick={() => handleStartPractice(key, 'tutor')}
             >
               Practice with Tutor
             </Button>

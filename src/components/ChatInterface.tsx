@@ -2,7 +2,8 @@
 
 import { useState, useEffect, useRef } from 'react';
 import { FiSend, FiRefreshCw } from 'react-icons/fi';
-import { GeminiService, type AgentType } from '@/services/gemini';
+import { geminiService } from '@/services/geminiService';
+import type { AgentType } from '@/types';
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -27,8 +28,6 @@ interface ChatInterfaceProps {
     maxOutputTokens?: number;
   }
 }
-
-const geminiService = new GeminiService(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
 
 function ChatInterface({ agentType, systemInstruction, templatePrompt, sessionId, customConfig }: ChatInterfaceProps) {
   const [messages, setMessages] = useState<Message[]>([]);

@@ -39,7 +39,16 @@ const Feature = styled(Box)(({ theme }) => ({
 export const SpeakingDashboard = () => {
   const navigate = useNavigate();
 
-  const practiceOptions = [
+  interface PracticeOption {
+    title: string;
+    description: string;
+    features: string[];
+    icon: React.ReactNode;
+    path: string;
+    color: 'primary' | 'secondary' | 'info' | 'success';
+  }
+
+  const practiceOptions: PracticeOption[] = [
     {
       title: 'AI Tutor Practice',
       description: 'Practice with our AI tutor that adapts to your level and provides real-time feedback',

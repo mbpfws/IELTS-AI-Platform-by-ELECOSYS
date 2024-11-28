@@ -66,7 +66,7 @@ export const FreePractice: React.FC = () => {
   const [isRecording, setIsRecording] = useState(false);
   const [sessionTime, setSessionTime] = useState(0);
   const chatEndRef = useRef<null | HTMLDivElement>(null);
-  const tutorService = useRef(new TutorService());
+  const tutorService = useRef(TutorService.getInstance());
 
   useEffect(() => {
     // Add initial tutor message
@@ -96,11 +96,11 @@ export const FreePractice: React.FC = () => {
     setInput('');
 
     // Get AI response
-    const response = await tutorService.current.getResponse(input);
+    const feedback = await tutorService.current.provideFeedback(input);
     const tutorMessage = {
-      content: response,
+      content: feedback.recordedResponses[0].feedback,
       isUser: false,
-      timestamp: new Date(),
+      timestamp: new Date()
     };
     setMessages(prev => [...prev, tutorMessage]);
   };

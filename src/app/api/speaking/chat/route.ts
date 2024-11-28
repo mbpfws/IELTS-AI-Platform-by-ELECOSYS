@@ -6,7 +6,31 @@ import { SYSTEM_INSTRUCTION, CONVERSATION_PROMPTS, MOCK_TEST_PROMPTS } from '@/a
 const MAX_RETRIES = 3;
 const RETRY_DELAY = 1000;
 
-async function callAIWithRetry(messages: any[], retries = 0): Promise<any> {
+interface AIMessage {
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+}
+
+interface AIResponse {
+  choices: [{
+    message: {
+      role: 'assistant';
+      content: string;
+    }
+  }]
+}
+
+interface SessionMetrics {
+  scores: {
+    pronunciation: number;
+    grammar: number;
+    vocabulary: number;
+    fluency: number;
+    coherence: number;
+  }
+}
+
+async function callAIWithRetry(messages: AIMessage[], retries = 0): Promise<AIResponse> {
   try {
     const response = await fetch('https://api.learnlm.xyz/v1/chat/completions', {
       method: 'POST',
@@ -38,7 +62,17 @@ async function callAIWithRetry(messages: any[], retries = 0): Promise<any> {
 
 export async function POST(request: Request) {
   try {
-    const { message, sessionId, duration, mode = 'practice' } = await request.json();
+    const { 
+      message,
+      sessionId,
+      duration,
+      mode = 'practice' 
+    }: {
+      message: Message & { audioUrl?: string };
+      sessionId?: string;
+      duration?: number;
+      mode?: 'practice' | 'test';
+    } = await request.json();
 
     // Get or create session
     let session = sessionId ? 
@@ -50,9 +84,11 @@ export async function POST(request: Request) {
       }) :
       await prisma.speakingSession.create({
         data: {
-          duration,
+          duration: duration || 0,
           userId: 'default', // Replace with actual user ID
-          mode
+        },
+        include: {
+          messages: true
         }
       });
 
@@ -61,20 +97,20 @@ export async function POST(request: Request) {
     }
 
     // Check if this is a session end request
-    const isSessionEnd = message.role === 'system' && 
+    const isSessionEnd = (message.role as string) === 'system' && 
       message.content.includes('has finished please give feedback in json');
 
     // Prepare the messages for AI
-    const messages = [
+    const messages: AIMessage[] = [
       { role: 'system', content: SYSTEM_INSTRUCTION }
     ];
 
     // Add conversation history (last 5 messages for context)
     if (session.messages) {
-      const recentMessages = session.messages
+      const recentMessages: AIMessage[] = session.messages
         .slice(-5)
         .map(msg => ({
-          role: msg.role,
+          role: msg.role as 'user' | 'assistant' | 'system',
           content: msg.content
         }));
       messages.push(...recentMessages);
@@ -117,7 +153,7 @@ export async function POST(request: Request) {
     });
 
     // Parse metrics if this is session end
-    let metrics = null;
+    let metrics: SessionMetrics | null = null;
     if (isSessionEnd) {
       try {
         const jsonMatch = aiResponse.choices[0].message.content.match(/\{[\s\S]*\}/);
@@ -125,19 +161,21 @@ export async function POST(request: Request) {
           metrics = JSON.parse(jsonMatch[0]);
           
           // Store metrics
-          await prisma.speakingMetrics.create({
-            data: {
-              sessionId: session.id,
-              pronunciation: metrics.scores.pronunciation,
-              grammar: metrics.scores.grammar,
-              vocabulary: metrics.scores.vocabulary,
-              fluency: metrics.scores.fluency,
-              coherence: metrics.scores.coherence,
-              averageResponseTime: 0,
-              totalMessages: session.messages.length,
-              uniqueWords: 0 // Calculate this if needed
-            }
-          });
+          if (metrics && metrics.scores) {
+            await prisma.speakingMetrics.create({
+              data: {
+                sessionId: session.id,
+                pronunciation: metrics.scores.pronunciation,
+                grammar: metrics.scores.grammar,
+                vocabulary: metrics.scores.vocabulary,
+                fluency: metrics.scores.fluency,
+                coherence: metrics.scores.coherence,
+                averageResponseTime: 0,
+                totalMessages: session.messages.length,
+                uniqueWords: 0 // Calculate this if needed
+              }
+            });
+          }
         }
       } catch (err) {
         console.log('Metrics parsing error:', err);

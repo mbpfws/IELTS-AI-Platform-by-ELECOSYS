@@ -4,7 +4,7 @@ export interface Message {
   role: 'user' | 'assistant';
   content: string;
   timestamp: Date;
-  contentType?: 'text' | 'audio';
+  contentType?: 'text' | 'audio' | 'feedback';
   audioUrl?: string;
 }
 
