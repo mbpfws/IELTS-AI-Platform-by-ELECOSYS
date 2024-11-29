@@ -1,8 +1,10 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 
-class AudioService {
+export class AudioService {
   private static instance: AudioService;
   private genAI: GoogleGenerativeAI;
+  private mediaRecorder: MediaRecorder | null = null;
+  private audioChunks: BlobPart[] = [];
 
   private constructor() {
     const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
@@ -17,6 +19,40 @@ class AudioService {
       AudioService.instance = new AudioService();
     }
     return AudioService.instance;
+  }
+
+  async startRecording(): Promise<void> {
+    try {
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      this.mediaRecorder = new MediaRecorder(stream);
+      this.audioChunks = [];
+
+      this.mediaRecorder.ondataavailable = (event) => {
+        this.audioChunks.push(event.data);
+      };
+
+      this.mediaRecorder.start();
+    } catch (error) {
+      console.error('Error starting recording:', error);
+      throw new Error('Failed to start recording');
+    }
+  }
+
+  stopRecording(): Promise<Blob> {
+    return new Promise((resolve, reject) => {
+      if (!this.mediaRecorder) {
+        reject(new Error('No recording in progress'));
+        return;
+      }
+
+      this.mediaRecorder.onstop = () => {
+        const audioBlob = new Blob(this.audioChunks, { type: 'audio/wav' });
+        this.audioChunks = [];
+        resolve(audioBlob);
+      };
+
+      this.mediaRecorder.stop();
+    });
   }
 
   async processAudio(audioBlob: Blob, mode: 'conversation' | 'scoring' = 'conversation', context?: string): Promise<string> {
@@ -159,6 +195,31 @@ Provide a summary and scores for each category.`;
       return result.url; // Assuming the backend returns the URL of the uploaded file
     } catch (error) {
       console.error('Error uploading audio:', error);
+      throw error;
+    }
+  }
+
+  async getFeedback(text: string): Promise<{
+    pronunciation: string[];
+    grammar: string[];
+    vocabulary: string[];
+  }> {
+    try {
+      const response = await fetch('/api/analyze-speech', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ text }),
+      });
+
+      if (!response.ok) {
+        throw new Error('Failed to get feedback');
+      }
+
+      return await response.json();
+    } catch (error) {
+      console.error('Error getting feedback:', error);
       throw error;
     }
   }

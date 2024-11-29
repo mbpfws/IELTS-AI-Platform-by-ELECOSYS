@@ -66,20 +66,31 @@ const INITIAL_MESSAGES: Record<AgentType, string[]> = {
   custom: ["How can I assist you today?"]
 };
 
+// Rate limiting configuration
+const RATE_LIMIT = {
+  maxRequestsPerMinute: 60,
+  maxRetries: 3,
+  initialRetryDelay: 1000, // 1 second
+};
+
 export class GeminiService {
   private static instance: GeminiService;
-  private genAI: GoogleGenerativeAI;
-  private model: any;
+  private apiKey: string;
+  private endpoint: string;
+  private headers: Headers;
   private config: typeof DEFAULT_CONFIG;
+  private requestTimestamps: number[] = [];
+  private retryCount: number = 0;
 
   private constructor() {
-    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!apiKey) {
-      throw new Error('Missing NEXT_PUBLIC_GEMINI_API_KEY environment variable');
+    this.apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    if (!this.apiKey) {
+      throw new Error('API key not found');
     }
-    this.genAI = new GoogleGenerativeAI(apiKey);
+    this.endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
+    this.headers = new Headers();
+    this.headers.append('Content-Type', 'application/json');
     this.config = { ...DEFAULT_CONFIG };
-    this.initModel(this.config);
   }
 
   public static getInstance(): GeminiService {
@@ -89,68 +100,120 @@ export class GeminiService {
     return GeminiService.instance;
   }
 
-  private initModel(config: typeof DEFAULT_CONFIG) {
-    this.model = this.genAI.getGenerativeModel({ 
-      model: config.modelName,
-      generationConfig: {
-        temperature: config.temperature,
-        topP: config.topP,
-        maxOutputTokens: config.maxOutputTokens,
-      },
-    });
-  }
-
-  updateConfig(newConfig: Partial<typeof DEFAULT_CONFIG>) {
-    this.config = { ...this.config, ...newConfig };
-    this.initModel(this.config);
-  }
-
   async sendMessage(
     message: string,
-    systemPrompt?: string,
-    agentType: AgentType = 'custom',
-    customConfig?: Partial<AgentConfig>
+    context: string,
+    mode: 'speaking' | 'feedback' | 'general' = 'general'
   ): Promise<string> {
     try {
-      // Update config if needed
-      if (customConfig || agentType !== 'custom') {
-        const config = customConfig || AGENT_CONFIGS[agentType];
-        this.updateConfig(config);
+      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+      if (!apiKey) {
+        throw new Error('Gemini API key not found');
       }
 
-      // Send system instruction if provided
-      if (systemPrompt) {
-        let prompt = systemPrompt;
-        if (agentType !== 'custom') {
-          prompt += `\n\n${SYSTEM_INSTRUCTIONS[agentType]}`;
+      const genAI = new GoogleGenerativeAI(apiKey);
+      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
+
+      const prompt = this.buildPrompt(message, context, mode);
+      const result = await model.generateContent(prompt);
+      const response = result.response;
+      const text = response.text();
+
+      if (mode === 'feedback') {
+        try {
+          // Validate JSON format for feedback
+          JSON.parse(text);
+        } catch (error) {
+          throw new Error('Invalid feedback format');
         }
-        await this.model.generateContent(prompt);
       }
-      
-      // Send user message
-      const result = await this.model.generateContent(message);
-      return result.response.text();
+
+      return text;
     } catch (error) {
-      console.error('Error sending message:', error);
+      console.error('Error in Gemini service:', error);
       throw error;
+    }
+  }
+
+  private buildPrompt(message: string, context: string, mode: string): string {
+    switch (mode) {
+      case 'speaking':
+        return `${context}
+
+Remember to:
+1. Maintain the role of an IELTS examiner
+2. Provide natural follow-up questions
+3. Give brief feedback on major errors
+4. Stay focused on the topic and learning objectives`;
+
+      case 'feedback':
+        return context;
+
+      default:
+        return `${context}\n\nUser: ${message}`;
     }
   }
 
   async generateChat(messages: { role: string; content: string }[]): Promise<string> {
-    try {
-      const chat = this.model.startChat({
-        history: messages.map(msg => ({
-          role: msg.role === 'user' ? 'user' : 'model',
-          parts: msg.content,
-        })),
-      });
+    return this.retryWithExponentialBackoff(async () => {
+      try {
+        const chat = this.model.startChat({
+          history: messages.map(msg => ({
+            role: msg.role === 'user' ? 'user' : 'model',
+            parts: msg.content,
+          })),
+        });
 
-      const result = await chat.sendMessage(messages[messages.length - 1].content);
-      return result.response.text();
-    } catch (error) {
-      console.error('Error in chat generation:', error);
+        const result = await chat.sendMessage(messages[messages.length - 1].content);
+        return result.response.text();
+      } catch (error: any) {
+        console.error('Error in chat generation:', error);
+        if (error.message.includes('rate limit exceeded')) {
+          throw error; // Let retryWithExponentialBackoff handle it
+        }
+        throw new Error(`Failed to generate chat response: ${error.message}`);
+      }
+    });
+  }
+
+  private async retryWithExponentialBackoff<T>(
+    operation: () => Promise<T>
+  ): Promise<T> {
+    try {
+      await this.checkRateLimit();
+      return await operation();
+    } catch (error: any) {
+      if (
+        error.message.includes('rate limit exceeded') &&
+        this.retryCount < RATE_LIMIT.maxRetries
+      ) {
+        const delay = RATE_LIMIT.initialRetryDelay * Math.pow(2, this.retryCount);
+        this.retryCount++;
+        console.log(`Retrying in ${delay}ms... (Attempt ${this.retryCount}/${RATE_LIMIT.maxRetries})`);
+        await new Promise(resolve => setTimeout(resolve, delay));
+        return this.retryWithExponentialBackoff(operation);
+      }
+      
+      // Reset retry count for next operation
+      this.retryCount = 0;
       throw error;
     }
+  }
+
+  private async checkRateLimit(): Promise<void> {
+    const now = Date.now();
+    // Remove timestamps older than 1 minute
+    this.requestTimestamps = this.requestTimestamps.filter(
+      timestamp => now - timestamp < 60000
+    );
+    
+    if (this.requestTimestamps.length >= RATE_LIMIT.maxRequestsPerMinute) {
+      const oldestTimestamp = this.requestTimestamps[0];
+      const waitTime = 60000 - (now - oldestTimestamp);
+      throw new Error(`Rate limit exceeded. Please wait ${Math.ceil(waitTime / 1000)} seconds.`);
+    }
+    
+    this.requestTimestamps.push(now);
   }
 }
 

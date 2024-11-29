@@ -12,7 +12,7 @@ export default function CustomAgentPage() {
     const userMessage: Message = {
       role: 'user',
       content: message,
-      timestamp: Date.now()
+      timestamp: new Date()
     };
     setMessages(prev => [...prev, userMessage]);
 

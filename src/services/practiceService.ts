@@ -1,10 +1,14 @@
-import { part1Questions, part2Questions, part3Questions } from '../data/speakingQuestions';
-import { tutorSystemPrompt } from '../data/tutorSystemPrompt';
-import { audioService } from './audioService';
-import { speakingService } from './speakingService';
-import { Template } from '../types/template';
-import { SpeakingMetrics } from '../types/speakingSession';
+import { prisma } from '@/lib/prisma';
+import { Template } from '@/types/template';
 import { v4 as uuidv4 } from 'uuid';
+import { 
+  Prisma,
+  SpeakingSession as Speaking_Session,
+  SpeakingMessage as Speaking_Message,
+  AudioRecording as Audio_Recording,
+  SpeakingMetrics as Speaking_Metrics,
+  SpeakingFeedback as Speaking_Feedback 
+} from '@prisma/client';
 
 export interface PracticeSession {
   id: string;
@@ -44,394 +48,226 @@ export interface UserProgress {
   strongAreas: string[];
 }
 
-interface SpeakingSession {
-  id: string;
-  userId: string;
-  duration: number; // in minutes
-  startTime: number;
-  endTime?: number;
-  messages: Message[];
-  feedback?: string;
-}
-
-export interface Message {
-  role: 'user' | 'assistant';
+interface Message {
+  role: 'user' | 'assistant' | 'system';
   content: string;
   timestamp: number;
   contentType?: 'text' | 'audio' | 'feedback';
   audioUrl?: string;
 }
 
-class PracticeService {
+type SessionWithIncludes = Speaking_Session & {
+  messages: Speaking_Message[];
+  recordings: Audio_Recording[];
+  metrics: Speaking_Metrics | null;
+  feedback: Speaking_Feedback | null;
+};
+
+export class PracticeService {
   private static instance: PracticeService;
-  private currentSession: SpeakingSession | null = null;
-  private sessionHistory: PracticeSession[] = [];
+  private currentSession: SessionWithIncludes | null = null;
+  private sessionHistory: Map<string, Message[]> = new Map();
   private sessionStartTime: number | null = null;
   private sessionDuration: number | null = null;
+  private userId: string | null = null;
 
   private constructor() {}
 
-  public static getInstance(): PracticeService {
+  static getInstance(): PracticeService {
     if (!PracticeService.instance) {
       PracticeService.instance = new PracticeService();
     }
     return PracticeService.instance;
   }
 
-  // Start a new practice session
-  async startSession(
-    type: 'tutor' | 'template' | 'mock-test', 
-    duration: number,
-    template?: Template
-  ): Promise<PracticeSession> {
-    // Initialize timing
-    this.sessionStartTime = Date.now();
-    this.sessionDuration = duration * 60 * 1000; // Convert to milliseconds
-
-    // Create practice session
-    this.currentSession = {
-      id: uuidv4(),
-      userId: 'user', // default user id
-      duration,
-      startTime: Date.now(),
-      messages: []
-    };
-
-    // Initialize speaking service with template context
-    const mode = type === 'template' ? 'template' : 'practice';
-    speakingService.startSession(
-      this.currentSession.id,
-      duration,
-      mode,
-      template?.id
-    );
-
-    let initialPrompt = '';
-    if (template) {
-      let questions: string[] = [];
-      
-      // Get relevant questions based on the template part
-      if (template.part === 'PART1') {
-        const topic = template.topic 
-          ? template.topic.toLowerCase().replace(/[^a-z0-9]/g, '_') 
-          : 'default';
-        const questionKey = `speaking_part1_${topic}`;
-        questions = part1Questions[questionKey] || [];
-
-        // If no specific questions found, use default questions for the topic
-        if (questions.length === 0) {
-          questions = [
-            `Tell me about your interests.`,
-            `What do you enjoy doing in your free time?`,
-            `Can you describe your hometown or where you currently live?`,
-            `What are some of your future goals?`,
-            `How do you like to relax?`
-          ];
-        }
-      }
-
-      initialPrompt = `
-Here is the speaking task for ${template.part}:
-Topic: ${template.topic || 'default'}
-
-Here are the questions I will ask you about this topic:
-${questions.map((q, i) => `${i + 1}. ${q}`).join('\n')}
-
-I will now start asking these questions one by one. Please respond naturally as you would in an IELTS Speaking test.
-
-Let's begin with the first question: ${questions[0]}`;
-    } else {
-      // For non-template sessions, provide a welcome message
-      initialPrompt = `Welcome to your ${duration}-minute IELTS Speaking practice session! 
-
-I am your speaking practice partner. I'll help you practice your English speaking skills through natural conversation and provide feedback when needed.
-
-Let's start with a common IELTS Speaking Part 1 topic: Your hobbies and interests.
-
-Could you tell me about your favorite hobby or interest?`;
-    }
-
-    // Send initial message through speaking service
-    await this.sendMessage(initialPrompt);
-
-    const practiceSession: PracticeSession = {
-      id: this.currentSession.id,
-      type,
-      startTime: Date.now(),
-      duration,
-      topics: template ? [template.topic || 'default'] : [],
-      feedback: [],
-      messages: this.currentSession.messages,
-      audioUrls: []
-    };
-
-    // Add to session history
-    this.sessionHistory.push(practiceSession);
-
-    return practiceSession;
+  async createSession(userId: string, template: Template): Promise<SessionWithIncludes> {
+    return await prisma.$transaction(async (tx) => {
+      const session = await tx.speakingSession.create({
+        data: {
+          userId,
+          duration: template.duration,
+          startTime: new Date(),
+        },
+        include: {
+          messages: true,
+          recordings: true,
+          metrics: true,
+          feedback: true,
+        },
+      });
+      return session;
+    });
   }
 
-  async sendMessage(content: string, audioBlob?: Blob): Promise<void> {
-    if (!this.currentSession) {
-      throw new Error('No active session');
-    }
-
+  async startSession(config: {
+    userId: string;
+    duration: number;
+    templateId: string;
+    startTime: number;
+  }): Promise<SessionWithIncludes> {
     try {
-      // Initialize messages array if it doesn't exist
-      if (!Array.isArray(this.currentSession.messages)) {
-        this.currentSession.messages = [];
-      }
-
-      let response: string;
+      const { userId, duration, templateId, startTime } = config;
       
-      if (audioBlob) {
-        // Handle audio input through speaking service
-        response = await speakingService.handleAudioInput(audioBlob);
-      } else {
-        // Handle text input through speaking service
-        response = await speakingService.sendMessage(content);
+      // End any existing session
+      if (this.currentSession) {
+        await this.endSession(this.currentSession.id);
       }
 
-      // Check if the response is feedback
-      const isFeedback = response.includes('Pronunciation:') || 
-                        response.includes('Grammar:') || 
-                        response.includes('Vocabulary:') ||
-                        response.includes('Fluency:');
-
-      // Add messages to practice session history
-      this.currentSession.messages.push(
-        {
-          role: 'user',
-          content: audioBlob ? '[Audio Message]' : content,
-          timestamp: Date.now(),
-          contentType: audioBlob ? 'audio' : 'text',
-          audioUrl: audioBlob ? await audioService.uploadAudio(audioBlob) : undefined
+      // Create new session
+      const session = await prisma.speakingSession.create({
+        data: {
+          id: uuidv4(),
+          userId,
+          templateId,
+          startTime: new Date(startTime),
+          duration,
+          status: 'active'
         },
-        {
-          role: 'assistant',
-          content: response,
-          timestamp: Date.now(),
-          contentType: isFeedback ? 'feedback' : 'text'
+        include: {
+          messages: true,
+          recordings: true,
+          metrics: true,
+          feedback: true
         }
-      );
+      });
 
+      this.currentSession = session;
+      this.sessionStartTime = startTime;
+      this.sessionDuration = duration * 60 * 1000; // Convert minutes to milliseconds
+      this.userId = userId;
+
+      return session;
     } catch (error) {
-      console.error('Error in practice service sendMessage:', error);
+      console.error('Error starting session:', error);
       throw error;
     }
   }
 
-  async sendAudio(audioBlob: Blob): Promise<string> {
-    if (!this.currentSession) {
-      throw new Error('No active session');
-    }
-
+  async endSession(sessionId: string): Promise<void> {
     try {
-      // Process audio through speaking service
-      const response = await speakingService.handleAudioInput(audioBlob);
-      
-      // Add messages to session history if not already added by speaking service
-      if (!Array.isArray(this.currentSession.messages)) {
-        this.currentSession.messages = [];
-      }
-
-      // Check if the response is feedback
-      const isFeedback = response.includes('Pronunciation:') || 
-                        response.includes('Grammar:') || 
-                        response.includes('Vocabulary:') ||
-                        response.includes('Fluency:');
-
-      this.currentSession.messages.push(
-        { 
-          role: 'user', 
-          content: '[Audio Message]', 
-          timestamp: Date.now(),
-          contentType: 'audio',
-          audioUrl: await audioService.uploadAudio(audioBlob)
-        },
-        { 
-          role: 'assistant', 
-          content: response, 
-          timestamp: Date.now(),
-          contentType: isFeedback ? 'feedback' : 'text'
+      await prisma.speakingSession.update({
+        where: { id: sessionId },
+        data: {
+          status: 'completed',
+          endTime: new Date()
         }
-      );
+      });
 
-      return response;
+      if (this.currentSession?.id === sessionId) {
+        this.currentSession = null;
+        this.sessionStartTime = null;
+        this.sessionDuration = null;
+      }
     } catch (error) {
-      console.error('Error processing audio:', error);
+      console.error('Error ending session:', error);
       throw error;
     }
   }
 
   getTimeRemaining(): number {
-    if (!this.currentSession) return 0;
-    
-    const elapsedTime = Date.now() - this.currentSession.startTime;
-    const totalDuration = this.currentSession.duration * 60 * 1000; // Convert minutes to ms
-    return Math.max(0, totalDuration - elapsedTime);
+    if (!this.sessionStartTime || !this.sessionDuration) {
+      return 0;
+    }
+
+    const elapsed = Date.now() - this.sessionStartTime;
+    const remaining = Math.max(0, this.sessionDuration - elapsed);
+    return Math.floor(remaining / 1000); // Convert to seconds
   }
 
-  async endSession(session: SpeakingSession): Promise<{ metrics: SpeakingMetrics } | null> {
+  async addMessage(sessionId: string, content: string, role: 'user' | 'assistant' | 'system'): Promise<void> {
     try {
-      // Validate session
-      if (!session || !session.id) {
-        console.error('Invalid session');
-        return Promise.resolve(null);
-      }
+      const message = await prisma.speakingMessage.create({
+        data: {
+          id: uuidv4(),
+          sessionId,
+          content,
+          role,
+          timestamp: new Date()
+        }
+      });
 
-      // Calculate session metrics
-      const metrics = this.calculateSessionMetrics(session);
-
-      // Save session to storage or backend
-      this.saveSession(session);
-
-      return Promise.resolve({ metrics });
+      const history = this.sessionHistory.get(sessionId) || [];
+      this.sessionHistory.set(sessionId, [...history, { role, content, timestamp: Date.now() }]);
     } catch (error) {
-      console.error('Error ending session:', error);
-      return Promise.resolve(null);
+      console.error('Error adding message:', error);
+      throw error;
     }
   }
 
-  getCurrentSession(): SpeakingSession | null {
+  async addRecording(sessionId: string, url: string, duration: number): Promise<void> {
+    try {
+      await prisma.audioRecording.create({
+        data: {
+          id: uuidv4(),
+          sessionId,
+          url,
+          duration
+        }
+      });
+    } catch (error) {
+      console.error('Error adding recording:', error);
+      throw error;
+    }
+  }
+
+  async updateMetrics(sessionId: string, metrics: Partial<Speaking_Metrics>): Promise<void> {
+    const { pronunciation, grammar, vocabulary, fluency, coherence } = metrics;
+    await prisma.speakingMetrics.upsert({
+      where: { sessionId },
+      create: {
+        sessionId,
+        pronunciation: pronunciation || 0,
+        grammar: grammar || 0,
+        vocabulary: vocabulary || 0,
+        fluency: fluency || 0,
+        coherence: coherence || 0,
+        averageResponseTime: 0,
+        totalWords: 0,
+      },
+      update: {
+        pronunciation,
+        grammar,
+        vocabulary,
+        fluency,
+        coherence,
+      },
+    });
+  }
+
+  async addFeedback(sessionId: string, content: string, score: number): Promise<void> {
+    await prisma.speakingFeedback.create({
+      data: {
+        sessionId,
+        content,
+        score,
+      },
+    });
+  }
+
+  async getSession(sessionId: string): Promise<SessionWithIncludes | null> {
+    return prisma.speakingSession.findUnique({
+      where: { id: sessionId },
+      include: {
+        messages: true,
+        recordings: true,
+        metrics: true,
+        feedback: true,
+      },
+    });
+  }
+
+  async deleteSession(sessionId: string): Promise<void> {
+    await prisma.speakingSession.delete({
+      where: { id: sessionId },
+    });
+  }
+
+  getCurrentSession(): SessionWithIncludes | null {
     return this.currentSession;
   }
 
-  getSessionHistory(): PracticeSession[] {
-    return this.sessionHistory;
-  }
-
-  getUserProgress(): UserProgress {
-    // Calculate progress from session history
-    const progress: UserProgress = {
-      totalSessions: this.sessionHistory.length,
-      averageScores: {
-        pronunciation: 0,
-        grammar: 0,
-        vocabulary: 0,
-        fluency: 0,
-        coherence: 0
-      },
-      recentTopics: [],
-      weakAreas: [],
-      strongAreas: []
-    };
-
-    if (this.sessionHistory.length > 0) {
-      // Calculate average scores
-      const scores = this.sessionHistory.reduce((acc, session) => {
-        session.feedback.forEach(fb => {
-          acc.pronunciation += fb.metrics.pronunciation;
-          acc.grammar += fb.metrics.grammar;
-          acc.vocabulary += fb.metrics.vocabulary;
-          acc.fluency += fb.metrics.fluency;
-          acc.coherence += fb.metrics.coherence;
-        });
-        return acc;
-      }, { ...progress.averageScores });
-
-      const totalFeedback = this.sessionHistory.reduce((sum, session) => 
-        sum + session.feedback.length, 0);
-
-      if (totalFeedback > 0) {
-        Object.keys(scores).forEach((key) => {
-          progress.averageScores[key as keyof typeof scores] = scores[key as keyof typeof scores] / totalFeedback;
-        });
-      }
-
-      // Get recent topics
-      progress.recentTopics = this.sessionHistory
-        .slice(-5)
-        .flatMap(session => session.topics);
-
-      // Determine weak and strong areas
-      const threshold = 7;
-      Object.entries(progress.averageScores).forEach(([area, score]) => {
-        if (score >= threshold) {
-          progress.strongAreas.push(area);
-        } else {
-          progress.weakAreas.push(area);
-        }
-      });
-    }
-
-    return progress;
-  }
-
-  private calculateSessionMetrics(session: SpeakingSession): SpeakingMetrics {
-    // Simulate metrics calculation based on session content
-    const messageCount = session.messages.length;
-    const userMessageCount = session.messages.filter(m => m.role === 'user').length;
-    const avgMessageLength = session.messages.reduce((sum, msg) => sum + msg.content.length, 0) / messageCount;
-
-    // Generate random scores between 2.5 and 4.5
-    const metrics: SpeakingMetrics = {
-      pronunciation: Math.min(4.5, Math.max(2.5, Math.random() * 4.5)),
-      grammar: Math.min(4.5, Math.max(2.5, Math.random() * 4.5)),
-      vocabulary: Math.min(4.5, Math.max(2.5, Math.random() * 4.5)),
-      fluency: Math.min(4.5, Math.max(2.5, Math.random() * 4.5)),
-      coherence: Math.min(4.5, Math.max(2.5, Math.random() * 4.5)),
-      overallBand: Math.min(7.0, Math.max(4.0, Math.random() * 7.0)),
-      feedback: {
-        strengths: this.generateStrengths(messageCount, userMessageCount, avgMessageLength),
-        improvements: this.generateImprovements(messageCount, userMessageCount, avgMessageLength),
-        tips: this.generateTips()
-      },
-      nextSteps: this.generateNextSteps()
-    };
-
-    return metrics;
-  }
-
-  private generateStrengths(messageCount: number, userMessageCount: number, avgLength: number): string[] {
-    const strengths: string[] = [];
-    
-    if (messageCount > 5) strengths.push('Good conversation engagement');
-    if (userMessageCount > 3) strengths.push('Active participation');
-    if (avgLength > 50) strengths.push('Detailed responses');
-    
-    return strengths.length ? strengths : ['Showing potential in communication'];
-  }
-
-  private generateImprovements(messageCount: number, userMessageCount: number, avgLength: number): string[] {
-    const improvements: string[] = [];
-    
-    if (messageCount <= 3) improvements.push('Increase conversation depth');
-    if (userMessageCount <= 2) improvements.push('Participate more actively');
-    if (avgLength < 30) improvements.push('Provide more detailed responses');
-    
-    return improvements.length ? improvements : ['Continue practicing to improve skills'];
-  }
-
-  private generateTips(): string[] {
-    const allTips = [
-      'Practice speaking with varied vocabulary',
-      'Focus on clear pronunciation',
-      'Try to use more complex sentence structures',
-      'Listen carefully and respond thoughtfully',
-      'Don\'t be afraid to ask for clarification',
-      'Practice speaking about a wide range of topics'
-    ];
-
-    // Randomly select 3 tips
-    return allTips.sort(() => 0.5 - Math.random()).slice(0, 3);
-  }
-
-  private generateNextSteps(): string[] {
-    const nextSteps = [
-      'Review today\'s conversation',
-      'Practice vocabulary from the session',
-      'Try a more challenging speaking template',
-      'Focus on areas of improvement',
-      'Listen to native speaker recordings'
-    ];
-
-    // Randomly select 2-3 next steps
-    return nextSteps.sort(() => 0.5 - Math.random()).slice(0, 3);
-  }
-
-  private saveSession(session: SpeakingSession): void {
-    // TO DO: implement saving session to storage or backend
+  getSessionHistory(sessionId: string): Message[] | undefined {
+    return this.sessionHistory.get(sessionId);
   }
 }
 

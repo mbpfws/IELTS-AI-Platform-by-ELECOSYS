@@ -1,4 +1,4 @@
-// File: e:\STAND ALONE APP\src\app\agents\writing\page.tsx
+// File: E:\STAND ALONE APP\src\app\agents\writing\page.tsx
 import * as entry from '../../../../../src/app/agents/writing/page.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

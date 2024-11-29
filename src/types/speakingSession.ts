@@ -1,36 +1,64 @@
 export interface SpeakingMetrics {
-  pronunciation: number;
+  fluency: number;
   grammar: number;
   vocabulary: number;
-  fluency: number;
-  coherence: number;
-  overallBand?: number;
-  feedback?: {
-    strengths: string[];
-    improvements: string[];
-    tips: string[];
-  };
-  nextSteps?: string[];
+  pronunciation: number;
+}
+
+export interface UserProfile {
+  id: string;
+  name: string;
+  level: string;
+  targetScore: number;
+  weakPoints: string[];
+  strongPoints: string[];
 }
 
 export interface Message {
+  id: string;
   role: 'user' | 'assistant';
   content: string;
   timestamp: number;
-  contentType?: 'text' | 'audio' | 'feedback';
   audioUrl?: string;
+}
+
+export interface SpeakingTemplate {
+  id: string;
+  title: string;
+  part: 1 | 2 | 3;
+  difficulty: 'easy' | 'medium' | 'hard';
+  systemInstruction: string;
+  category: string;
+  description: string;
+  targetBand: number;
+  duration: number;
+  initialQuestion: string;
+  learningObjectives: string[];
+  tags: string[];
 }
 
 export interface SpeakingSession {
   id: string;
   userId: string;
-  templateId: string;
-  startTime: number;
-  endTime?: number;
-  duration: number;
+  startTime: Date;
+  duration: number; 
+  status: 'active' | 'completed' | 'cancelled';
+  topic?: string;
+  template?: {
+    id: string;
+    title: string;
+    part: 1 | 2 | 3;
+    difficulty: 'easy' | 'medium' | 'hard';
+    systemInstruction: string;
+  };
   messages: Message[];
-  metrics?: SpeakingMetrics;
-  audioUrls: string[]; // URLs to stored audio recordings
+  finalFeedback?: {
+    metrics: SpeakingMetrics;
+    strengths: string[];
+    weaknesses: string[];
+    suggestions: string[];
+    overallScore: number;
+  };
 }
 
 export interface SpeakingHistory {
@@ -41,7 +69,7 @@ export interface SpeakingHistory {
   stats: {
     totalSessions: number;
     averageBand: number;
-    timeSpent: number; // in minutes
+    timeSpent: number; 
     lastSessionDate: number;
   };
 }
