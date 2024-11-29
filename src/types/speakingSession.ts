@@ -1,8 +1,17 @@
 export interface SpeakingMetrics {
-  fluency: number;
-  grammar: number;
   vocabulary: number;
+  grammar: number;
+  fluency: number;
   pronunciation: number;
+  coherence: number;
+  overallBand?: number;
+  feedback?: SpeakingFeedback;
+}
+
+export interface SpeakingFeedback {
+  strengths: string[];
+  weaknesses: string[];
+  suggestions: string[];
 }
 
 export interface UserProfile {
@@ -27,13 +36,23 @@ export interface SpeakingTemplate {
   title: string;
   part: 1 | 2 | 3;
   difficulty: 'easy' | 'medium' | 'hard';
-  systemInstruction: string;
+  systemPrompt: string;
   category: string;
   description: string;
+  titleVi: string;
+  titleEn: string;
+  descriptionVi: string;
+  descriptionEn: string;
+  taskType: 'task1' | 'task2' | 'lesson';
+  level: string;
   targetBand: number;
+  criteria: string[];
+  topics: string[];
+  objectives: string[];
+  questions?: string[];
+  cueCard?: string;
   duration: number;
-  initialQuestion: string;
-  learningObjectives: string[];
+  supportText: string;
   tags: string[];
 }
 
@@ -49,14 +68,12 @@ export interface SpeakingSession {
     title: string;
     part: 1 | 2 | 3;
     difficulty: 'easy' | 'medium' | 'hard';
-    systemInstruction: string;
+    systemPrompt: string;
   };
   messages: Message[];
   finalFeedback?: {
     metrics: SpeakingMetrics;
-    strengths: string[];
-    weaknesses: string[];
-    suggestions: string[];
+    feedback: SpeakingFeedback;
     overallScore: number;
   };
 }

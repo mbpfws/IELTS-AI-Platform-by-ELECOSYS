@@ -1,6 +1,7 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { Box, Container, Paper, Typography, Button, LinearProgress, Avatar } from '@mui/material';
 import { styled } from '@mui/material/styles';
+import { useLocation } from 'react-router-dom';
 import { TutorService } from '../../services/tutorService';
 import { ChatInterface } from './ChatInterface';
 import { SessionTimer } from './SessionTimer';
@@ -40,61 +41,147 @@ const ControlPanel = styled(Box)(({ theme }) => ({
 }));
 
 export const SpeakingPractice: React.FC = () => {
+  const location = useLocation();
+  const { template, state } = location.state || {};
+
   const [sessionStarted, setSessionStarted] = useState(false);
   const [duration, setDuration] = useState(0);
   const [timeRemaining, setTimeRemaining] = useState(0);
   const [isRecording, setIsRecording] = useState(false);
   const [messages, setMessages] = useState<GlobalMessage[]>([]);
+  const [isProcessing, setIsProcessing] = useState(false);
 
   const tutorService = useRef(TutorService.getInstance());
+  const timerRef = useRef<NodeJS.Timeout>();
 
-  const handleStartSession = async (selectedDuration: number) => {
-    setDuration(selectedDuration);
-    setTimeRemaining(selectedDuration * 60);
+  useEffect(() => {
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+        timerRef.current = undefined;
+      }
+    };
+  }, []);
+
+  const handleStartSession = async (selectedDuration?: number) => {
+    // Clear any existing timer first
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = undefined;
+    }
+
+    // PRIORITIZE user-selected duration FIRST
+    const safeDuration = selectedDuration 
+      ? Math.max(1, selectedDuration)
+      : Math.max(1, template?.duration || 15);
+    
+    setDuration(safeDuration);
+    setTimeRemaining(safeDuration * 60);
     setSessionStarted(true);
     
-    const session = tutorService.current.startSession(selectedDuration, {
-      currentLevel: 6.5, // This should come from user settings
+    const session = tutorService.current.startSession(safeDuration, {
+      currentLevel: 6.5,
       targetBand: 7.0,
-      focusAreas: ['fluency', 'vocabulary']
+      focusAreas: ['fluency', 'vocabulary'],
+      template: template
     });
 
-    // Add initial tutor message
+    const initialMessage = template 
+      ? `Hello! Let's practice the ${template.title} template. ${selectedDuration ? `You've chosen a ${safeDuration}` : `We'll use the default ${safeDuration}`}-minute session. Are you ready?`
+      : `Hello! I'm your IELTS Speaking assistant. We'll have a ${safeDuration}-minute practice session. How are you feeling today?`;
+
     setMessages([{
       role: 'assistant',
-      content: 'Hello! I\'m your IELTS Speaking assistant. Let\'s begin our practice session. How are you feeling today?',
+      content: initialMessage,
       timestamp: Date.now(),
       contentType: 'text'
     }]);
+
+    // Start the timer
+    timerRef.current = setInterval(() => {
+      setTimeRemaining(prev => {
+        if (prev <= 1) {
+          if (timerRef.current) {
+            clearInterval(timerRef.current);
+            timerRef.current = undefined;
+          }
+          handleEndSession();
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
   };
 
   const handleUserMessage = async (message: string) => {
-    // Add user message
-    const newMessage: GlobalMessage = {
-      role: 'user',
-      content: message,
-      timestamp: Date.now(),
-      contentType: 'text'
-    };
-    setMessages(prev => [...prev, newMessage]);
+    if (isProcessing) return;
+    setIsProcessing(true);
 
-    // Get tutor response
-    const feedback = tutorService.current.provideFeedback(message);
-    const nextQuestion = tutorService.current.getNextQuestion();
+    try {
+      const newMessage: GlobalMessage = {
+        role: 'user',
+        content: message,
+        timestamp: Date.now(),
+        contentType: 'text'
+      };
+      setMessages(prev => [...prev, newMessage]);
 
-    // Add tutor response
-    setMessages(prev => [...prev, {
-      role: 'assistant',
-      content: nextQuestion,
-      timestamp: Date.now(),
-      contentType: 'text'
-    }]);
+      const feedback = tutorService.current.provideFeedback(message);
+      const nextQuestion = tutorService.current.getNextQuestion();
+
+      setMessages(prev => [...prev, {
+        role: 'assistant',
+        content: nextQuestion,
+        timestamp: Date.now(),
+        contentType: 'text'
+      }]);
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   const handleEndSession = () => {
+    if (timerRef.current) {
+      clearInterval(timerRef.current);
+      timerRef.current = undefined;
+    }
     const finalFeedback = tutorService.current.endSession();
-    // Show final feedback modal/panel
+    setSessionStarted(false);
+    setTimeRemaining(0);
   };
+
+  const handleToggleRecording = async () => {
+    if (isProcessing) return;
+    
+    try {
+      setIsProcessing(true);
+
+      if (isRecording) {
+        // Stop recording
+        await tutorService.current.stopRecording();
+        setIsRecording(false);
+      } else {
+        // Start recording
+        await tutorService.current.startRecording();
+        setIsRecording(true);
+      }
+    } catch (error) {
+      console.error('Recording error:', error);
+      // Reset recording state on error
+      setIsRecording(false);
+    } finally {
+      setIsProcessing(false);
+    }
+  };
+
+  // Cleanup recording on unmount
+  useEffect(() => {
+    return () => {
+      if (isRecording) {
+        tutorService.current.stopRecording().catch(console.error);
+      }
+    };
+  }, [isRecording]);
 
   const mapToChatMessage = (msg: GlobalMessage) => ({
     role: msg.role === 'system' ? 'assistant' : msg.role,
@@ -104,29 +191,12 @@ export const SpeakingPractice: React.FC = () => {
 
   const chatMessages = messages.map(mapToChatMessage);
 
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    if (sessionStarted && timeRemaining > 0) {
-      timer = setInterval(() => {
-        setTimeRemaining(prev => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            handleEndSession();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-    return () => clearInterval(timer);
-  }, [sessionStarted, timeRemaining]);
-
   if (!sessionStarted) {
     return (
       <Container maxWidth="md">
         <StyledPaper>
           <Typography variant="h4" gutterBottom>
-            IELTS Speaking Practice
+            {template ? `${template.title} Practice` : 'IELTS Speaking Practice'}
           </Typography>
           <Typography variant="body1" paragraph>
             Choose your practice duration:
@@ -141,6 +211,14 @@ export const SpeakingPractice: React.FC = () => {
                 {mins} minutes
               </Button>
             ))}
+            {template && template.duration > 0 && (
+              <Button
+                variant="outlined"
+                onClick={() => handleStartSession(template.duration)}
+              >
+                Template Default ({template.duration || 'N/A'} mins)
+              </Button>
+            )}
           </Box>
         </StyledPaper>
       </Container>
@@ -154,7 +232,10 @@ export const SpeakingPractice: React.FC = () => {
           <TutorAvatar src="/tutor-avatar.png" />
           <Box>
             <Typography variant="h5">IELTS Speaking Assistant</Typography>
-            <SessionTimer timeRemaining={timeRemaining} />
+            <SessionTimer 
+              timeRemaining={timeRemaining} 
+              totalDuration={duration * 60} 
+            />
           </Box>
         </Box>
 
@@ -168,12 +249,13 @@ export const SpeakingPractice: React.FC = () => {
         <ControlPanel>
           <RecordButton
             isRecording={isRecording}
-            onToggleRecording={() => setIsRecording(!isRecording)}
+            onToggleRecording={handleToggleRecording}
           />
           <Button
             variant="contained"
             color="secondary"
             onClick={handleEndSession}
+            disabled={isProcessing}
           >
             End Session
           </Button>

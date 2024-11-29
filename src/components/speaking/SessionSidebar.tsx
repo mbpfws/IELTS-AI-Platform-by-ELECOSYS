@@ -88,7 +88,7 @@ export default function SessionSidebar({
                     })}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    Band: {session.metrics?.overallBand || 'N/A'}
+                    Band: {session.finalFeedback?.metrics?.overallBand || 'N/A'}
                   </span>
                 </div>
                 <ChevronRight className="h-4 w-4" />

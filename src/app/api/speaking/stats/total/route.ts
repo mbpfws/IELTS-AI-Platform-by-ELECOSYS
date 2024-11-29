@@ -11,14 +11,14 @@ export async function GET(request: Request) {
 
   try {
     // Get total number of sessions
-    const totalSessions = await prisma.speakingSession.count({
+    const totalSessions = await prisma.speaking_Session.count({
       where: {
         userId: userId
       }
     });
 
     // Calculate total practice time in minutes
-    const sessions = await prisma.speakingSession.findMany({
+    const sessions = await prisma.speaking_Session.findMany({
       where: {
         userId: userId,
         endTime: {

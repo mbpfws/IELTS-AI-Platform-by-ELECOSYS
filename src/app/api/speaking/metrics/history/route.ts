@@ -11,7 +11,7 @@ export async function GET(request: Request) {
 
   try {
     // Get the last 10 sessions with their metrics
-    const sessions = await prisma.speakingSession.findMany({
+    const sessions = await prisma.speaking_Session.findMany({
       where: {
         userId: userId,
         metrics: {

@@ -1,11 +1,15 @@
 import { part1Questions, part2Questions, part3Questions, advancedTopics } from '../data/speakingQuestions';
 import { tutorDialogues, TutorSession, SessionFeedback, FeedbackMetrics } from '../data/speakingTutorSession';
 import { speakingService } from './speakingService';
+import { tutorResponseService } from './tutorResponseService';
+import { AudioService } from './AudioService';
 
 export class TutorService {
   private static instance: TutorService;
   private currentSession: TutorSession | null = null;
   private feedbackHistory: SessionFeedback[] = [];
+  private audioService = AudioService.getInstance();
+  private isRecording = false;
 
   private constructor() {}
 
@@ -59,32 +63,62 @@ export class TutorService {
       throw new Error('No active session');
     }
 
-    // Get time remaining
-    const timeRemaining = this.getTimeRemaining();
-    
     // If time is up, provide final feedback
-    if (timeRemaining <= 0) {
+    if (this.isSessionExpired()) {
       return this.generateFinalFeedback();
     }
 
-    // Otherwise, analyze current response
-    const metrics: FeedbackMetrics = this.analyzeResponse(response);
-    
+    // For ongoing sessions, provide encouraging conversational responses
+    const encouragingResponses = [
+      "You're doing great! Keep going with your thoughts.",
+      "That's interesting! Would you like to elaborate more?",
+      "I'm following your points. Please continue.",
+      "Good flow of ideas! Feel free to expand on that.",
+      "You're expressing yourself well. What else would you add?",
+      "I see what you mean. Tell me more about that.",
+    ];
+
+    const randomResponse = encouragingResponses[Math.floor(Math.random() * encouragingResponses.length)];
+
     return {
-      metrics,
-      strengths: this.identifyStrengths(response, metrics),
-      improvements: this.identifyImprovements(metrics),
-      tips: this.generateTips(metrics),
+      metrics: {
+        pronunciation: 5,
+        grammar: 5,
+        vocabulary: 5,
+        fluency: 5,
+        coherence: 5,
+        overallBand: 5
+      },
+      strengths: [],
+      improvements: [],
+      tips: [],
       recordedResponses: [{
         question: this.currentSession.progress.currentTopic || '',
         response,
-        feedback: this.generateDetailedFeedback(metrics)
+        feedback: randomResponse
       }]
     };
   }
 
   private analyzeResponse(response: string): FeedbackMetrics {
-    // For now, return placeholder metrics
+    // Check if the response contains a request for feedback
+    const feedbackRequestRegex = /feedback|score|rate|evaluate|analysis/i;
+    const hasFeedbackRequest = feedbackRequestRegex.test(response);
+
+    if (!hasFeedbackRequest) {
+      // If no explicit feedback request, return neutral metrics
+      return {
+        pronunciation: 5,
+        grammar: 5,
+        vocabulary: 5,
+        fluency: 5,
+        coherence: 5,
+        overallBand: 5
+      };
+    }
+
+    // Placeholder for more sophisticated analysis
+    // In a real implementation, you might use AI to generate more precise metrics
     return {
       pronunciation: 7,
       grammar: 7,
@@ -111,17 +145,6 @@ export class TutorService {
       'Try recording yourself speaking',
       'Practice with native speakers when possible'
     ];
-  }
-
-  private generateDetailedFeedback(metrics: FeedbackMetrics): string {
-    return `
-Detailed Feedback:
-- Pronunciation: Clear and understandable
-- Grammar: Good use of basic structures
-- Vocabulary: Appropriate word choice
-- Fluency: Maintained good pace
-- Coherence: Ideas well connected
-    `;
   }
 
   getNextQuestion(): string {
@@ -175,8 +198,111 @@ Detailed Feedback:
 
   getTimeRemaining(): number {
     if (!this.currentSession) return 0;
-    const elapsed = (Date.now() - new Date(this.currentSession.startTime).getTime()) / 1000 / 60;
-    return Math.max(0, this.currentSession.duration - elapsed);
+    
+    const now = Date.now();
+    const startTime = new Date(this.currentSession.startTime).getTime();
+    const elapsedMinutes = (now - startTime) / 1000 / 60;
+    
+    // Update time spent in the session
+    if (this.currentSession.progress) {
+      this.currentSession.progress.timeSpent = Math.floor(elapsedMinutes);
+    }
+    
+    return Math.max(0, this.currentSession.duration - elapsedMinutes);
+  }
+
+  trackTimeSpent() {
+    if (!this.currentSession) return 0;
+    
+    const now = Date.now();
+    const startTime = new Date(this.currentSession.startTime).getTime();
+    const elapsedMinutes = Math.floor((now - startTime) / 1000 / 60);
+    
+    if (this.currentSession.progress) {
+      this.currentSession.progress.timeSpent = elapsedMinutes;
+    }
+    
+    return elapsedMinutes;
+  }
+
+  isSessionExpired(): boolean {
+    return this.getTimeRemaining() <= 0;
+  }
+
+  async startRecording(): Promise<void> {
+    if (this.isRecording) {
+      throw new Error('Recording already in progress');
+    }
+
+    if (!this.currentSession) {
+      throw new Error('No active session');
+    }
+
+    try {
+      await this.audioService.startRecording();
+      this.isRecording = true;
+    } catch (error) {
+      console.error('Failed to start recording:', error);
+      this.isRecording = false;
+      throw error;
+    }
+  }
+
+  async stopRecording(): Promise<void> {
+    if (!this.isRecording) {
+      return; // No recording in progress, just return
+    }
+
+    if (!this.currentSession) {
+      throw new Error('No active session');
+    }
+
+    try {
+      const audioBlob = await this.audioService.stopRecording();
+      this.isRecording = false;
+
+      // Process the audio
+      const transcription = await this.audioService.processAudio(audioBlob, 'scoring', this.currentSession.progress.currentTopic);
+
+      // Add transcription to messages
+      const userMessage = {
+        role: 'user',
+        content: transcription,
+        timestamp: Date.now(),
+        contentType: 'text'
+      };
+
+      // Get AI response
+      const response = await speakingService.generateResponse(
+        this.currentSession.studentInfo.template,
+        transcription
+      );
+
+      const aiMessage = {
+        role: 'assistant',
+        content: response,
+        timestamp: Date.now(),
+        contentType: 'text'
+      };
+
+      // Update feedback history
+      this.feedbackHistory.push({
+        metrics: this.analyzeResponse(transcription),
+        strengths: this.identifyStrengths(transcription, this.analyzeResponse(transcription)),
+        improvements: this.identifyImprovements(this.analyzeResponse(transcription)),
+        tips: this.generateTips(this.analyzeResponse(transcription)),
+        recordedResponses: [{
+          question: this.currentSession.progress.currentTopic || '',
+          response: transcription,
+          feedback: response
+        }]
+      });
+
+    } catch (error) {
+      console.error('Failed to stop recording:', error);
+      this.isRecording = false;
+      throw error;
+    }
   }
 
   endSession(): SessionFeedback {
@@ -199,21 +325,21 @@ Detailed Feedback:
       throw new Error('No active session');
     }
 
-    const metrics: FeedbackMetrics = {
-      pronunciation: 7,
-      grammar: 7,
-      vocabulary: 7,
-      fluency: 7,
-      coherence: 7,
-      overallBand: 7
-    };
+    const feedback = tutorResponseService.generateDetailedFeedback(
+      this.currentSession.progress.completedTopics.join('\n'),
+      this.currentSession.studentInfo.targetBand
+    );
 
+    // Make the feedback more conversational
     return {
-      metrics,
-      strengths: this.identifyStrengths('', metrics),
-      improvements: this.identifyImprovements(metrics),
-      tips: this.generateTips(metrics),
-      recordedResponses: []
+      ...feedback,
+      strengths: feedback.strengths.map(s => `👍 ${s}`),
+      improvements: feedback.improvements.map(i => `💡 ${i}`),
+      tips: feedback.tips.map(t => `✨ ${t}`),
+      recordedResponses: feedback.recordedResponses.map(r => ({
+        ...r,
+        feedback: `Here's my thoughts on your response: ${r.feedback}`
+      }))
     };
   }
 }

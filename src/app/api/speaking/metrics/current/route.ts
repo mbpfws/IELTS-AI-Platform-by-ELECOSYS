@@ -11,7 +11,7 @@ export async function GET(request: Request) {
 
   try {
     // Get the latest speaking session metrics
-    const latestMetrics = await prisma.speakingMetrics.findFirst({
+    const latestMetrics = await prisma.speaking_Metrics.findFirst({
       where: {
         session: {
           userId: userId

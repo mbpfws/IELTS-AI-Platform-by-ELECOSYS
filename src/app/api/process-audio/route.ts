@@ -79,19 +79,96 @@ export async function POST(request: NextRequest) {
   try {
     if (!process.env.GEMINI_API_KEY) {
       return NextResponse.json(
-        { error: 'GEMINI_API_KEY is not set' },
+        { success: false, error: 'GEMINI_API_KEY is not set' },
         { status: 500 }
       );
     }
 
-    // Handle session initialization
-    const contentType = request.headers.get('content-type');
-    if (contentType?.includes('application/json')) {
-      const { sessionData, isSessionStart } = await request.json();
+    const contentType = request.headers.get('content-type') || '';
+    let requestData;
+
+    if (contentType.includes('multipart/form-data')) {
+      // Handle FormData request (audio submission)
+      const formData = await request.formData();
+      const audioFile = formData.get('audio') as Blob;
+      const sessionDataStr = formData.get('sessionData') as string;
+
+      if (!audioFile || !sessionDataStr) {
+        return NextResponse.json(
+          { success: false, error: 'Missing audio or session data' },
+          { status: 400 }
+        );
+      }
+
+      let sessionData;
+      try {
+        sessionData = JSON.parse(sessionDataStr);
+      } catch (error) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid session data format' },
+          { status: 400 }
+        );
+      }
+
+      // Process the audio file
+      const transcription = await processAudioToText(audioFile);
       
-      if (isSessionStart) {
-        const model = genAI.getGenerativeModel({ model: "gemini-pro" });
-        const prompt = `You are a friendly IELTS Speaking tutor. The student wants to practice ${sessionData.topic.title} for ${sessionData.duration} minutes.
+      // Generate AI response
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-pro",
+        generationConfig,
+      });
+
+      const prompt = `${BASE_INSTRUCTIONS}
+
+Topic: ${sessionData.topic.title}
+Description: ${sessionData.topic.description}
+Target Band Score: ${sessionData.topic.targetBand}
+
+Student's response: ${transcription}
+
+Please provide:
+1. A natural, encouraging response to continue the conversation
+2. A gentle correction of any major errors (if present)
+3. A follow-up question to keep the discussion going
+
+Format your response in a conversational way, focusing on keeping the student engaged.`;
+
+      const result = await model.generateContent(prompt);
+      const response = result.response.text();
+
+      return NextResponse.json({
+        success: true,
+        transcription,
+        response
+      }, { status: 200 });
+
+    } else {
+      // Handle JSON request (session initialization or text submission)
+      try {
+        requestData = await request.json();
+      } catch (error) {
+        console.error('Error parsing JSON request body:', error);
+        return NextResponse.json(
+          { success: false, error: 'Invalid JSON format' },
+          { status: 400 }
+        );
+      }
+
+      // Handle session initialization
+      if (requestData.isSessionStart) {
+        try {
+          const { sessionData } = requestData;
+          
+          if (!sessionData || !sessionData.topic) {
+            return NextResponse.json(
+              { success: false, error: 'Invalid session data' },
+              { status: 400 }
+            );
+          }
+
+          const model = genAI.getGenerativeModel({ model: "gemini-pro" });
+          const prompt = `You are a friendly IELTS Speaking tutor. The student wants to practice ${sessionData.topic.title} for ${Math.floor(sessionData.duration / 60)} minutes.
         
 Topic description: ${sessionData.topic.description}
 
@@ -103,83 +180,107 @@ Generate a welcoming message that:
 
 ${sessionData.topic.systemPrompt || ''}`;
 
+          const result = await model.generateContent(prompt);
+          const response = result.response.text();
+
+          if (!response) {
+            throw new Error('No response from AI model');
+          }
+
+          return NextResponse.json(
+            { success: true, response },
+            { status: 200 }
+          );
+        } catch (error) {
+          console.error('Error in session initialization:', error);
+          return NextResponse.json(
+            { 
+              success: false, 
+              error: 'Failed to initialize session',
+              details: error instanceof Error ? error.message : 'Unknown error'
+            },
+            { status: 500 }
+          );
+        }
+      }
+
+      // Handle text message
+      if (requestData.message) {
+        const { message, sessionData } = requestData;
+        const model = genAI.getGenerativeModel({ 
+          model: "gemini-pro",
+          generationConfig,
+        });
+
+        const prompt = `${BASE_INSTRUCTIONS}
+
+Topic: ${sessionData.topic.title}
+Description: ${sessionData.topic.description}
+Target Band Score: ${sessionData.topic.targetBand}
+
+Student's message: ${message}
+
+Please provide a natural, conversational response that:
+1. Acknowledges their input
+2. Provides gentle feedback if needed
+3. Asks a relevant follow-up question`;
+
         const result = await model.generateContent(prompt);
         const response = result.response.text();
 
+        return NextResponse.json({
+          success: true,
+          response
+        }, { status: 200 });
+      }
+
+      // Handle transcription processing
+      const { transcription, sessionData: sessionDataRaw } = requestData;
+
+      if (!sessionDataRaw) {
         return NextResponse.json(
-          { success: true, response },
-          { status: 200 }
+          { success: false, error: 'No session data provided' },
+          { status: 400 }
         );
       }
-    }
 
-    const formData = await request.formData();
-    const audio = formData.get('audio') as Blob | null;
-    const transcription = formData.get('transcription') as string | null;
-    const sessionDataRaw = formData.get('sessionData');
+      if (!transcription) {
+        return NextResponse.json(
+          { success: false, error: 'No transcription provided' },
+          { status: 400 }
+        );
+      }
 
-    if (!sessionDataRaw) {
-      return NextResponse.json(
-        { error: 'No session data provided' },
-        { status: 400 }
-      );
-    }
-
-    if (!audio && !transcription) {
-      return NextResponse.json(
-        { error: 'No audio or transcription provided' },
-        { status: 400 }
-      );
-    }
-
-    let sessionData;
-    try {
-      sessionData = JSON.parse(sessionDataRaw as string);
-    } catch (error) {
-      return NextResponse.json(
-        { error: 'Invalid session data format' },
-        { status: 400 }
-      );
-    }
-
-    const { topic } = sessionData;
-    if (!topic || !topic.title) {
-      return NextResponse.json(
-        { error: 'Invalid topic data' },
-        { status: 400 }
-      );
-    }
-
-    let textToProcess = transcription;
-
-    if (audio) {
+      let sessionData;
       try {
-        textToProcess = await processAudioToText(audio);
+        sessionData = typeof sessionDataRaw === 'string' ? JSON.parse(sessionDataRaw) : sessionDataRaw;
       } catch (error) {
-        console.error('Error processing audio:', error);
         return NextResponse.json(
-          { error: 'Failed to process audio file' },
-          { status: 500 }
+          { success: false, error: 'Invalid session data format' },
+          { status: 400 }
         );
       }
-    }
 
-    const model = genAI.getGenerativeModel({ 
-      model: "gemini-pro",
-      generationConfig,
-    });
+      const { topic } = sessionData;
+      if (!topic || !topic.title) {
+        return NextResponse.json(
+          { success: false, error: 'Invalid topic data' },
+          { status: 400 }
+        );
+      }
 
-    const chat = model.startChat({
-      history: [],
-    });
+      const model = genAI.getGenerativeModel({ 
+        model: "gemini-pro",
+        generationConfig,
+      });
 
-    const prompt = `${BASE_INSTRUCTIONS}
+      const prompt = `${BASE_INSTRUCTIONS}
 
 Topic: ${topic.title}
 Description: ${topic.description}
 Target Band Score: ${topic.targetBand}
 
-Student's response: ${textToProcess}
+Student's response: ${transcription}
 
 Please analyze the response and provide:
 1. A band score (0-9) for this response
@@ -200,33 +301,37 @@ Format your response in JSON:
     "grammarAndAccuracy": string,
     "pronunciation": string
   },
-  "examples": string[],
-  "improvements": string[]
+  "improvements": [string]
 }`;
 
-    try {
-      const result = await chat.sendMessage(prompt);
-      const response = result.response;
-      const text = response.text();
-      
-      // Format the response to be more conversational
-      const formattedResponse = await formatTutorResponse(text);
+      const result = await model.generateContent(prompt);
+      const response = result.response.text();
+
+      const formattedResponse = await formatTutorResponse(response);
 
       return NextResponse.json(
-        { success: true, response: formattedResponse },
+        { 
+          success: true, 
+          response: formattedResponse,
+          rawAnalysis: response 
+        },
         { status: 200 }
       );
-    } catch (error) {
-      console.error('Error processing with Gemini:', error);
-      return NextResponse.json(
-        { error: 'Failed to process with AI model' },
-        { status: 500 }
-      );
     }
-  } catch (error) {
-    console.error('Error in API route:', error);
+
     return NextResponse.json(
-      { error: 'Internal server error' },
+      { success: false, error: 'Invalid request type' },
+      { status: 400 }
+    );
+
+  } catch (error) {
+    console.error('Unexpected error in process-audio route:', error);
+    return NextResponse.json(
+      { 
+        success: false, 
+        error: 'Unexpected server error',
+        details: error instanceof Error ? error.message : 'Unknown error'
+      },
       { status: 500 }
     );
   }

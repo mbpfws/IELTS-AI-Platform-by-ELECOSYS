@@ -9,6 +9,8 @@ import {
   Grid
 } from '@mui/material';
 import { useNavigate } from 'react-router-dom';
+import { part1Templates } from '../../data/speakingTemplates';
+import { SpeakingTemplate } from '@/types/speakingSession';
 
 export const SpeakingAgent = () => {
   const navigate = useNavigate();
@@ -17,13 +19,15 @@ export const SpeakingAgent = () => {
     targetBand: 'Any',
     mode: 'Free Chat'
   });
+  const [selectedTemplate, setSelectedTemplate] = useState<SpeakingTemplate | null>(null);
 
   const startSession = () => {
     // Initialize speaking session with AI tutor
     navigate('/practice', { 
       state: { 
         config: agentConfig,
-        mode: 'speaking'
+        mode: 'speaking',
+        template: selectedTemplate
       } 
     });
   };
@@ -98,12 +102,39 @@ export const SpeakingAgent = () => {
               </TextField>
             </Grid>
 
+            <Grid item xs={12}>
+              <Typography variant="h6" gutterBottom>
+                Select Practice Template
+              </Typography>
+              <Grid container spacing={2}>
+                {part1Templates.map((template) => (
+                  <Grid item xs={12} md={4} key={template.id}>
+                    <Button
+                      variant={selectedTemplate?.id === template.id ? "contained" : "outlined"}
+                      onClick={() => setSelectedTemplate(template)}
+                      fullWidth
+                    >
+                      {template.title}
+                    </Button>
+                  </Grid>
+                ))}
+              </Grid>
+            </Grid>
+
+            {selectedTemplate && (
+              <Box sx={{ mt: 2, mb: 2 }}>
+                <Typography variant="subtitle1">Selected Template:</Typography>
+                <Typography variant="body2">{selectedTemplate.title}</Typography>
+              </Box>
+            )}
+
             <Grid item xs={12} sx={{ mt: 2 }}>
               <Button 
                 variant="contained" 
                 color="primary" 
                 size="large"
                 onClick={startSession}
+                disabled={!selectedTemplate}
                 fullWidth
               >
                 Start Practice Session

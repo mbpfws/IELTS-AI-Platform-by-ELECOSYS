@@ -1,9 +1,10 @@
 export type AgentType = 'writing' | 'speaking' | 'custom';
 
-export interface Message {
+export interface ChatMessage {
+  id: string;
   role: 'user' | 'assistant';
   content: string;
-  timestamp: Date;
+  timestamp: number;
   contentType?: 'text' | 'audio' | 'feedback';
   audioUrl?: string;
 }
@@ -11,7 +12,7 @@ export interface Message {
 export interface Session {
   id: string;
   name: string;
-  messages: Message[];
+  messages: ChatMessage[];
   createdAt: Date;
   lastUpdated?: Date;
   agentType: AgentType;

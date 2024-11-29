@@ -11,7 +11,7 @@ import { cn } from "@/lib/utils";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
 import SessionSidebar from './SessionSidebar';
-import type { Message, Session } from '@/types/chat';
+import type { ChatMessage } from '@/types/chat';
 import AudioRecorder from './AudioRecorder';
 import { LearningMetrics } from "@/types/learningMetrics";
 import { Progress } from "@/components/ui/progress";
@@ -30,7 +30,7 @@ interface ChatInterfaceProps {
 }
 
 function ChatInterface({ agentType, systemInstruction, templatePrompt, sessionId, customConfig }: ChatInterfaceProps) {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [input, setInput] = useState('');
   const [isLoading, setIsLoading] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -72,8 +72,8 @@ function ChatInterface({ agentType, systemInstruction, templatePrompt, sessionId
     feedback: {
       strengthPoints: [],
       improvementAreas: [],
-      bandScoreEstimate: 6.0,
-      confidenceLevel: 75
+      bandScoreEstimate: 0,
+      confidenceLevel: 0
     }
   });
 
@@ -93,11 +93,11 @@ function ChatInterface({ agentType, systemInstruction, templatePrompt, sessionId
 
   useEffect(() => {
     if (isClient && templatePrompt && sessionId) {
-      const initialMessage: Message = {
+      const initialMessage: ChatMessage = {
         role: 'assistant',
         content: templatePrompt,
-        timestamp: new Date(),
-        contentType: 'text'
+        timestamp: Date.now(),
+        id: `initial-${sessionId}`
       };
       setMessages([initialMessage]);
     }
@@ -122,42 +122,42 @@ function ChatInterface({ agentType, systemInstruction, templatePrompt, sessionId
     e.preventDefault();
     if (!input.trim() || isLoading) return;
 
-    const userMessage: Message = {
+    const userMessage: ChatMessage = {
       role: 'user',
       content: input.trim(),
-      timestamp: new Date(),
-      contentType: 'text'
+      timestamp: Date.now(),
+      id: `user-${Date.now()}`
     };
 
-    setMessages(prev => [...prev, userMessage]);
+    setMessages(prevMessages => [...prevMessages, userMessage]);
     setInput('');
     setIsLoading(true);
 
     try {
       const response = await geminiService.generateResponse(
         input.trim(),
-        templatePrompt ? `${systemInstruction}\n\nTemplate Context:\n${templatePrompt}` : systemInstruction,
+        systemInstruction,
         customConfig
       );
 
-      const assistantMessage: Message = {
+      const assistantMessage: ChatMessage = {
         role: 'assistant',
         content: response,
-        timestamp: new Date(),
-        contentType: 'text'
+        timestamp: Date.now(),
+        id: `assistant-${Date.now()}`
       };
 
-      setMessages(prev => [...prev, assistantMessage]);
+      setMessages(prevMessages => [...prevMessages, assistantMessage]);
       updateMetrics(input.trim(), response);
     } catch (error) {
       console.error('Error generating response:', error);
-      const errorMessage: Message = {
+      const errorMessage: ChatMessage = {
         role: 'assistant',
         content: 'Sorry, I encountered an error. Please try again.',
-        timestamp: new Date(),
-        contentType: 'text'
+        timestamp: Date.now(),
+        id: `error-${Date.now()}`
       };
-      setMessages(prev => [...prev, errorMessage]);
+      setMessages(prevMessages => [...prevMessages, errorMessage]);
     } finally {
       setIsLoading(false);
     }
@@ -173,7 +173,7 @@ function ChatInterface({ agentType, systemInstruction, templatePrompt, sessionId
         <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message, index) => (
             <div
-              key={index}
+              key={message.id}
               className={cn(
                 "max-w-3xl mx-auto p-4 rounded-lg",
                 message.role === 'user'

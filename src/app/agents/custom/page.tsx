@@ -2,17 +2,18 @@
 
 import { useState } from "react";
 import { ChatInterface } from "@/components/practice/ChatInterface";
-import { Message } from "@/types/speakingSession";
+import { ChatMessage } from "@/types/chat";
 
 export default function CustomAgentPage() {
-  const [messages, setMessages] = useState<Message[]>([]);
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
 
   const handleSendMessage = async (message: string) => {
     // Add user message to the chat
-    const userMessage: Message = {
+    const userMessage: ChatMessage = {
+      id: crypto.randomUUID(),
       role: 'user',
       content: message,
-      timestamp: new Date()
+      timestamp: Date.now()
     };
     setMessages(prev => [...prev, userMessage]);
 

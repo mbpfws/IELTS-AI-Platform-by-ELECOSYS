@@ -17,20 +17,29 @@ const NeumorphicTimer = ({
   const [timeLeft, setTimeLeft] = useState(duration * 60); // Convert to seconds
   const [isRunning, setIsRunning] = useState(true);
 
+  // Reset timer when duration changes
+  useEffect(() => {
+    setTimeLeft(duration * 60);
+    setIsRunning(true);
+  }, [duration]);
+
   useEffect(() => {
     if (!isRunning || timeLeft <= 0) return;
 
+    const startTime = Date.now();
     const timer = setInterval(() => {
+      const elapsedSeconds = Math.floor((Date.now() - startTime) / 1000);
       setTimeLeft((prev) => {
-        if (prev <= 1) {
+        const newTime = prev - elapsedSeconds;
+        if (newTime <= 0) {
           clearInterval(timer);
           setIsRunning(false);
           onComplete?.();
           return 0;
         }
-        return prev - 1;
+        return newTime;
       });
-    }, 1000);
+    }, 100); // Update more frequently for smoother countdown
 
     return () => clearInterval(timer);
   }, [isRunning, timeLeft, onComplete]);
@@ -38,7 +47,15 @@ const NeumorphicTimer = ({
   const minutes = Math.floor(timeLeft / 60);
   const seconds = timeLeft % 60;
 
+  // Calculate progress percentage
   const progress = ((duration * 60 - timeLeft) / (duration * 60)) * 100;
+  
+  // Determine color based on time remaining
+  const getProgressColor = () => {
+    if (timeLeft <= 30) return 'from-red-500 to-red-600';
+    if (timeLeft <= 120) return 'from-yellow-500 to-yellow-600';
+    return 'from-blue-500 to-purple-500';
+  };
 
   return (
     <div className={cn(
@@ -49,12 +66,20 @@ const NeumorphicTimer = ({
     )}>
       <div className="absolute inset-0 rounded-xl overflow-hidden">
         <div
-          className="absolute left-0 top-0 h-full bg-gradient-to-r from-blue-500 to-purple-500 transition-all duration-300"
+          className={cn(
+            "absolute left-0 top-0 h-full bg-gradient-to-r transition-all duration-300",
+            getProgressColor()
+          )}
           style={{ width: `${progress}%` }}
         />
       </div>
       <div className="relative z-10 flex items-center justify-center">
-        <div className="text-4xl font-bold text-gray-800">
+        <div className={cn(
+          "text-4xl font-bold",
+          timeLeft <= 30 ? "text-red-600" :
+          timeLeft <= 120 ? "text-yellow-600" :
+          "text-gray-800"
+        )}>
           {minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
         </div>
       </div>

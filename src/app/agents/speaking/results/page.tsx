@@ -93,16 +93,16 @@ function Results() {
                 <div className="mb-4">
                   <h3 className="font-semibold mb-2">Areas for Improvement</h3>
                   <ul className="list-disc pl-5">
-                    {metrics.feedback.improvements.map((improvement, index) => (
-                      <li key={index}>{improvement}</li>
+                    {metrics.feedback.weaknesses.map((weakness, index) => (
+                      <li key={index}>{weakness}</li>
                     ))}
                   </ul>
                 </div>
                 <div>
-                  <h3 className="font-semibold mb-2">Tips</h3>
+                  <h3 className="font-semibold mb-2">Suggestions</h3>
                   <ul className="list-disc pl-5">
-                    {metrics.feedback.tips.map((tip, index) => (
-                      <li key={index}>{tip}</li>
+                    {metrics.feedback.suggestions.map((suggestion, index) => (
+                      <li key={index}>{suggestion}</li>
                     ))}
                   </ul>
                 </div>

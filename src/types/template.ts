@@ -7,14 +7,27 @@ export interface BaseTemplate {
   title: string;
   description: string;
   part: string;
-  systemPrompt: string;
   taskType: string;
   level: string;
   targetBand: number;
   criteria: string[];
+  duration?: number;
+  supportText?: string;
+  tags?: string[];
+  category?: string;
 }
 
-export interface Template extends BaseTemplate {}
+export interface Template extends BaseTemplate {
+  systemPrompt: string;
+}
+
+export interface WritingTemplate extends BaseTemplate {
+  objectives: string[];
+  systemPrompt: string;
+  taskType: 'task1' | 'task2';
+  level: CEFRLevel;
+  targetBand: IELTSBand;
+}
 
 export interface SpeakingTemplate extends BaseTemplate {
   titleVi: string;
@@ -26,13 +39,10 @@ export interface SpeakingTemplate extends BaseTemplate {
   targetBand?: IELTSBand;
   criteria?: readonly ('task_response' | 'coherence_cohesion' | 'lexical_resource' | 'grammatical_range')[];
   topics?: string[];
-  tags?: string[];
   objectives?: string[];
   questions?: string[];
   cueCard?: string;
-  lessonPlan?: string[];
-  category?: string;
-  part?: 'PART1' | 'PART2' | 'PART3';
+  systemPrompt: string;
 }
 
 export interface PerformanceStats {

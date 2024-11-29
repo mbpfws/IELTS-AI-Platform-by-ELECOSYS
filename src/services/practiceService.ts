@@ -99,68 +99,49 @@ export class PracticeService {
     });
   }
 
-  async startSession(config: {
+  startSession(sessionData: {
     userId: string;
     duration: number;
     templateId: string;
     startTime: number;
-  }): Promise<SessionWithIncludes> {
+  }): SessionWithIncludes | null {
     try {
-      const { userId, duration, templateId, startTime } = config;
-      
-      // End any existing session
-      if (this.currentSession) {
-        await this.endSession(this.currentSession.id);
-      }
+      // Create a mock session object
+      this.currentSession = {
+        id: uuidv4(),
+        userId: sessionData.userId,
+        startTime: new Date(sessionData.startTime),
+        duration: sessionData.duration,
+        templateId: sessionData.templateId,
+        messages: [],
+        recordings: [],
+        metrics: null,
+        feedback: null
+      } as SessionWithIncludes;
 
-      // Create new session
-      const session = await prisma.speakingSession.create({
-        data: {
-          id: uuidv4(),
-          userId,
-          templateId,
-          startTime: new Date(startTime),
-          duration,
-          status: 'active'
-        },
-        include: {
-          messages: true,
-          recordings: true,
-          metrics: true,
-          feedback: true
-        }
-      });
+      // Store session details for timer tracking
+      this.sessionStartTime = sessionData.startTime;
+      this.sessionDuration = sessionData.duration;
+      this.userId = sessionData.userId;
 
-      this.currentSession = session;
-      this.sessionStartTime = startTime;
-      this.sessionDuration = duration * 60 * 1000; // Convert minutes to milliseconds
-      this.userId = userId;
-
-      return session;
+      return this.currentSession;
     } catch (error) {
       console.error('Error starting session:', error);
-      throw error;
+      return null;
     }
   }
 
-  async endSession(sessionId: string): Promise<void> {
-    try {
-      await prisma.speakingSession.update({
-        where: { id: sessionId },
-        data: {
-          status: 'completed',
-          endTime: new Date()
-        }
-      });
+  getCurrentSession(): SessionWithIncludes | null {
+    return this.currentSession;
+  }
 
-      if (this.currentSession?.id === sessionId) {
-        this.currentSession = null;
-        this.sessionStartTime = null;
-        this.sessionDuration = null;
-      }
-    } catch (error) {
-      console.error('Error ending session:', error);
-      throw error;
+  endSession(sessionId: string) {
+    if (this.currentSession && this.currentSession.id === sessionId) {
+      // Reset session tracking
+      this.currentSession = null;
+      this.sessionStartTime = null;
+      this.sessionDuration = null;
+      this.userId = null;
     }
   }
 
@@ -260,10 +241,6 @@ export class PracticeService {
     await prisma.speakingSession.delete({
       where: { id: sessionId },
     });
-  }
-
-  getCurrentSession(): SessionWithIncludes | null {
-    return this.currentSession;
   }
 
   getSessionHistory(sessionId: string): Message[] | undefined {

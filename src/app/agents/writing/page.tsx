@@ -3,12 +3,13 @@
 import { useState, useEffect } from 'react';
 import ChatInterface from "@/components/ChatInterface";
 import { TemplateCards } from "@/components/TemplateCards";
-import { Template } from "@/types/template";
 import { Button } from "@/components/ui/button";
+import { task1Templates, task2Templates } from "@/data/writingTemplates";
+import { WritingTemplate } from '@/types/template';
 import { useRouter } from 'next/navigation';
 
 export default function WritingAgentPage() {
-  const [selectedTemplate, setSelectedTemplate] = useState<Template | undefined>(undefined);
+  const [selectedTemplate, setSelectedTemplate] = useState<WritingTemplate | undefined>(undefined);
   const [sessionId, setSessionId] = useState<string>('');
   const [isClient, setIsClient] = useState(false);
   const router = useRouter();
@@ -24,7 +25,7 @@ export default function WritingAgentPage() {
     }
   }, [isClient, selectedTemplate]);
 
-  const handleTemplateSelect = (template: Template) => {
+  const handleTemplateSelect = (template: WritingTemplate) => {
     setSelectedTemplate(template);
   };
 
@@ -121,7 +122,7 @@ Remember to:
             ← Quay lại danh sách mẫu
           </Button>
           <div className="mb-4 p-4 rounded-lg bg-white/80 backdrop-blur-sm shadow-[6px_6px_12px_#b8b9be,-6px_-6px_12px_#ffffff]">
-            <h2 className="text-xl font-semibold mb-2">{selectedTemplate.titleVi}</h2>
+            <h2 className="text-xl font-semibold mb-2">{selectedTemplate.title}</h2>
             <div className="text-sm text-slate-600">
               <p><strong>CEFR Level:</strong> {selectedTemplate.level}</p>
               <p><strong>Target Band:</strong> {selectedTemplate.targetBand}</p>

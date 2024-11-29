@@ -22,6 +22,7 @@ import ChatIcon from '@mui/icons-material/Chat';
 import BookmarkIcon from '@mui/icons-material/Bookmark';
 import { part1Questions, part2Questions, part3Questions } from '../../data/speakingQuestions';
 import { practiceService } from '../../services/practiceService';
+import { TimerSelectionDialog } from './TimerSelectionDialog';
 
 interface TabPanelProps {
   children?: React.ReactNode;
@@ -53,25 +54,49 @@ function TabPanel(props: TabPanelProps) {
 
 export const SpeakingTemplates = () => {
   const [tabValue, setTabValue] = useState(0);
+  const [timerDialogOpen, setTimerDialogOpen] = useState(false);
+  const [selectedTopic, setSelectedTopic] = useState('');
+  const [selectedType, setSelectedType] = useState<'tutor' | 'template'>('tutor');
   const navigate = useNavigate();
 
   const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
     setTabValue(newValue);
   };
 
-  const handleStartPractice = async (topic: string, type: 'tutor' | 'template') => {
+  const handleStartPractice = (topic: string, type: 'tutor' | 'template') => {
+    setSelectedTopic(topic);
+    setSelectedType(type);
+    setTimerDialogOpen(true);
+  };
+
+  const handleSessionStart = async (duration: number) => {
     try {
-      if (type === 'tutor') {
-        const session = await practiceService.startSession('tutor', 15);
-        if (session && session.id) {
-          navigate('/practice', { state: { topic, sessionId: session.id } });
-        }
-      } else {
-        navigate('/templates/practice', { state: { topic } });
+      const startTime = Date.now();
+      const session = await practiceService.startSession({
+        userId: 'user', // Replace with actual user ID
+        duration: duration * 60, // Convert minutes to seconds
+        templateId: selectedTopic,
+        startTime
+      });
+
+      if (session) {
+        navigate('/practice', { 
+          state: { 
+            topic: selectedTopic,
+            level: 'intermediate', // You can make this dynamic
+            targetBand: 7, // You can make this dynamic
+            part: tabValue + 1,
+            mode: 'practice',
+            duration: duration,
+            sessionId: session.id
+          } 
+        });
       }
     } catch (error) {
       console.error('Failed to start practice session:', error);
-      // TODO: Show error message to user
+      // TODO: Show error toast to user
+    } finally {
+      setTimerDialogOpen(false);
     }
   };
 
@@ -145,6 +170,12 @@ export const SpeakingTemplates = () => {
       <TabPanel value={tabValue} index={2}>
         {renderTopicList(part3Questions, 3)}
       </TabPanel>
+
+      <TimerSelectionDialog 
+        open={timerDialogOpen}
+        onClose={() => setTimerDialogOpen(false)}
+        onStartSession={handleSessionStart}
+      />
     </Container>
   );
 };

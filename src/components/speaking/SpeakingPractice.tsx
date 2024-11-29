@@ -6,7 +6,10 @@ import SendIcon from '@mui/icons-material/Send';
 import { useToast } from '@/components/ui/use-toast';
 import { Message } from '@/types/speakingSession';
 import AudioRecorder from '@/components/speaking/AudioRecorder';
-import { SessionTimer } from './SessionTimer';
+import NeumorphicTimer from '../ui/neumorphic/timer';
+import TimerDialog from './TimerDialog';
+import { practiceService } from '@/services/practiceService'; 
+import { v4 as uuidv4 } from 'uuid'; // Import uuidv4
 
 const ChatContainer = styled(Box)(({ theme }) => ({
   height: 'calc(100vh - 300px)',
@@ -59,7 +62,6 @@ interface SpeakingPracticeProps {
   targetBand: number;
   part: number;
   mode?: 'practice' | 'mocktest';
-  duration: number;
   onSessionEnd?: (feedback: any) => void;
 }
 
@@ -69,7 +71,6 @@ export const SpeakingPractice = ({
   targetBand,
   part,
   mode = 'practice',
-  duration,
   onSessionEnd
 }: SpeakingPracticeProps) => {
   const [messages, setMessages] = useState<Message[]>([]);
@@ -77,42 +78,71 @@ export const SpeakingPractice = ({
   const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
   const [audioUrl, setAudioUrl] = useState<string | null>(null);
   const [handsFreeMode, setHandsFreeMode] = useState(false);
-  const [sessionActive, setSessionActive] = useState(true);
+  const [sessionActive, setSessionActive] = useState(false);
   const [isProcessing, setIsProcessing] = useState(false);
+  const [sessionDuration, setSessionDuration] = useState<number | null>(null);
+  const [showTimerDialog, setShowTimerDialog] = useState(true);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
+  const handleSessionComplete = () => {
+    setSessionActive(false);
+    if (onSessionEnd) {
+      onSessionEnd({});
+    }
+  };
+
+  const handleTimerSelect = (duration: number) => {
+    setSessionDuration(duration);
+    setShowTimerDialog(false);
+    initSession(duration);
+  };
+
+  const initSession = async (duration: number) => {
+    try {
+      // Start practice session
+      const startTime = Date.now();
+      const session = practiceService.startSession({
+        userId: 'user', // Replace with actual user ID
+        duration: duration, // Duration in seconds from timer dialog
+        templateId: topic,
+        startTime
+      });
+
+      if (!session) {
+        throw new Error('Failed to start session');
+      }
+
+      // Initialize with system message
+      const systemPrompt = `Let's practice IELTS Speaking Part ${part} about "${topic}". You have ${Math.round(duration / 60)} minutes. I'll listen and provide feedback at the end.`;
+      const initialMessage = {
+        id: uuidv4(),
+        role: 'assistant' as 'assistant',
+        content: systemPrompt,
+        timestamp: Date.now()
+      } as Message;
+      
+      setMessages([initialMessage]);
+      setSessionActive(true);
+    } catch (error) {
+      console.error('Error initializing session:', error);
+      toast({
+        title: 'Error',
+        description: 'Failed to start practice session',
+        variant: 'destructive',
+      });
+    }
+  };
+
+  // Cleanup on unmount
   useEffect(() => {
-    const initSession = async () => {
-      try {
-        const session = await fetch('/api/speaking/start-session', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            topic,
-            level,
-            targetBand,
-            part,
-            duration,
-            mode
-          }),
-        });
-        const data = await session.json();
-        setMessages(data.messages || []);
-      } catch (error) {
-        console.error('Error starting session:', error);
-        toast({
-          title: 'Error',
-          description: 'Failed to start session. Please try again.',
-          variant: 'destructive',
-        });
+    return () => {
+      const session = practiceService.getCurrentSession();
+      if (session) {
+        practiceService.endSession(session.id);
       }
     };
-
-    initSession();
-  }, [topic, level, targetBand, part, duration, mode]);
+  }, []);
 
   const handleSend = async () => {
     if (!input.trim() && !audioBlob) return;
@@ -133,7 +163,7 @@ export const SpeakingPractice = ({
             content: input || 'Audio message sent',
             audioUrl: audioUrl
           },
-          duration,
+          duration: sessionDuration,
           mode
         }),
       });
@@ -164,46 +194,21 @@ export const SpeakingPractice = ({
     await handleSend();
   };
 
-  const handleSessionEnd = async () => {
-    setSessionActive(false);
-    try {
-      const feedback = await fetch('/api/speaking/end-session', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          duration,
-          mode
-        }),
-      });
-      const data = await feedback.json();
-      onSessionEnd?.(data.feedback);
-      
-      toast({
-        title: 'Session Ended',
-        description: 'Your speaking practice session has ended. Check your feedback below.',
-      });
-    } catch (error) {
-      console.error('Error ending session:', error);
-      toast({
-        title: 'Error',
-        description: 'Failed to get session feedback. Please try again.',
-        variant: 'destructive',
-      });
-    }
-  };
-
   useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
   }, [messages]);
 
   return (
-    <Box>
-      <SessionTimer 
-        onSessionEnd={handleSessionEnd}
-      />
-      
+    <Box sx={{ height: '100%', display: 'flex', flexDirection: 'column', gap: 2 }}>
+      <Box sx={{ position: 'sticky', top: 0, zIndex: 1, bgcolor: 'background.paper', py: 2 }}>
+        {sessionActive && sessionDuration && (
+          <NeumorphicTimer
+            duration={Math.round(sessionDuration / 60)} // Convert seconds to minutes for display
+            onComplete={handleSessionComplete}
+            className="w-full max-w-md mx-auto"
+          />
+        )}
+      </Box>
       <StatsCard>
         <Box display="flex" justifyContent="space-between" alignItems="center">
           <Box>
@@ -274,6 +279,14 @@ export const SpeakingPractice = ({
           audioBlob={audioBlob}
         />
       )}
+
+      {/* Timer Selection Dialog */}
+      <TimerDialog
+        open={showTimerDialog}
+        onClose={() => setShowTimerDialog(false)}
+        onStartSession={handleTimerSelect}
+        part={part}
+      />
     </Box>
   );
 };

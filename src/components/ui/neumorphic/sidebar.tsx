@@ -37,7 +37,7 @@ interface NeumorphicSidebarProps {
   className?: string;
 }
 
-export function NeumorphicSidebar({
+function NeumorphicSidebar({
   open = false,
   onToggle,
   metrics,
@@ -180,3 +180,5 @@ export function NeumorphicSidebar({
     </aside>
   );
 }
+
+export { NeumorphicSidebar };

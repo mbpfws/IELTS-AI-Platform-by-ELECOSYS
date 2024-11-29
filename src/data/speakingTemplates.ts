@@ -1,7 +1,6 @@
-import { SpeakingTemplate } from '@/types/speaking';
+import { SpeakingTemplate } from '@/types/speakingSession';
 
-const baseInstructions = `
-You are an IELTS Speaking tutor using LearnLM 1.5 Pro to help students improve their speaking skills. You will:
+const baseInstructions = `You are an IELTS Speaking tutor using LearnLM 1.5 Pro to help students improve their speaking skills. You will:
 
 1. Listen and evaluate student responses naturally during the conversation
 2. Only provide detailed feedback and scoring when the session time is up, focusing on:
@@ -20,11 +19,7 @@ You are an IELTS Speaking tutor using LearnLM 1.5 Pro to help students improve t
 4. At the end of the session:
    - Provide a comprehensive evaluation in JSON format
    - Include specific examples from the conversation
-   - Give actionable improvement suggestions
-
-Model: learnlm-1.5-pro-experimental
-Max tokens: 4000
-`;
+   - Give actionable improvement suggestions`;
 
 const part1SystemInstruction = `You are conducting IELTS Speaking Part 1.
 This part consists of general questions about familiar topics.
@@ -49,332 +44,791 @@ This part involves more abstract and analytical discussion.
 - Allow the candidate to develop their ideas
 - Connect responses to wider social contexts`;
 
-// Part 1 Templates (40 topics)
-export const part1Templates: SpeakingTemplate[] = [
-  // Home/Accommodation
+// Part 1 templates
+const part1Templates: SpeakingTemplate[] = [
   {
-    id: 'p1_home_1',
-    title: 'Nơi bạn sống',
-    description: 'Thảo luận về nơi bạn sinh sống và lớn lên',
-    category: 'part1',
-    systemInstruction: `${baseInstructions}\n${part1SystemInstruction}\nFocus: Home and living situation`,
-    initialQuestion: 'Hãy kể về nơi bạn đang sống. Bạn thích điều gì nhất ở đó?',
-    learningObjectives: [
-      'Mô tả địa điểm',
-      'Diễn đạt cảm xúc',
-      'Sử dụng từ vựng về môi trường sống'
+    id: 'p1_home_accommodation',
+    title: 'Home & Accommodation',
+    titleVi: 'Nhà ở & Chỗ ở',
+    titleEn: 'Home & Accommodation',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'daily_life',
+    description: 'Discuss your living situation and preferences',
+    descriptionVi: 'Thảo luận về tình hình và sở thích về nhà ở',
+    descriptionEn: 'Discuss your living situation and preferences',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Housing', 'Living Preferences', 'Accommodation'],
+    objectives: [
+      'Describe current living situation',
+      'Express preferences about housing',
+      'Compare different types of accommodation'
     ],
-    tags: ['Hometown', 'Living Environment'],
-    duration: 300
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
   },
   {
-    id: 'p1_home_2',
-    title: 'Phòng yêu thích',
-    description: 'Mô tả phòng bạn thích nhất trong nhà',
-    category: 'part1',
-    systemInstruction: `${baseInstructions}\n${part1SystemInstruction}\nFocus: Favorite room in the house`,
-    initialQuestion: 'Hãy mô tả phòng bạn thích nhất trong nhà.',
-    learningObjectives: [
-      'Mô tả chi tiết',
-      'Diễn đạt sở thích',
-      'Sử dụng từ vựng về đồ đạc'
+    id: 'p1_family_relationships',
+    title: 'Family Life',
+    titleVi: 'Cuộc sống gia đình',
+    titleEn: 'Family Life',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'relationships',
+    description: 'Talk about your family and relationships',
+    descriptionVi: 'Nói về gia đình và các mối quan hệ',
+    descriptionEn: 'Talk about your family and relationships',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Family Members', 'Family Activities', 'Family Relationships'],
+    objectives: [
+      'Describe family structure',
+      'Discuss family relationships',
+      'Express opinions about family life'
     ],
-    tags: ['Home', 'Favorite Room'],
-    duration: 300
-  },
-  
-  // Work/Study
-  {
-    id: 'p1_work_1',
-    title: 'Công việc/Học tập',
-    description: 'Thảo luận về công việc hoặc việc học của bạn',
-    category: 'part1',
-    systemInstruction: `${baseInstructions}\n${part1SystemInstruction}\nFocus: Work or studies`,
-    initialQuestion: 'Bạn thường làm gì trong thời gian rảnh?',
-    learningObjectives: [
-      'Mô tả công việc hoặc học tập',
-      'Diễn đạt mục tiêu',
-      'Sử dụng từ vựng về nghề nghiệp'
-    ],
-    tags: ['Work', 'Study'],
-    duration: 300
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
   },
   {
-    id: 'p1_work_2',
-    title: 'Kế hoạch tương lai',
-    description: 'Nói về kế hoạch nghề nghiệp trong tương lai',
-    category: 'part1',
-    systemInstruction: `${baseInstructions}\n${part1SystemInstruction}\nFocus: Future career plans`,
-    initialQuestion: 'Hãy nói về kế hoạch nghề nghiệp của bạn trong tương lai.',
-    learningObjectives: [
-      'Mô tả kế hoạch',
-      'Diễn đạt mục tiêu',
-      'Sử dụng từ vựng về nghề nghiệp'
+    id: 'p1_daily_routine_activities',
+    title: 'Daily Routine',
+    titleVi: 'Thói quen hàng ngày',
+    titleEn: 'Daily Routine',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'daily_life',
+    description: 'Describe your daily activities and routines',
+    descriptionVi: 'Mô tả các hoạt động và thói quen hàng ngày',
+    descriptionEn: 'Describe your daily activities and routines',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Morning Routine', 'Work/School Schedule', 'Leisure Activities'],
+    objectives: [
+      'Describe daily schedule',
+      'Discuss time management',
+      'Express preferences about daily activities'
     ],
-    tags: ['Career', 'Future Plans'],
-    duration: 300
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
+  },
+  {
+    id: 'p1_weather_and_seasons',
+    title: 'Weather & Seasons',
+    titleVi: 'Thời tiết & Mùa',
+    titleEn: 'Weather & Seasons',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'environment',
+    description: 'Discuss weather patterns and seasonal preferences',
+    descriptionVi: 'Thảo luận về thói tiết và sở thích theo mùa',
+    descriptionEn: 'Discuss weather patterns and seasonal preferences',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Weather Forecast', 'Seasonal Activities', 'Favorite Season'],
+    objectives: [
+      'Describe weather patterns',
+      'Discuss seasonal preferences',
+      'Express opinions about climate change'
+    ],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
+  },
+  {
+    id: 'p1_transportation_modes',
+    title: 'Transportation',
+    titleVi: 'Phương tiện di chuyển',
+    titleEn: 'Transportation',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'daily_life',
+    description: 'Talk about different modes of transport',
+    descriptionVi: 'Nói về các phương tiện di chuyển khác nhau',
+    descriptionEn: 'Talk about different modes of transport',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Public Transport', 'Private Transport', 'Sustainable Transport'],
+    objectives: [
+      'Describe transportation options',
+      'Discuss transportation challenges',
+      'Express opinions about transportation systems'
+    ],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
+  },
+  {
+    id: 'p1_technology_use',
+    title: 'Technology Use',
+    titleVi: 'Sử dụng công nghệ',
+    titleEn: 'Technology Use',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'technology',
+    description: 'Discuss daily technology use and preferences',
+    descriptionVi: 'Thảo luận về việc sử dụng công nghệ hàng ngày',
+    descriptionEn: 'Discuss daily technology use and preferences',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Smartphones', 'Computers', 'Gadgets'],
+    objectives: [
+      'Describe technology use',
+      'Discuss technology benefits',
+      'Express opinions about technology addiction'
+    ],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
+  },
+  {
+    id: 'p1_shopping_habits',
+    title: 'Shopping Habits',
+    titleVi: 'Thói quen mua sắm',
+    titleEn: 'Shopping Habits',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'daily_life',
+    description: 'Talk about shopping preferences and habits',
+    descriptionVi: 'Nói về sở thích và thói quen mua sắm',
+    descriptionEn: 'Talk about shopping preferences and habits',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Shopping Malls', 'Online Shopping', 'Favorite Brands'],
+    objectives: [
+      'Describe shopping habits',
+      'Discuss shopping preferences',
+      'Express opinions about consumerism'
+    ],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
+  },
+  {
+    id: 'p1_entertainment_preferences',
+    title: 'Entertainment',
+    titleVi: 'Giải trí',
+    titleEn: 'Entertainment',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'entertainment',
+    description: 'Discuss entertainment preferences',
+    descriptionVi: 'Thảo luận về sở thích giải trí',
+    descriptionEn: 'Discuss entertainment preferences',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Movies', 'Music', 'Hobbies'],
+    objectives: [
+      'Describe entertainment preferences',
+      'Discuss favorite activities',
+      'Express opinions about leisure time'
+    ],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
+  },
+  {
+    id: 'p1_social_media_usage',
+    title: 'Social Media',
+    titleVi: 'Mạng xã hội',
+    titleEn: 'Social Media',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'technology',
+    description: 'Talk about social media usage',
+    descriptionVi: 'Nói về việc sử dụng mạng xã hội',
+    descriptionEn: 'Talk about social media usage',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Facebook', 'Instagram', 'Twitter'],
+    objectives: [
+      'Describe social media use',
+      'Discuss social media benefits',
+      'Express opinions about social media addiction'
+    ],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
+  },
+  {
+    id: 'p1_hobbies_and_interests',
+    title: 'Hobbies & Interests',
+    titleVi: 'Sở thích & Điều yêu thích',
+    titleEn: 'Hobbies & Interests',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'part1',
+    description: 'Questions about your hobbies and interests',
+    descriptionVi: 'Các câu hỏi về sở thích và điều bạn yêu thích',
+    descriptionEn: 'Questions about your hobbies and interests',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Sports', 'Music', 'Reading'],
+    objectives: [
+      'Describe hobbies',
+      'Discuss interests',
+      'Express opinions about leisure activities'
+    ],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
+  },
+  {
+    id: 'p1_transportation_modes_2',
+    title: 'Transportation',
+    titleVi: 'Phương tiện giao thông',
+    titleEn: 'Transportation',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'part1',
+    description: 'Questions about different modes of transport',
+    descriptionVi: 'Các câu hỏi về các phương tiện đi lại',
+    descriptionEn: 'Questions about different modes of transport',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Cars', 'Buses', 'Trains'],
+    objectives: [
+      'Describe transportation options',
+      'Discuss transportation challenges',
+      'Express opinions about transportation systems'
+    ],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
+  },
+  {
+    id: 'p1_work_or_study',
+    title: 'Work or Study',
+    titleVi: 'Công việc hoặc học tập',
+    titleEn: 'Work or Study',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'part1',
+    description: 'Questions about your work or studies',
+    descriptionVi: 'Các câu hỏi về công việc hoặc việc học của bạn',
+    descriptionEn: 'Questions about your work or studies',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Job', 'University', 'Career'],
+    objectives: [
+      'Describe work/study experience',
+      'Discuss career goals',
+      'Express opinions about work-life balance'
+    ],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
+  },
+  {
+    id: 'p1_hometown_experiences',
+    title: 'Hometown',
+    titleVi: 'Quê hương',
+    titleEn: 'Hometown',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'part1',
+    description: 'Questions about where you grew up',
+    descriptionVi: 'Các câu hỏi về nơi bạn lớn lên',
+    descriptionEn: 'Questions about where you grew up',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Childhood', 'Family', 'Memories'],
+    objectives: [
+      'Describe hometown',
+      'Discuss childhood experiences',
+      'Express opinions about hometown'
+    ],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
+  },
+  {
+    id: 'p1_childhood_games_and_activities',
+    title: 'Childhood Games',
+    titleVi: 'Trò chơi thơi thơ ấu',
+    titleEn: 'Childhood Games',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'part1',
+    description: 'Questions about games you played as a child',
+    descriptionVi: 'Các câu hỏi về trò chơi bạn chơi khi còn nhỏ',
+    descriptionEn: 'Questions about games you played as a child',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Toys', 'Games', 'Childhood'],
+    objectives: [
+      'Describe childhood games',
+      'Discuss favorite games',
+      'Express opinions about childhood activities'
+    ],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
+  },
+  {
+    id: 'p1_food_and_cooking_preferences',
+    title: 'Food & Cooking',
+    titleVi: 'Ẩm thực & Nấu ăn',
+    titleEn: 'Food & Cooking',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'part1',
+    description: 'Questions about food preferences and cooking',
+    descriptionVi: 'Các câu hỏi về sở thích ẩm thực và nấu ăn',
+    descriptionEn: 'Questions about food preferences and cooking',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Food', 'Cooking', 'Recipes'],
+    objectives: [
+      'Describe food preferences',
+      'Discuss cooking habits',
+      'Express opinions about food culture'
+    ],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
+  },
+  {
+    id: 'p1_sports_and_exercise_habits',
+    title: 'Sports & Exercise',
+    titleVi: 'Thể thao & Tập thể dục',
+    titleEn: 'Sports & Exercise',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'part1',
+    description: 'Questions about sports and exercise habits',
+    descriptionVi: 'Các câu hỏi về thói quen thể thao và tập thể dục',
+    descriptionEn: 'Questions about sports and exercise habits',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Sports', 'Exercise', 'Fitness'],
+    objectives: [
+      'Describe sports/exercise habits',
+      'Discuss favorite sports',
+      'Express opinions about physical activity'
+    ],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
+  },
+  {
+    id: 'p1_friends_and_friendship',
+    title: 'Friends & Friendship',
+    titleVi: 'Bạn bè & Tình bạn',
+    titleEn: 'Friends & Friendship',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'part1',
+    description: 'Questions about friends and friendship',
+    descriptionVi: 'Các câu hỏi về bạn bè và tình bạn',
+    descriptionEn: 'Questions about friends and friendship',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Friends', 'Friendship', 'Social Life'],
+    objectives: [
+      'Describe friends',
+      'Discuss friendship',
+      'Express opinions about social relationships'
+    ],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
+  },
+  {
+    id: 'p1_music_and_dancing_preferences',
+    title: 'Music & Dancing',
+    titleVi: 'Âm nhạc & Khiêu vũ',
+    titleEn: 'Music & Dancing',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'part1',
+    description: 'Questions about music preferences and dancing',
+    descriptionVi: 'Các câu hỏi về sở thích âm nhạc và khiêu vũ',
+    descriptionEn: 'Questions about music preferences and dancing',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Music', 'Dancing', 'Concerts'],
+    objectives: [
+      'Describe music preferences',
+      'Discuss dancing habits',
+      'Express opinions about music culture'
+    ],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
+  },
+  {
+    id: 'p1_travel_experiences',
+    title: 'Travel & Holidays',
+    titleVi: 'Du lịch & Kỳ nghỉ',
+    titleEn: 'Travel & Holidays',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
+    category: 'part1',
+    description: 'Questions about travel experiences and holidays',
+    descriptionVi: 'Các câu hỏi về trải nghiệm du lịch và kỳ nghỉ',
+    descriptionEn: 'Questions about travel experiences and holidays',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Travel', 'Holidays', 'Tourism'],
+    objectives: [
+      'Describe travel experiences',
+      'Discuss holiday preferences',
+      'Express opinions about cultural exchange'
+    ],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 1', 'Introduction', 'Basic']
   },
 
-  // Hobbies/Free Time
-  {
-    id: 'p1_hobby_1',
-    title: 'Sở thích',
-    description: 'Chia sẻ về sở thích và thời gian rảnh',
-    category: 'part1',
-    systemInstruction: `${baseInstructions}\n${part1SystemInstruction}\nFocus: Hobbies and free time`,
-    initialQuestion: 'Bạn thường làm gì trong thời gian rảnh?',
-    learningObjectives: [
-      'Mô tả sở thích',
-      'Diễn đạt cảm xúc',
-      'Sử dụng từ vựng về hoạt động giải trí'
-    ],
-    tags: ['Hobbies', 'Free Time'],
-    duration: 300
-  },
-  
-  // Weather/Seasons
-  {
-    id: 'p1_weather_1',
-    title: 'Thời tiết',
-    description: 'Thảo luận về thời tiết và mùa yêu thích',
-    category: 'part1',
-    systemInstruction: `${baseInstructions}\n${part1SystemInstruction}\nFocus: Weather preferences and seasonal changes`,
-    initialQuestion: 'Hãy nói về thời tiết và mùa yêu thích của bạn.',
-    learningObjectives: [
-      'Mô tả thời tiết',
-      'Diễn đạt sở thích',
-      'Sử dụng từ vựng về thời tiết'
-    ],
-    tags: ['Weather', 'Seasons'],
-    duration: 300
-  },
-
-  // Continue with more Part 1 templates...
 ];
 
-// Part 2 Templates (50 topics)
-export const part2Templates: SpeakingTemplate[] = [
-  // People
+// Part 2 templates
+const part2Templates: SpeakingTemplate[] = [
   {
-    id: 'p2_people_1',
-    title: 'Người truyền cảm hứng',
-    description: 'Mô tả về một người truyền cảm hứng cho bạn',
-    category: 'part2_people',
-    systemInstruction: `${baseInstructions}\n${part2SystemInstruction}\nAsk the candidate to describe a person who:\n- Has influenced them\n- They admire\n- Has helped them in some way`,
-    initialQuestion: 'Hãy mô tả một người đã truyền cảm hứng cho bạn.',
-    learningObjectives: [
-      'Mô tả người',
-      'Diễn đạt cảm xúc',
-      'Sử dụng từ vựng về tính cách'
+    id: 'p2_traditional_festival',
+    title: 'Traditional Festival',
+    titleVi: 'Lễ hội truyền thống',
+    titleEn: 'Traditional Festival',
+    part: 2,
+    difficulty: 'medium',
+    systemPrompt: `${baseInstructions}\n${part2SystemInstruction}`,
+    category: 'culture',
+    description: 'Describe a traditional festival you have attended',
+    descriptionVi: 'Mô tả một lễ hội truyền thống bạn đã tham dự',
+    descriptionEn: 'Describe a traditional festival you have attended',
+    taskType: 'task2',
+    level: 'Intermediate',
+    targetBand: 7.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Festivals', 'Traditions', 'Cultural Events'],
+    objectives: [
+      'Describe festival activities',
+      'Express cultural significance',
+      'Share personal experiences'
     ],
-    tags: ['Inspiring Person', 'Role Model'],
-    duration: 300
+    duration: 10,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 2', 'Description', 'Intermediate']
   },
   {
-    id: 'p2_people_2',
-    title: 'Người bạn thân',
-    description: 'Nói về người bạn thân nhất của bạn',
-    category: 'part2_people',
-    systemInstruction: `${baseInstructions}\n${part2SystemInstruction}\nAsk the candidate to describe a person who:\n- Is a close friend\n- Has helped them in some way\n- They admire`,
-    initialQuestion: 'Hãy nói về người bạn thân nhất của bạn.',
-    learningObjectives: [
-      'Mô tả người',
-      'Diễn đạt cảm xúc',
-      'Sử dụng từ vựng về mối quan hệ'
+    id: 'p2_special_celebration',
+    title: 'Special Celebration',
+    titleVi: 'Dịp kỷ niệm đặc biệt',
+    titleEn: 'Special Celebration',
+    part: 2,
+    difficulty: 'medium',
+    systemPrompt: `${baseInstructions}\n${part2SystemInstruction}`,
+    category: 'events',
+    description: 'Describe a special celebration you remember',
+    descriptionVi: 'Mô tả một dịp kỷ niệm đặc biệt bạn nhớ',
+    descriptionEn: 'Describe a special celebration you remember',
+    taskType: 'task2',
+    level: 'Intermediate',
+    targetBand: 7.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Celebrations', 'Special Events', 'Personal Memories'],
+    objectives: [
+      'Describe celebration details',
+      'Express personal significance',
+      'Share emotional impact'
     ],
-    tags: ['Best Friend', 'Relationship'],
-    duration: 300
-  },
+    duration: 10,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 2', 'Description', 'Intermediate']
+  }
+  ];
 
-  // Events/Occasions
+// Part 3 templates
+const part3Templates: SpeakingTemplate[] = [
   {
-    id: 'p2_event_1',
-    title: 'Kỷ niệm đáng nhớ',
-    description: 'Mô tả một sự kiện đáng nhớ trong đời',
-    category: 'part2_events',
-    systemInstruction: `${baseInstructions}\n${part2SystemInstruction}\nAsk the candidate to describe an event that:\n- Is memorable\n- Has left a strong impression\n- They would like to repeat`,
-    initialQuestion: 'Hãy mô tả một sự kiện đáng nhớ trong đời bạn.',
-    learningObjectives: [
-      'Mô tả sự kiện',
-      'Diễn đạt cảm xúc',
-      'Sử dụng từ vựng về thời gian'
+    id: 'p3_globalization_impact',
+    title: 'Globalization',
+    titleVi: 'Toàn cầu hóa',
+    titleEn: 'Globalization',
+    part: 3,
+    difficulty: 'hard',
+    systemPrompt: `${baseInstructions}\n${part3SystemInstruction}`,
+    category: 'society',
+    description: 'Discuss the impact of globalization',
+    descriptionVi: 'Thảo luận về tác động của toàn cầu hóa',
+    descriptionEn: 'Discuss the impact of globalization',
+    taskType: 'task2',
+    level: 'Advanced',
+    targetBand: 8.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Globalization', 'Cultural Exchange', 'Economic Impact'],
+    objectives: [
+      'Analyze global trends',
+      'Evaluate cultural impact',
+      'Discuss economic effects'
     ],
-    tags: ['Memorable Event', 'Experience'],
-    duration: 300
+    duration: 15,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 3', 'Discussion', 'Advanced']
   },
   {
-    id: 'p2_event_2',
-    title: 'Lễ hội truyền thống',
-    description: 'Nói về một lễ hội truyền thống bạn thích',
-    category: 'part2_events',
-    systemInstruction: `${baseInstructions}\n${part2SystemInstruction}\nAsk the candidate to describe a festival that:\n- Is traditional\n- They enjoy attending\n- Has cultural significance`,
-    initialQuestion: 'Hãy nói về một lễ hội truyền thống bạn thích.',
-    learningObjectives: [
-      'Mô tả lễ hội',
-      'Diễn đạt sở thích',
-      'Sử dụng từ vựng về văn hóa'
+    id: 'p3_education_systems_comparison',
+    title: 'Education Systems',
+    titleVi: 'Hệ thống giáo dục',
+    titleEn: 'Education Systems',
+    part: 3,
+    difficulty: 'hard',
+    systemPrompt: `${baseInstructions}\n${part3SystemInstruction}`,
+    category: 'education',
+    description: 'Compare different education systems',
+    descriptionVi: 'So sánh các hệ thống giáo dục khác nhau',
+    descriptionEn: 'Compare different education systems',
+    taskType: 'task2',
+    level: 'Advanced',
+    targetBand: 8.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Education Systems', 'Learning Methods', 'Academic Standards'],
+    objectives: [
+      'Compare education systems',
+      'Evaluate teaching methods',
+      'Discuss future trends'
     ],
-    tags: ['Traditional Festival', 'Culture'],
-    duration: 300
-  },
+    duration: 15,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Part 3', 'Discussion', 'Advanced']
+  }
+  ];
 
-  // Places/Destinations
+// Basic tutoring templates
+const basicTutoringTemplates: SpeakingTemplate[] = [
   {
-    id: 'p2_place_1',
-    title: 'Địa điểm du lịch',
-    description: 'Mô tả một nơi bạn đã từng đến thăm',
-    category: 'part2_places',
-    systemInstruction: `${baseInstructions}\n${part2SystemInstruction}\nAsk the candidate to describe a place that:\n- Is a popular tourist destination\n- They have visited\n- Has left a strong impression`,
-    initialQuestion: 'Hãy mô tả một nơi bạn đã từng đến thăm.',
-    learningObjectives: [
-      'Mô tả địa điểm',
-      'Diễn đạt cảm xúc',
-      'Sử dụng từ vựng về du lịch'
+    id: 'basic_pronunciation_practice',
+    title: 'Basic Pronunciation Practice',
+    titleVi: 'Luyện phát âm cơ bản',
+    titleEn: 'Basic Pronunciation Practice',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\nFocus on basic pronunciation practice:\n- Introduce common sounds\n- Practice pronunciation of individual sounds\n- Focus on word stress and intonation\n- Encourage self-practice`,
+    category: 'Tutoring',
+    description: 'Practice basic pronunciation skills',
+    descriptionVi: 'Luyện kỹ năng phát âm cơ bản',
+    descriptionEn: 'Practice basic pronunciation skills',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Sound Recognition', 'Stress Patterns', 'Intonation', 'Connected Speech'],
+    objectives: [
+      'Master basic sounds',
+      'Improve word stress',
+      'Enhance intonation',
+      'Practice connected speech'
     ],
-    tags: ['Travel Destination', 'Tourism'],
-    duration: 300
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Tutoring', 'Pronunciation', 'Basic']
   },
   {
-    id: 'p2_place_2',
-    title: 'Thành phố yêu thích',
-    description: 'Nói về thành phố bạn thích nhất',
-    category: 'part2_places',
-    systemInstruction: `${baseInstructions}\n${part2SystemInstruction}\nAsk the candidate to describe a city that:\n- Is their favorite\n- They have visited\n- Has cultural significance`,
-    initialQuestion: 'Hãy nói về thành phố bạn thích nhất.',
-    learningObjectives: [
-      'Mô tả thành phố',
-      'Diễn đạt sở thích',
-      'Sử dụng từ vựng về địa lý'
+    id: 'basic_grammar_practice',
+    title: 'Essential Grammar Practice',
+    titleVi: 'Luyện ngữ pháp cơ bản',
+    titleEn: 'Essential Grammar Practice',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\nFocus on essential grammar practice:\n- Introduce basic grammar structures\n- Practice grammar in context\n- Focus on verb tenses and sentence structure\n- Encourage self-practice`,
+    category: 'Tutoring',
+    description: 'Practice essential grammar skills',
+    descriptionVi: 'Luyện kỹ năng ngữ pháp cơ bản',
+    descriptionEn: 'Practice essential grammar skills',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Grammar Rules', 'Sentence Structure', 'Verb Tenses', 'Basic Grammar'],
+    objectives: [
+      'Master basic grammar structures',
+      'Improve sentence structure',
+      'Understand verb tenses',
+      'Practice grammar in context'
     ],
-    tags: ['Favorite City', 'Geography'],
-    duration: 300
-  },
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Tutoring', 'Grammar', 'Basic']
+  }
+  ];
 
-  // Objects
+// Advanced tutoring templates
+const advancedTutoringTemplates: SpeakingTemplate[] = [
   {
-    id: 'p2_object_1',
-    title: 'Món quà ý nghĩa',
-    description: 'Mô tả một món quà có ý nghĩa với bạn',
-    category: 'part2_objects',
-    systemInstruction: `${baseInstructions}\n${part2SystemInstruction}\nAsk the candidate to describe an object that:\n- Is meaningful\n- They have received as a gift\n- Has sentimental value`,
-    initialQuestion: 'Hãy mô tả một món quà có ý nghĩa với bạn.',
-    learningObjectives: [
-      'Mô tả món quà',
-      'Diễn đạt cảm xúc',
-      'Sử dụng từ vựng về vật dụng'
+    id: 'advanced_case_study_analysis',
+    title: 'Business Case Study Analysis',
+    titleVi: 'Phân tích tình huống',
+    titleEn: 'Case Study Analysis',
+    part: 2,
+    difficulty: 'hard',
+    systemPrompt: `${baseInstructions}\nGuide students through business case analysis:\n- Problem identification\n- Solution development\n- Implementation strategies\n- Result evaluation`,
+    category: 'Tutoring',
+    description: 'Analyze a business case study',
+    descriptionVi: 'Phân tích tình huống kinh doanh',
+    descriptionEn: 'Analyze a business case study',
+    taskType: 'task2',
+    level: 'Advanced',
+    targetBand: 8.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Business Analysis', 'Case Studies', 'Problem-Solving'],
+    objectives: [
+      'Develop analytical thinking',
+      'Improve business vocabulary',
+      'Practice problem-solving communication',
+      'Enhance presentation skills'
     ],
-    tags: ['Meaningful Gift', 'Present'],
-    duration: 300
+    duration: 15,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Tutoring', 'Case Study', 'Advanced']
   },
   {
-    id: 'p2_object_2',
-    title: 'Vật dụng quan trọng',
-    description: 'Nói về một vật dụng quan trọng trong cuộc sống',
-    category: 'part2_objects',
-    systemInstruction: `${baseInstructions}\n${part2SystemInstruction}\nAsk the candidate to describe an object that:\n- Is important\n- They use daily\n- Has practical value`,
-    initialQuestion: 'Hãy nói về một vật dụng quan trọng trong cuộc sống.',
-    learningObjectives: [
-      'Mô tả vật dụng',
-      'Diễn đạt sở thích',
-      'Sử dụng từ vựng về đồ đạc'
+    id: 'advanced_inversion_techniques',
+    title: 'Advanced Inversion Techniques',
+    titleVi: 'Kỹ thuật đảo ngữ nâng cao',
+    titleEn: 'Advanced Inversion Techniques',
+    part: 2,
+    difficulty: 'hard',
+    systemPrompt: `${baseInstructions}\nFocus on advanced inversion techniques:\n- Introduce complex inversion structures\n- Practice inversion in context\n- Focus on formal language and style\n- Encourage self-practice`,
+    category: 'Tutoring',
+    description: 'Practice advanced inversion techniques',
+    descriptionVi: 'Luyện kỹ thuật đảo ngữ nâng cao',
+    descriptionEn: 'Practice advanced inversion techniques',
+    taskType: 'task2',
+    level: 'Advanced',
+    targetBand: 8.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Formal Language', 'Inversion Structures', 'Complex Grammar', 'Advanced Vocabulary'],
+    objectives: [
+      'Master advanced inversion structures',
+      'Improve formal language',
+      'Enhance complex grammar',
+      'Practice advanced vocabulary'
     ],
-    tags: ['Important Object', 'Possession'],
-    duration: 300
-  },
+    duration: 15,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Tutoring', 'Inversion', 'Advanced']
+  }
+  ];
 
-  // Continue with more Part 2 templates...
-];
+// Custom tutoring templates
+const customTutoringTemplates: SpeakingTemplate[] = [
+  {
+    id: 'tutoring_custom_lesson',
+    title: 'Custom Tutoring Lesson',
+    titleVi: 'Bài học tùy chỉnh',
+    titleEn: 'Custom Lesson',
+    part: 1,
+    difficulty: 'easy',
+    systemPrompt: `${baseInstructions}\nThe specific lesson content will be determined by user input.
+Follow the standard lesson structure:
+1. Introduction and goal setting
+2. Main content delivery
+3. Practice and application
+4. Review and feedback
+5. Assignment and next steps
 
-// Part 3 Templates
-export const part3Templates: SpeakingTemplate[] = [
-  {
-    id: 'p3_education_1',
-    title: 'Giáo dục hiện đại',
-    description: 'Thảo luận về vai trò của công nghệ trong giáo dục',
-    category: 'part3',
-    systemInstruction: `${baseInstructions}\n${part3SystemInstruction}\nExplore topics such as:\n- Compare education systems\n- Role of technology in education\n- Future of learning\n- Educational challenges`,
-    initialQuestion: 'Hãy thảo luận về vai trò của công nghệ trong giáo dục.',
-    learningObjectives: [
-      'Thảo luận về giáo dục',
-      'Diễn đạt ý kiến',
-      'Sử dụng từ vựng về công nghệ'
-    ],
-    tags: ['Modern Education', 'Technology'],
-    duration: 300
-  },
-  {
-    id: 'p3_environment_1',
-    title: 'Bảo vệ môi trường',
-    description: 'Bàn về các vấn đề môi trường và giải pháp',
-    category: 'part3',
-    systemInstruction: `${baseInstructions}\n${part3SystemInstruction}\nDiscuss:\n- Environmental challenges\n- Solutions to pollution\n- Individual vs collective responsibility\n- Future environmental scenarios`,
-    initialQuestion: 'Hãy bàn về các vấn đề môi trường và giải pháp.',
-    learningObjectives: [
-      'Thảo luận về môi trường',
-      'Diễn đạt ý kiến',
-      'Sử dụng từ vựng về bảo vệ môi trường'
-    ],
-    tags: ['Environmental Issues', 'Solutions'],
-    duration: 300
-  },
-  // Continue with more Part 3 templates...
-];
+Model: learnlm-1.5-pro-experimental
+Max tokens: 4000`,
+    category: 'Tutoring',
+    description: 'Custom tutoring lesson',
+    descriptionVi: 'Bài học tùy chỉnh',
+    descriptionEn: 'Custom tutoring lesson',
+    taskType: 'task1',
+    level: 'Beginner',
+    targetBand: 6.0,
+    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
+    topics: ['Custom Topic'],
+    objectives: ['Custom Objectives'],
+    duration: 5,
+    supportText: 'Remember to speak naturally and expand your answers with examples',
+    tags: ['Tutoring', 'Custom', 'Basic']
+  }
+  ];
 
-// Tutoring Templates
-export const tutoringTemplates: SpeakingTemplate[] = [
-  {
-    id: 'tutoring_1',
-    title: 'Double Comparatives',
-    description: 'Luyện tập cấu trúc so sánh kép',
-    category: 'tutoring',
-    systemInstruction: `${baseInstructions}\nFocus: Double comparatives`,
-    initialQuestion: 'Hãy luyện tập cấu trúc so sánh kép.',
-    learningObjectives: [
-      'Luyện tập cấu trúc',
-      'Diễn đạt ý kiến',
-      'Sử dụng từ vựng về so sánh'
-    ],
-    tags: ['Double Comparatives', 'Grammar'],
-    duration: 5400
-  },
-  {
-    id: 'tutoring_2',
-    title: 'Mixed Conditionals',
-    description: 'Thực hành câu điều kiện hỗn hợp',
-    category: 'tutoring',
-    systemInstruction: `${baseInstructions}\nFocus: Mixed conditionals`,
-    initialQuestion: 'Hãy thực hành câu điều kiện hỗn hợp.',
-    learningObjectives: [
-      'Thực hành câu điều kiện',
-      'Diễn đạt ý kiến',
-      'Sử dụng từ vựng về điều kiện'
-    ],
-    tags: ['Mixed Conditionals', 'Grammar'],
-    duration: 5400
-  },
-  {
-    id: 'tutoring_3',
-    title: 'Inversion',
-    description: 'Luyện tập đảo ngữ trong tiếng Anh',
-    category: 'tutoring',
-    systemInstruction: `${baseInstructions}\nFocus: Inversion`,
-    initialQuestion: 'Hãy luyện tập đảo ngữ trong tiếng Anh.',
-    learningObjectives: [
-      'Luyện tập đảo ngữ',
-      'Diễn đạt ý kiến',
-      'Sử dụng từ vựng về ngữ pháp'
-    ],
-    tags: ['Inversion', 'Grammar'],
-    duration: 5400
-  },
-  // Add custom template form handling in the UI
-];
+// Combine all tutoring templates
+const tutoringTemplates: SpeakingTemplate[] = [
+  ...basicTutoringTemplates,
+  ...advancedTutoringTemplates,
+  ...customTutoringTemplates
+  ];
 
-export const speakingTemplates = [
+// Combine all templates
+const speakingTemplates: SpeakingTemplate[] = [
   ...part1Templates,
   ...part2Templates,
   ...part3Templates,
   ...tutoringTemplates
-];
+  ];
 
-export default speakingTemplates;
+// Export everything
+export {
+  part1Templates,
+  part2Templates,
+  part3Templates,
+  basicTutoringTemplates,
+  advancedTutoringTemplates,
+  customTutoringTemplates,
+  tutoringTemplates,
+  speakingTemplates
+};
