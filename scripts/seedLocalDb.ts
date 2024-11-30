@@ -28,7 +28,33 @@ const part1Templates: Template[] = [
     topics: ["personal", "background", "introduction"],
     duration: 4,
     targetBand: 6.0,
-    systemPrompt: "You are an IELTS examiner conducting Part 1 of the speaking test."
+    systemPrompt: "You are an IELTS examiner conducting Part 1 of the speaking test, focusing on personal information and background."
+  },
+  {
+    id: "part1-2",
+    titleEn: "Work and Studies",
+    titleVi: "Công việc và Học tập",
+    description: "Questions about your work experience and education",
+    descriptionEn: "Questions about your work experience and education",
+    descriptionVi: "Các câu hỏi về kinh nghiệm làm việc và giáo dục của bạn",
+    level: "beginner",
+    topics: ["work", "education", "studies"],
+    duration: 4,
+    targetBand: 6.0,
+    systemPrompt: "You are an IELTS examiner conducting Part 1 of the speaking test, focusing on work and study experiences."
+  },
+  {
+    id: "part1-3",
+    titleEn: "Hobbies and Free Time",
+    titleVi: "Sở thích và Thời gian Rảnh",
+    description: "Questions about your interests and leisure activities",
+    descriptionEn: "Questions about your interests and leisure activities",
+    descriptionVi: "Các câu hỏi về sở thích và hoạt động giải trí của bạn",
+    level: "beginner",
+    topics: ["hobbies", "leisure", "interests"],
+    duration: 4,
+    targetBand: 6.0,
+    systemPrompt: "You are an IELTS examiner conducting Part 1 of the speaking test, focusing on hobbies and leisure activities."
   }
 ];
 
@@ -44,7 +70,33 @@ const part2Templates: Template[] = [
     topics: ["people", "description", "relationships"],
     duration: 3,
     targetBand: 6.5,
-    systemPrompt: "You are an IELTS examiner conducting Part 2 of the speaking test."
+    systemPrompt: "You are an IELTS examiner conducting Part 2 of the speaking test. Ask the candidate to describe a person who has influenced them."
+  },
+  {
+    id: "part2-2",
+    titleEn: "Describing a Place",
+    titleVi: "Mô tả một Địa điểm",
+    description: "Describe a place you have visited or would like to visit",
+    descriptionEn: "Describe a place you have visited or would like to visit",
+    descriptionVi: "Mô tả một địa điểm bạn đã đến thăm hoặc muốn đến thăm",
+    level: "intermediate",
+    topics: ["places", "travel", "description"],
+    duration: 3,
+    targetBand: 6.5,
+    systemPrompt: "You are an IELTS examiner conducting Part 2 of the speaking test. Ask the candidate to describe a memorable place."
+  },
+  {
+    id: "part2-3",
+    titleEn: "Describing an Event",
+    titleVi: "Mô tả một Sự kiện",
+    description: "Talk about a significant event in your life",
+    descriptionEn: "Talk about a significant event in your life",
+    descriptionVi: "Nói về một sự kiện quan trọng trong cuộc đời bạn",
+    level: "intermediate",
+    topics: ["events", "experiences", "memories"],
+    duration: 3,
+    targetBand: 6.5,
+    systemPrompt: "You are an IELTS examiner conducting Part 2 of the speaking test. Ask the candidate to describe a memorable event."
   }
 ];
 
@@ -60,7 +112,33 @@ const part3Templates: Template[] = [
     topics: ["society", "issues", "discussion"],
     duration: 4,
     targetBand: 7.0,
-    systemPrompt: "You are an IELTS examiner conducting Part 3 of the speaking test."
+    systemPrompt: "You are an IELTS examiner conducting Part 3 of the speaking test. Engage in a discussion about current social issues."
+  },
+  {
+    id: "part3-2",
+    titleEn: "Technology and Innovation",
+    titleVi: "Công nghệ và Đổi mới",
+    description: "Discuss the impact of technology on society",
+    descriptionEn: "Discuss the impact of technology on society",
+    descriptionVi: "Thảo luận về tác động của công nghệ đối với xã hội",
+    level: "advanced",
+    topics: ["technology", "innovation", "society"],
+    duration: 4,
+    targetBand: 7.0,
+    systemPrompt: "You are an IELTS examiner conducting Part 3 of the speaking test. Discuss the role of technology in modern society."
+  },
+  {
+    id: "part3-3",
+    titleEn: "Environment and Sustainability",
+    titleVi: "Môi trường và Phát triển Bền vững",
+    description: "Discuss environmental challenges and solutions",
+    descriptionEn: "Discuss environmental challenges and solutions",
+    descriptionVi: "Thảo luận về các thách thức và giải pháp môi trường",
+    level: "advanced",
+    topics: ["environment", "sustainability", "climate"],
+    duration: 4,
+    targetBand: 7.0,
+    systemPrompt: "You are an IELTS examiner conducting Part 3 of the speaking test. Engage in a discussion about environmental issues and sustainability."
   }
 ];
 
