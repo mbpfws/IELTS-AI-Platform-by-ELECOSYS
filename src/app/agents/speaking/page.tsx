@@ -123,7 +123,7 @@ const SpeakingPage: React.FC = () => {
       const response = await ieltsGeminiService.initializeSession({
         userName,
         templatePrompt: prompt,
-        templateId: sessionResponse.id,
+        sessionId: sessionResponse.id, // Use session ID here
         duration: sessionDuration
       });
 

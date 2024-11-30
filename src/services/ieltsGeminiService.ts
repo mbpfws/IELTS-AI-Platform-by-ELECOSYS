@@ -5,7 +5,7 @@ import { v4 as uuidv4 } from 'uuid';
 interface SessionConfig {
   userName: string;
   templatePrompt: string;
-  templateId: string;
+  sessionId: string;
   duration?: number;
 }
 
@@ -72,7 +72,7 @@ By incorporating bilingual support and understanding the specific needs of Vietn
 
   async initializeSession(config: SessionConfig): Promise<SessionResponse> {
     try {
-      if (!config.templateId || !config.userName || !config.templatePrompt) {
+      if (!config.sessionId || !config.userName || !config.templatePrompt) {
         throw new Error('Missing required session configuration');
       }
 
@@ -95,14 +95,14 @@ By incorporating bilingual support and understanding the specific needs of Vietn
 
       // Create the first message in the database
       await databaseService.addMessageToSession({
-        sessionId: config.templateId,
+        sessionId: config.sessionId,
         content: text,
         role: 'assistant'
       });
 
       return {
         message: text,
-        session_id: config.templateId,
+        session_id: config.sessionId,
         metrics: {
           fluency: 0,
           lexical: 0,
