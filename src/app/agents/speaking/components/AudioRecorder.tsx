@@ -1,250 +1,221 @@
 'use client';
 
 import React, { useState, useRef, useEffect } from 'react';
+import { Button } from '@/components/ui/button';
+import { Mic, Square, Play, Download, Pause } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 
-export const AudioRecorder = ({ onTextSubmit, onAudioSubmit, isSessionActive }: { 
-  onTextSubmit: (text: string) => Promise<void>;
-  onAudioSubmit: (content: string, blob: Blob) => Promise<void>;
-  isSessionActive: boolean;
-}) => {
+interface AudioRecorderProps {
+  onRecordingComplete: (blob: Blob) => void;
+  onRecordingStart?: () => void;
+  onRecordingStop?: () => void;
+  disabled?: boolean;
+}
+
+export function AudioRecorder({ 
+  onRecordingComplete, 
+  onRecordingStart, 
+  onRecordingStop,
+  disabled 
+}: AudioRecorderProps) {
   const [isRecording, setIsRecording] = useState(false);
   const [isPaused, setIsPaused] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [isManualInput, setIsManualInput] = useState(false);
-  const [textInput, setTextInput] = useState('');
-  const [volume, setVolume] = useState(0);
+  const [recordedBlob, setRecordedBlob] = useState<Blob | null>(null);
+  const [duration, setDuration] = useState(0);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const mediaRecorder = useRef<MediaRecorder | null>(null);
+  const chunks = useRef<Blob[]>([]);
+  const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
 
-  const mediaRecorderRef = useRef<MediaRecorder | null>(null);
-  const streamRef = useRef<MediaStream | null>(null);
-  const chunksRef = useRef<Blob[]>([]);
-  const audioContextRef = useRef<AudioContext | null>(null);
-  const analyserRef = useRef<AnalyserNode | null>(null);
-  const animationFrameRef = useRef<number>();
-
-  // Cleanup function
-  const cleanup = () => {
-    if (animationFrameRef.current) {
-      cancelAnimationFrame(animationFrameRef.current);
-    }
-
-    if (mediaRecorderRef.current?.state !== 'inactive') {
-      mediaRecorderRef.current?.stop();
-    }
-
-    if (audioContextRef.current?.state !== 'closed') {
-      audioContextRef.current?.close();
-    }
-
-    if (streamRef.current) {
-      streamRef.current.getTracks().forEach(track => track.stop());
-    }
-
-    mediaRecorderRef.current = null;
-    audioContextRef.current = null;
-    analyserRef.current = null;
-    streamRef.current = null;
-    chunksRef.current = [];
-    setVolume(0);
-    setIsRecording(false);
-    setIsPaused(false);
-  };
-
-  // Cleanup on unmount or when session becomes inactive
   useEffect(() => {
-    if (!isSessionActive) {
-      cleanup();
-    }
-    return cleanup;
-  }, [isSessionActive]);
-
-  const initializeAudio = async () => {
-    try {
-      cleanup(); // Cleanup any existing instances first
-
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      streamRef.current = stream;
-
-      const audioContext = new AudioContext();
-      const analyser = audioContext.createAnalyser();
-      const source = audioContext.createMediaStreamSource(stream);
-      source.connect(analyser);
-
-      audioContextRef.current = audioContext;
-      analyserRef.current = analyser;
-
-      const mediaRecorder = new MediaRecorder(stream, {
-        mimeType: 'audio/webm'
-      });
-
-      mediaRecorder.ondataavailable = (e) => {
-        if (e.data.size > 0) {
-          chunksRef.current.push(e.data);
-        }
-      };
-
-      mediaRecorder.onstop = async () => {
-        try {
-          const audioBlob = new Blob(chunksRef.current, { type: 'audio/webm' });
-          chunksRef.current = [];
-          await onAudioSubmit(textInput, audioBlob);
-        } catch (err) {
-          console.error('Error processing audio:', err);
-          setError('Failed to process audio. Please try again.');
-        }
-      };
-
-      mediaRecorderRef.current = mediaRecorder;
-      setError(null);
-    } catch (err) {
-      console.error('Error initializing audio:', err);
-      setError('Please allow microphone access to record audio');
-      cleanup();
-    }
-  };
-
-  const analyzeVolume = () => {
-    if (!analyserRef.current || !isRecording) return;
-    
-    const dataArray = new Uint8Array(analyserRef.current.frequencyBinCount);
-    analyserRef.current.getByteFrequencyData(dataArray);
-    
-    const average = dataArray.reduce((a, b) => a + b) / dataArray.length;
-    setVolume(average);
-    
-    if (isRecording) {
-      animationFrameRef.current = requestAnimationFrame(analyzeVolume);
-    }
-  };
-
-  const handleStart = async () => {
-    if (!isSessionActive) return;
-    
-    try {
-      await initializeAudio();
-      if (mediaRecorderRef.current) {
-        mediaRecorderRef.current.start();
-        setIsRecording(true);
-        analyzeVolume();
+    return () => {
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
       }
-    } catch (err) {
-      console.error('Error starting recording:', err);
-      setError('Failed to start recording. Please try again.');
-      cleanup();
-    }
-  };
+      if (audioUrl) {
+        URL.revokeObjectURL(audioUrl);
+      }
+    };
+  }, [audioUrl]);
 
-  const handlePause = () => {
-    if (mediaRecorderRef.current?.state === 'recording') {
-      mediaRecorderRef.current.pause();
-      setIsPaused(true);
-    }
-  };
-
-  const handleResume = () => {
-    if (mediaRecorderRef.current?.state === 'paused') {
-      mediaRecorderRef.current.resume();
-      setIsPaused(false);
-    }
-  };
-
-  const handleStop = () => {
-    if (mediaRecorderRef.current?.state !== 'inactive') {
-      mediaRecorderRef.current?.stop();
-    }
-    cleanup();
-  };
-
-  const handleTextSubmit = async () => {
-    if (!textInput.trim()) return;
+  const startRecording = async () => {
     try {
-      await onTextSubmit(textInput);
-      setTextInput('');
-    } catch (err) {
-      console.error('Error submitting text:', err);
-      setError('Failed to submit text. Please try again.');
+      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+      mediaRecorder.current = new MediaRecorder(stream);
+      chunks.current = [];
+
+      mediaRecorder.current.ondataavailable = (e) => {
+        if (e.data.size > 0) {
+          chunks.current.push(e.data);
+        }
+      };
+
+      mediaRecorder.current.onstop = () => {
+        const blob = new Blob(chunks.current, { type: 'audio/ogg; codecs=opus' });
+        setRecordedBlob(blob);
+        const url = URL.createObjectURL(blob);
+        setAudioUrl(url);
+        onRecordingComplete(blob);
+        onRecordingStop?.();
+      };
+
+      mediaRecorder.current.start();
+      setIsRecording(true);
+      setDuration(0);
+      onRecordingStart?.();
+      
+      timerRef.current = setInterval(() => {
+        setDuration(prev => prev + 1);
+      }, 1000);
+    } catch (error) {
+      console.error('Error starting recording:', error);
     }
+  };
+
+  const stopRecording = () => {
+    if (mediaRecorder.current && isRecording) {
+      mediaRecorder.current.stop();
+      mediaRecorder.current.stream.getTracks().forEach(track => track.stop());
+      setIsRecording(false);
+      setIsPaused(false);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    }
+  };
+
+  const pauseRecording = () => {
+    if (mediaRecorder.current && isRecording) {
+      mediaRecorder.current.pause();
+      setIsPaused(true);
+      if (timerRef.current) {
+        clearInterval(timerRef.current);
+      }
+    }
+  };
+
+  const resumeRecording = () => {
+    if (mediaRecorder.current && isPaused) {
+      mediaRecorder.current.resume();
+      setIsPaused(false);
+      timerRef.current = setInterval(() => {
+        setDuration(prev => prev + 1);
+      }, 1000);
+    }
+  };
+
+  const downloadRecording = () => {
+    if (recordedBlob) {
+      const url = URL.createObjectURL(recordedBlob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `recording-${new Date().toISOString()}.ogg`;
+      a.click();
+      URL.revokeObjectURL(url);
+    }
+  };
+
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs.toString().padStart(2, '0')}`;
   };
 
   return (
-    <div className="space-y-4">
-      {error && (
-        <div className="bg-red-50 text-red-600 p-3 rounded-lg text-sm">
-          {error}
-        </div>
-      )}
-      
-      <div className="flex items-center gap-4">
-        <div className="flex-1">
-          {isManualInput ? (
-            <div className="flex gap-2">
-              <input
-                type="text"
-                value={textInput}
-                onChange={(e) => setTextInput(e.target.value)}
-                placeholder="Type your response..."
-                className="flex-1 px-4 py-2 border rounded-lg focus:ring-2 focus:ring-blue-500"
-              />
-              <button
-                onClick={handleTextSubmit}
-                disabled={!textInput.trim()}
-                className="px-4 py-2 bg-blue-500 text-white rounded-lg disabled:opacity-50"
-              >
-                Send
-              </button>
-            </div>
-          ) : (
-            <div className="flex items-center gap-4">
-              {!isRecording ? (
-                <button
-                  onClick={handleStart}
-                  disabled={!isSessionActive}
-                  className="px-6 py-3 bg-blue-500 text-white rounded-lg hover:bg-blue-600 transition-colors disabled:opacity-50"
+    <motion.div 
+      className="recorder-container p-4 rounded-lg border bg-card"
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.3 }}
+    >
+      <div className="flex flex-col space-y-4">
+        <div className="flex items-center justify-between">
+          <div className="flex items-center space-x-4">
+            <AnimatePresence mode="wait">
+              {isRecording ? (
+                <motion.div
+                  key="recording"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
                 >
-                  Start Recording
-                </button>
-              ) : (
-                <>
                   {isPaused ? (
-                    <button
-                      onClick={handleResume}
-                      className="px-6 py-3 bg-green-500 text-white rounded-lg hover:bg-green-600"
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={resumeRecording}
+                      disabled={disabled}
                     >
-                      Resume
-                    </button>
+                      <Play className="h-4 w-4" />
+                    </Button>
                   ) : (
-                    <button
-                      onClick={handlePause}
-                      className="px-6 py-3 bg-yellow-500 text-white rounded-lg hover:bg-yellow-600"
+                    <Button
+                      variant="outline"
+                      size="icon"
+                      onClick={pauseRecording}
+                      disabled={disabled}
                     >
-                      Pause
-                    </button>
+                      <Pause className="h-4 w-4" />
+                    </Button>
                   )}
-                  <button
-                    onClick={handleStop}
-                    className="px-6 py-3 bg-red-500 text-white rounded-lg hover:bg-red-600"
+                </motion.div>
+              ) : (
+                <motion.div
+                  key="start"
+                  initial={{ scale: 0 }}
+                  animate={{ scale: 1 }}
+                  exit={{ scale: 0 }}
+                >
+                  <Button
+                    variant="default"
+                    size="icon"
+                    onClick={startRecording}
+                    disabled={disabled}
                   >
-                    Stop
-                  </button>
-                </>
+                    <Mic className="h-4 w-4" />
+                  </Button>
+                </motion.div>
               )}
-              {isRecording && (
-                <div className="flex-1 h-2 bg-gray-200 rounded-full overflow-hidden">
-                  <div
-                    className="h-full bg-blue-500 transition-all duration-100"
-                    style={{ width: `${(volume / 255) * 100}%` }}
-                  />
-                </div>
-              )}
-            </div>
+            </AnimatePresence>
+
+            {isRecording && (
+              <Button
+                variant="destructive"
+                size="icon"
+                onClick={stopRecording}
+                disabled={disabled}
+              >
+                <Square className="h-4 w-4" />
+              </Button>
+            )}
+          </div>
+
+          <span className="text-sm font-medium">
+            {formatTime(duration)}
+          </span>
+
+          {recordedBlob && (
+            <Button
+              variant="outline"
+              size="icon"
+              onClick={downloadRecording}
+              disabled={disabled}
+            >
+              <Download className="h-4 w-4" />
+            </Button>
           )}
         </div>
-        <button
-          onClick={() => setIsManualInput(!isManualInput)}
-          className="px-4 py-2 text-gray-600 hover:bg-gray-100 rounded-lg transition-colors"
-        >
-          {isManualInput ? 'Switch to Voice' : 'Switch to Text'}
-        </button>
+
+        {audioUrl && (
+          <audio
+            ref={audioRef}
+            src={audioUrl}
+            controls
+            className="w-full"
+          />
+        )}
       </div>
-    </div>
+    </motion.div>
   );
-};
+}

@@ -60,9 +60,8 @@ export interface SpeakingSession {
   id: string;
   userId: string;
   startTime: Date;
-  duration: number; 
-  status: 'active' | 'completed' | 'cancelled';
-  topic?: string;
+  endTime?: Date;
+  duration: number;
   template?: {
     id: string;
     title: string;
@@ -71,11 +70,17 @@ export interface SpeakingSession {
     systemPrompt: string;
   };
   messages: Message[];
-  finalFeedback?: {
-    metrics: SpeakingMetrics;
-    feedback: SpeakingFeedback;
-    overallScore: number;
-  };
+  metrics?: SpeakingMetrics;
+  status: 'active' | 'completed' | 'cancelled';
+  createdAt: Date;
+  updatedAt: Date;
+}
+
+export interface SpeakingStats {
+  totalSessions: number;
+  averageBand: number;
+  timeSpent: number;
+  lastSessionDate: number;
 }
 
 export interface SpeakingHistory {
@@ -83,10 +88,5 @@ export interface SpeakingHistory {
   sessions: {
     [sessionId: string]: SpeakingSession;
   };
-  stats: {
-    totalSessions: number;
-    averageBand: number;
-    timeSpent: number; 
-    lastSessionDate: number;
-  };
+  stats: SpeakingStats;
 }

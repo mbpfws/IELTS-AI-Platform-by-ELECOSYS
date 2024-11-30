@@ -3,7 +3,9 @@
 import { useEffect, useState } from 'react';
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { speakingService } from '@/services/speakingService';
+import { SpeakingService } from '@/services/speakingService';
+import { audioService } from '@/services/audioService';
+import { GeminiService } from '@/services/gemini';
 import { SpeakingHistory, SpeakingSession } from '@/types/speakingSession';
 import { formatDistanceToNow } from 'date-fns';
 import { vi } from 'date-fns/locale';
@@ -11,22 +13,45 @@ import { ChevronRight } from 'lucide-react';
 
 interface SessionSidebarProps {
   userId: string;
-  onSessionSelect: (session: SpeakingSession) => void;
+  onSessionSelect: (sessionId: string) => void;
   currentSessionId?: string;
 }
 
-export default function SessionSidebar({ 
+export function SessionSidebar({ 
   userId, 
   onSessionSelect,
   currentSessionId 
 }: SessionSidebarProps) {
-  const [history, setHistory] = useState<SpeakingHistory | null>(null);
+  const [history, setHistory] = useState<SpeakingHistory>({
+    userId: '',
+    sessions: {},
+    stats: {
+      totalSessions: 0,
+      averageBand: 0,
+      timeSpent: 0,
+      lastSessionDate: 0
+    }
+  });
   const [recentSessions, setRecentSessions] = useState<SpeakingSession[]>([]);
+  const geminiService = GeminiService.getInstance();
+  const speakingService = new SpeakingService(audioService, geminiService);
 
   useEffect(() => {
-    const userHistory = speakingService.getHistory(userId);
+    // TODO: Implement actual history retrieval
+    const userHistory = {
+      userId: userId,
+      sessions: {},
+      stats: {
+        totalSessions: 0,
+        averageBand: 0,
+        timeSpent: 0,
+        lastSessionDate: 0
+      }
+    };
     setHistory(userHistory);
-    const recent = speakingService.getRecentSessions(userId, 10);
+
+    // TODO: Implement actual recent sessions retrieval
+    const recent: SpeakingSession[] = [];
     setRecentSessions(recent);
   }, [userId, currentSessionId]);
 
@@ -40,19 +65,19 @@ export default function SessionSidebar({
           <div className="space-y-2">
             <div className="flex justify-between">
               <span>Tổng số phiên:</span>
-              <span className="font-medium">{history?.stats.totalSessions || 0}</span>
+              <span className="font-medium">{history.stats.totalSessions || 0}</span>
             </div>
             <div className="flex justify-between">
               <span>Band trung bình:</span>
               <span className="font-medium">
-                {history?.stats.averageBand.toFixed(1) || 'N/A'}
+                {history.stats.averageBand.toFixed(1) || 'N/A'}
               </span>
             </div>
             <div className="flex justify-between">
               <span>Thời gian luyện tập:</span>
-              <span className="font-medium">{history?.stats.timeSpent || 0} phút</span>
+              <span className="font-medium">{history.stats.timeSpent || 0} phút</span>
             </div>
-            {history?.stats.lastSessionDate && (
+            {history.stats.lastSessionDate && (
               <div className="flex justify-between">
                 <span>Phiên gần nhất:</span>
                 <span className="font-medium">
@@ -78,7 +103,7 @@ export default function SessionSidebar({
                 key={session.id}
                 variant={session.id === currentSessionId ? "secondary" : "ghost"}
                 className="w-full justify-between"
-                onClick={() => onSessionSelect(session)}
+                onClick={() => onSessionSelect(session.id)}
               >
                 <div className="flex flex-col items-start">
                   <span className="text-sm font-medium">
@@ -88,7 +113,7 @@ export default function SessionSidebar({
                     })}
                   </span>
                   <span className="text-xs text-muted-foreground">
-                    Band: {session.finalFeedback?.metrics?.overallBand || 'N/A'}
+                    Band: {session.metrics?.overallBand || 'N/A'}
                   </span>
                 </div>
                 <ChevronRight className="h-4 w-4" />

@@ -75,22 +75,27 @@ const RATE_LIMIT = {
 
 export class GeminiService {
   private static instance: GeminiService;
-  private apiKey: string;
+  private apiKey: string | undefined;
   private endpoint: string;
   private headers: Headers;
   private config: typeof DEFAULT_CONFIG;
   private requestTimestamps: number[] = [];
   private retryCount: number = 0;
+  private model: any;
 
   private constructor() {
-    this.apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-    if (!this.apiKey) {
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    if (!apiKey) {
       throw new Error('API key not found');
     }
+    this.apiKey = apiKey;
     this.endpoint = 'https://generativelanguage.googleapis.com/v1beta/models/gemini-pro:generateContent';
     this.headers = new Headers();
     this.headers.append('Content-Type', 'application/json');
     this.config = { ...DEFAULT_CONFIG };
+
+    const genAI = new GoogleGenerativeAI(this.apiKey);
+    this.model = genAI.getGenerativeModel({ model: 'gemini-pro' });
   }
 
   public static getInstance(): GeminiService {
@@ -100,57 +105,35 @@ export class GeminiService {
     return GeminiService.instance;
   }
 
-  async sendMessage(
-    message: string,
-    context: string,
-    mode: 'speaking' | 'feedback' | 'general' = 'general'
-  ): Promise<string> {
+  public async generateContent(message: string, context?: string, mode: 'chat' | 'complete' = 'chat'): Promise<string> {
     try {
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-      if (!apiKey) {
+      if (!this.apiKey) {
         throw new Error('Gemini API key not found');
       }
 
-      const genAI = new GoogleGenerativeAI(apiKey);
-      const model = genAI.getGenerativeModel({ model: 'gemini-pro' });
-
       const prompt = this.buildPrompt(message, context, mode);
-      const result = await model.generateContent(prompt);
+      const result = await this.model.generateContent(prompt);
       const response = result.response;
       const text = response.text();
 
-      if (mode === 'feedback') {
-        try {
-          // Validate JSON format for feedback
-          JSON.parse(text);
-        } catch (error) {
-          throw new Error('Invalid feedback format');
-        }
-      }
-
       return text;
     } catch (error) {
-      console.error('Error in Gemini service:', error);
+      console.error('Error generating content:', error);
       throw error;
     }
   }
 
-  private buildPrompt(message: string, context: string, mode: string): string {
+  private buildPrompt(message: string, context?: string, mode: 'chat' | 'complete' = 'chat'): string {
+    // If no context is provided, use an empty string
+    const safeContext = context || '';
+
     switch (mode) {
-      case 'speaking':
-        return `${context}
-
-Remember to:
-1. Maintain the role of an IELTS examiner
-2. Provide natural follow-up questions
-3. Give brief feedback on major errors
-4. Stay focused on the topic and learning objectives`;
-
-      case 'feedback':
-        return context;
-
+      case 'chat':
+        return `${safeContext ? `Context: ${safeContext}\n\n` : ''}${message}`;
+      case 'complete':
+        return `${safeContext ? `Context: ${safeContext}\n\n` : ''}Complete the following: ${message}`;
       default:
-        return `${context}\n\nUser: ${message}`;
+        return message;
     }
   }
 
@@ -164,7 +147,7 @@ Remember to:
           })),
         });
 
-        const result = await chat.sendMessage(messages[messages.length - 1].content);
+        const result = await this.model.sendMessage(messages[messages.length - 1].content);
         return result.response.text();
       } catch (error: any) {
         console.error('Error in chat generation:', error);
@@ -174,6 +157,27 @@ Remember to:
         throw new Error(`Failed to generate chat response: ${error.message}`);
       }
     });
+  }
+
+  async sendChatMessage(messages: { role: string; content: string }[]): Promise<string> {
+    try {
+      const chat = await this.model.startChat({
+        history: messages.slice(0, -1).map((msg) => ({
+          role: msg.role === 'user' ? 'user' : 'model',
+          parts: [{ text: msg.content }],
+        })),
+      });
+
+      const result = await this.model.sendMessage(messages[messages.length - 1].content);
+      return result.response.text();
+    } catch (error: any) {
+      console.error('Error in chat generation:', error);
+      throw error;
+    }
+  }
+
+  async sendMessage(message: string, context?: string, mode: AgentType = 'speaking'): Promise<string> {
+    return this.generateContent(message, context, 'chat');
   }
 
   private async retryWithExponentialBackoff<T>(

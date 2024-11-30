@@ -65,6 +65,8 @@ model Speaking_Session {
   messages      Speaking_Message[]
   recordings    Audio_Recording[]
   feedback      Speaking_Feedback?
+  template      Speaking_Template? @relation(fields: [templateId], references: [id])
+  templateId    String?
   createdAt     DateTime         @default(now())
   updatedAt     DateTime         @updatedAt
 }
@@ -110,4 +112,25 @@ model Speaking_Feedback {
   content         String
   score           Float
   createdAt       DateTime        @default(now())
+}
+
+model Speaking_Template {
+  id            String            @id @default(uuid())
+  title         String
+  description   String
+  duration      Int              // Duration in minutes
+  parts         Speaking_Part[]
+  sessions      Speaking_Session[]
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
+}
+
+model Speaking_Part {
+  id            String            @id @default(uuid())
+  part          Int
+  prompt        String
+  template      Speaking_Template @relation(fields: [templateId], references: [id])
+  templateId    String
+  createdAt     DateTime         @default(now())
+  updatedAt     DateTime         @updatedAt
 }

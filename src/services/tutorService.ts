@@ -2,13 +2,14 @@ import { part1Questions, part2Questions, part3Questions, advancedTopics } from '
 import { tutorDialogues, TutorSession, SessionFeedback, FeedbackMetrics } from '../data/speakingTutorSession';
 import { speakingService } from './speakingService';
 import { tutorResponseService } from './tutorResponseService';
-import { AudioService } from './AudioService';
+import { AudioService, audioService } from './audioService';
+import { ieltsGeminiService } from './ieltsGeminiService';
 
 export class TutorService {
   private static instance: TutorService;
   private currentSession: TutorSession | null = null;
   private feedbackHistory: SessionFeedback[] = [];
-  private audioService = AudioService.getInstance();
+  private audioService = audioService;
   private isRecording = false;
 
   private constructor() {}
@@ -18,6 +19,29 @@ export class TutorService {
       TutorService.instance = new TutorService();
     }
     return TutorService.instance;
+  }
+
+  async initializeSession(userId: string, template?: any) {
+    const session = await speakingService.startSession(userId, template);
+    
+    // Send initial system message
+    await speakingService.sendMessage({
+      sessionId: session.id,
+      role: 'system',
+      content: 'Session started. I am your IELTS Speaking tutor. Let\'s begin our practice session.',
+      contentType: 'text'
+    });
+
+    // Send first question based on template
+    const firstQuestion = template?.questions?.[0] || 'Let\'s start with a general question. Could you tell me about yourself and your background?';
+    await speakingService.sendMessage({
+      sessionId: session.id,
+      role: 'assistant',
+      content: firstQuestion,
+      contentType: 'text'
+    });
+
+    return session;
   }
 
   startSession(duration: number, studentInfo: any): TutorSession {
@@ -34,14 +58,109 @@ export class TutorService {
       },
     };
 
-    // Start speaking session
-    speakingService.startSession(
-      studentInfo.userId,
-      duration,
-      'practice'
-    );
+    // Start IELTS speaking session with Gemini
+    const systemPrompt = `you are an expert Language Teacher for the IELTS you are going to teach the following: ${this.currentSession.progress.currentTopic}`;
+    ieltsGeminiService.setTemplate(systemPrompt);
+    ieltsGeminiService.clearContext();
+    ieltsGeminiService.addToContext({
+      role: 'user',
+      content: `My name is ${studentInfo.name}, and I would like to start a tutoring session of ${duration} minutes learning about ${this.currentSession.progress.currentTopic}`,
+      timestamp: Date.now()
+    });
 
     return this.currentSession;
+  }
+
+  async startRecording(): Promise<void> {
+    if (!this.currentSession) {
+      throw new Error('No active session');
+    }
+
+    this.isRecording = true;
+    await this.audioService.startRecording();
+  }
+
+  async stopRecording(): Promise<string> {
+    if (!this.isRecording || !this.currentSession) {
+      throw new Error('No active recording or session');
+    }
+
+    this.isRecording = false;
+    const audioData = await this.audioService.stopRecording();
+    
+    // Process the audio with Gemini
+    const response = await ieltsGeminiService.processAudioResponse(audioData);
+    return response;
+  }
+
+  async processAudioResponse(audioBlob: Blob): Promise<FeedbackMetrics> {
+    if (!this.currentSession) {
+      throw new Error('No active session');
+    }
+
+    try {
+      const feedback = await ieltsGeminiService.processAudioResponse(audioBlob);
+      
+      // Convert IELTS feedback to FeedbackMetrics
+      const metrics: FeedbackMetrics = {
+        overallBand: feedback.overallBand,
+        criteria: {
+          fluency: feedback.fluencyScore,
+          vocabulary: feedback.vocabularyScore,
+          grammar: feedback.grammarScore,
+          pronunciation: feedback.pronunciationScore
+        },
+        strengths: feedback.strengths,
+        improvements: feedback.areasForImprovement,
+        recommendations: feedback.recommendedPractice
+      };
+
+      this.feedbackHistory.push({
+        timestamp: Date.now(),
+        metrics,
+        audioUrl: URL.createObjectURL(audioBlob)
+      });
+
+      return metrics;
+    } catch (error) {
+      console.error('Error processing audio response:', error);
+      throw error;
+    }
+  }
+
+  async endSession(): Promise<SessionFeedback> {
+    if (!this.currentSession) {
+      throw new Error('No active session');
+    }
+
+    try {
+      const finalFeedback = await ieltsGeminiService.getFinalEvaluation();
+      
+      const feedback: SessionFeedback = {
+        timestamp: Date.now(),
+        metrics: {
+          overallBand: finalFeedback.overallBand,
+          criteria: {
+            fluency: finalFeedback.fluencyScore,
+            vocabulary: finalFeedback.vocabularyScore,
+            grammar: finalFeedback.grammarScore,
+            pronunciation: finalFeedback.pronunciationScore
+          },
+          strengths: finalFeedback.strengths,
+          improvements: finalFeedback.areasForImprovement,
+          recommendations: finalFeedback.recommendedPractice
+        }
+      };
+
+      this.feedbackHistory.push(feedback);
+      this.currentSession = null;
+      ieltsGeminiService.clearContext();
+
+      return feedback;
+    } catch (error) {
+      console.error('Error ending session:', error);
+      throw error;
+    }
   }
 
   private selectAppropriateQuestions(level: number): {
@@ -229,117 +348,52 @@ export class TutorService {
     return this.getTimeRemaining() <= 0;
   }
 
-  async startRecording(): Promise<void> {
-    if (this.isRecording) {
-      throw new Error('Recording already in progress');
-    }
-
-    if (!this.currentSession) {
-      throw new Error('No active session');
-    }
-
-    try {
-      await this.audioService.startRecording();
-      this.isRecording = true;
-    } catch (error) {
-      console.error('Failed to start recording:', error);
-      this.isRecording = false;
-      throw error;
-    }
-  }
-
-  async stopRecording(): Promise<void> {
-    if (!this.isRecording) {
-      return; // No recording in progress, just return
-    }
-
-    if (!this.currentSession) {
-      throw new Error('No active session');
-    }
-
-    try {
-      const audioBlob = await this.audioService.stopRecording();
-      this.isRecording = false;
-
-      // Process the audio
-      const transcription = await this.audioService.processAudio(audioBlob, 'scoring', this.currentSession.progress.currentTopic);
-
-      // Add transcription to messages
-      const userMessage = {
-        role: 'user',
-        content: transcription,
-        timestamp: Date.now(),
-        contentType: 'text'
-      };
-
-      // Get AI response
-      const response = await speakingService.generateResponse(
-        this.currentSession.studentInfo.template,
-        transcription
-      );
-
-      const aiMessage = {
-        role: 'assistant',
-        content: response,
-        timestamp: Date.now(),
-        contentType: 'text'
-      };
-
-      // Update feedback history
-      this.feedbackHistory.push({
-        metrics: this.analyzeResponse(transcription),
-        strengths: this.identifyStrengths(transcription, this.analyzeResponse(transcription)),
-        improvements: this.identifyImprovements(this.analyzeResponse(transcription)),
-        tips: this.generateTips(this.analyzeResponse(transcription)),
-        recordedResponses: [{
-          question: this.currentSession.progress.currentTopic || '',
-          response: transcription,
-          feedback: response
-        }]
-      });
-
-    } catch (error) {
-      console.error('Failed to stop recording:', error);
-      this.isRecording = false;
-      throw error;
-    }
-  }
-
-  endSession(): SessionFeedback {
-    if (!this.currentSession) {
-      throw new Error('No active session');
-    }
-    
-    // End speaking service session
-    speakingService.endSession();
-    
-    const finalFeedback = this.generateFinalFeedback();
-    this.feedbackHistory.push(finalFeedback);
-    this.currentSession = null;
-    
-    return finalFeedback;
-  }
-
   private generateFinalFeedback(): SessionFeedback {
     if (!this.currentSession) {
       throw new Error('No active session');
     }
 
-    const feedback = tutorResponseService.generateDetailedFeedback(
-      this.currentSession.progress.completedTopics.join('\n'),
-      this.currentSession.studentInfo.targetBand
-    );
+    const metrics: FeedbackMetrics = {
+      pronunciation: 0,
+      fluency: 0,
+      grammar: 0,
+      vocabulary: 0,
+      coherence: 0,
+      overallBand: 0
+    };
+    const feedback = tutorResponseService.generateFeedback(metrics);
+
+    // Parse the feedback content to extract strengths and improvements
+    const strengths = feedback.richTextContent
+      .split('💪 Your Strengths:')[1]
+      .split('🎯 Areas to Focus On:')[0]
+      .split('\n')
+      .filter(s => s.trim().startsWith('•'))
+      .map(s => s.trim().substring(2));
+
+    const improvements = feedback.richTextContent
+      .split('🎯 Areas to Focus On:')[1]
+      .split('📊 Detailed Breakdown:')[0]
+      .split('\n')
+      .filter(s => s.trim().startsWith('•'))
+      .map(s => s.trim().substring(2));
+
+    const tips = [feedback.richTextContent
+      .split('💡 Quick Tip:')[1]
+      .split('\n')[0]
+      .trim()];
 
     // Make the feedback more conversational
     return {
-      ...feedback,
-      strengths: feedback.strengths.map(s => `👍 ${s}`),
-      improvements: feedback.improvements.map(i => `💡 ${i}`),
-      tips: feedback.tips.map(t => `✨ ${t}`),
-      recordedResponses: feedback.recordedResponses.map(r => ({
-        ...r,
-        feedback: `Here's my thoughts on your response: ${r.feedback}`
-      }))
+      metrics,
+      strengths: strengths.map(s => `👍 ${s}`),
+      improvements: improvements.map(i => `💡 ${i}`),
+      tips: tips.map(t => `✨ ${t}`),
+      recordedResponses: [{
+        question: this.currentSession.progress.currentTopic || '',
+        response: '',
+        feedback: feedback.message
+      }]
     };
   }
 }

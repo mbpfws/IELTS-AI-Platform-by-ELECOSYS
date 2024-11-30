@@ -1,181 +1,132 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import {
-  Container,
-  Grid,
-  Card,
-  CardContent,
-  Typography,
-  Button,
-  Box,
-  Tabs,
-  Tab,
-  List,
-  ListItem,
-  ListItemText,
-  ListItemIcon,
-  IconButton,
-} from '@mui/material';
-import { styled } from '@mui/material/styles';
-import PlayCircleOutlineIcon from '@mui/icons-material/PlayCircleOutline';
-import ChatIcon from '@mui/icons-material/Chat';
-import BookmarkIcon from '@mui/icons-material/Bookmark';
-import { part1Questions, part2Questions, part3Questions } from '../../data/speakingQuestions';
-import { practiceService } from '../../services/practiceService';
-import { TimerSelectionDialog } from './TimerSelectionDialog';
+import { motion } from 'framer-motion';
+import { 
+  Card, CardContent, CardHeader,
+  Tabs, TabsList, TabsTrigger, TabsContent,
+  Button, Badge,
+  ScrollArea,
+  Sheet, SheetContent, SheetHeader, SheetTitle, SheetTrigger,
+} from '@/components/ui/';
+import { useTheme } from 'next-themes';
+import { part1Templates, part2Templates, part3Templates, basicTutoringTemplates } from '@/data/speakingTemplates';
+import { cn } from '@/lib/utils';
 
-interface TabPanelProps {
-  children?: React.ReactNode;
-  index: number;
-  value: number;
-}
-
-const StyledCard = styled(Card)(({ theme }) => ({
-  height: '100%',
-  display: 'flex',
-  flexDirection: 'column',
-  marginBottom: theme.spacing(2),
-}));
-
-function TabPanel(props: TabPanelProps) {
-  const { children, value, index, ...other } = props;
-  return (
-    <div
-      role="tabpanel"
-      hidden={value !== index}
-      id={`speaking-tabpanel-${index}`}
-      aria-labelledby={`speaking-tab-${index}`}
-      {...other}
-    >
-      {value === index && <Box sx={{ p: 3 }}>{children}</Box>}
-    </div>
-  );
-}
+const tabs = [
+  { 
+    id: 'part1', 
+    label: 'Part 1', 
+    templates: part1Templates,
+    description: 'Practice common topics for IELTS Speaking Part 1'
+  },
+  { 
+    id: 'part2', 
+    label: 'Part 2', 
+    templates: part2Templates,
+    description: 'Practice cue cards for IELTS Speaking Part 2'
+  },
+  { 
+    id: 'part3', 
+    label: 'Part 3', 
+    templates: part3Templates,
+    description: 'Practice in-depth discussion for IELTS Speaking Part 3'
+  },
+  { 
+    id: 'tutoring', 
+    label: 'Tutoring', 
+    templates: basicTutoringTemplates,
+    description: 'Get personalized tutoring sessions'
+  }
+];
 
 export const SpeakingTemplates = () => {
-  const [tabValue, setTabValue] = useState(0);
-  const [timerDialogOpen, setTimerDialogOpen] = useState(false);
-  const [selectedTopic, setSelectedTopic] = useState('');
-  const [selectedType, setSelectedType] = useState<'tutor' | 'template'>('tutor');
+  const [selectedTab, setSelectedTab] = useState('part1');
+  const [selectedTemplate, setSelectedTemplate] = useState(null);
+  const { theme } = useTheme();
   const navigate = useNavigate();
 
-  const handleTabChange = (event: React.SyntheticEvent, newValue: number) => {
-    setTabValue(newValue);
-  };
-
-  const handleStartPractice = (topic: string, type: 'tutor' | 'template') => {
-    setSelectedTopic(topic);
-    setSelectedType(type);
-    setTimerDialogOpen(true);
-  };
-
-  const handleSessionStart = async (duration: number) => {
+  const handleStartSession = async (template) => {
     try {
-      const startTime = Date.now();
-      const session = await practiceService.startSession({
-        userId: 'user', // Replace with actual user ID
-        duration: duration * 60, // Convert minutes to seconds
-        templateId: selectedTopic,
-        startTime
+      navigate('/speaking/practice', { 
+        state: { 
+          template,
+          mode: 'practice'
+        } 
       });
-
-      if (session) {
-        navigate('/practice', { 
-          state: { 
-            topic: selectedTopic,
-            level: 'intermediate', // You can make this dynamic
-            targetBand: 7, // You can make this dynamic
-            part: tabValue + 1,
-            mode: 'practice',
-            duration: duration,
-            sessionId: session.id
-          } 
-        });
-      }
     } catch (error) {
-      console.error('Failed to start practice session:', error);
-      // TODO: Show error toast to user
-    } finally {
-      setTimerDialogOpen(false);
+      console.error('Failed to start session:', error);
     }
   };
 
-  const renderTopicList = (questions: any, part: number) => {
-    return Object.entries(questions).map(([key, value]: [string, any]) => (
-      <StyledCard key={key}>
-        <CardContent>
-          <Typography variant="h6" gutterBottom>
-            {typeof value === 'object' && 'topic' in value
-              ? value.topic
-              : key.replace(/_/g, ' ').replace(/speaking_part\d_/, '')}
-          </Typography>
-          
-          {typeof value === 'object' && 'questions' in value && (
-            <List dense>
-              {value.questions.map((question: string, index: number) => (
-                <ListItem key={index}>
-                  <ListItemIcon>
-                    <BookmarkIcon color="primary" fontSize="small" />
-                  </ListItemIcon>
-                  <ListItemText primary={question} />
-                </ListItem>
-              ))}
-            </List>
-          )}
-
-          <Box display="flex" justifyContent="space-between" mt={2}>
-            <Button
-              startIcon={<PlayCircleOutlineIcon />}
-              variant="outlined"
-              onClick={() => handleStartPractice(key, 'template')}
-            >
-              Practice with Template
-            </Button>
-            <Button
-              startIcon={<ChatIcon />}
-              variant="contained"
-              onClick={() => handleStartPractice(key, 'tutor')}
-            >
-              Practice with Tutor
-            </Button>
-          </Box>
-        </CardContent>
-      </StyledCard>
-    ));
-  };
-
   return (
-    <Container maxWidth="lg" sx={{ py: 4 }}>
-      <Typography variant="h4" gutterBottom>
-        Speaking Templates
-      </Typography>
-      <Typography variant="subtitle1" color="text.secondary" paragraph>
-        Choose a template to practice or start an interactive session with our AI tutor
-      </Typography>
+    <div className="container mx-auto p-6">
+      <Tabs defaultValue="part1" className="w-full">
+        <TabsList className="grid w-full grid-cols-4 gap-4 mb-8">
+          {tabs.map((tab) => (
+            <TabsTrigger
+              key={tab.id}
+              value={tab.id}
+              className={cn(
+                'flex flex-col items-center p-4 rounded-lg transition-all',
+                'data-[state=active]:bg-primary data-[state=active]:text-primary-foreground',
+                'hover:bg-muted'
+              )}
+            >
+              <span className="text-lg font-semibold">{tab.label}</span>
+              <span className="text-sm text-muted-foreground">{tab.description}</span>
+            </TabsTrigger>
+          ))}
+        </TabsList>
 
-      <Box sx={{ borderBottom: 1, borderColor: 'divider' }}>
-        <Tabs value={tabValue} onChange={handleTabChange} aria-label="speaking parts tabs">
-          <Tab label="Part 1: Introduction & Interview" />
-          <Tab label="Part 2: Individual Long Turn" />
-          <Tab label="Part 3: Two-way Discussion" />
-        </Tabs>
-      </Box>
-
-      <TabPanel value={tabValue} index={0}>
-        {renderTopicList(part1Questions, 1)}
-      </TabPanel>
-      <TabPanel value={tabValue} index={1}>
-        {renderTopicList(part2Questions, 2)}
-      </TabPanel>
-      <TabPanel value={tabValue} index={2}>
-        {renderTopicList(part3Questions, 3)}
-      </TabPanel>
-
-      <TimerSelectionDialog 
-        open={timerDialogOpen}
-        onClose={() => setTimerDialogOpen(false)}
-        onStartSession={handleSessionStart}
-      />
-    </Container>
+        {tabs.map((tab) => (
+          <TabsContent key={tab.id} value={tab.id} className="mt-6">
+            <ScrollArea className="h-[calc(100vh-12rem)] pr-4">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+                {tab.templates.map((template) => (
+                  <motion.div
+                    key={template.id}
+                    initial={{ opacity: 0, y: 20 }}
+                    animate={{ opacity: 1, y: 0 }}
+                    transition={{ duration: 0.3 }}
+                  >
+                    <Card className={cn(
+                      'group hover:shadow-lg transition-all duration-300',
+                      'dark:hover:shadow-primary/20',
+                      'border-2 hover:border-primary',
+                      'cursor-pointer'
+                    )}>
+                      <CardHeader>
+                        <div className="flex justify-between items-start mb-2">
+                          <div>
+                            <h3 className="text-lg font-semibold">{template.titleEn}</h3>
+                            <p className="text-sm text-muted-foreground">{template.titleVi}</p>
+                          </div>
+                          <Badge variant="outline">{template.level}</Badge>
+                        </div>
+                        <p className="text-sm text-muted-foreground">{template.descriptionEn}</p>
+                        <p className="text-sm italic text-muted-foreground">{template.descriptionVi}</p>
+                      </CardHeader>
+                      <CardContent>
+                        <div className="flex flex-wrap gap-2 mb-4">
+                          {template.topics.map((topic) => (
+                            <Badge key={topic} variant="secondary">{topic}</Badge>
+                          ))}
+                        </div>
+                        <Button 
+                          className="w-full"
+                          onClick={() => handleStartSession(template)}
+                        >
+                          Start Practice
+                        </Button>
+                      </CardContent>
+                    </Card>
+                  </motion.div>
+                ))}
+              </div>
+            </ScrollArea>
+          </TabsContent>
+        ))}
+      </Tabs>
+    </div>
   );
 };

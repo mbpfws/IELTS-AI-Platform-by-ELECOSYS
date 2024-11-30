@@ -1,76 +1,95 @@
 import { SpeakingTemplate } from '@/types/speakingSession';
 
-const baseInstructions = `You are an IELTS Speaking tutor using LearnLM 1.5 Pro to help students improve their speaking skills. You will:
+const baseInstructions = `You are an expert IELTS Speaking tutor proficient in interacting with Vietnamese learners of all levels. You possess the ability to seamlessly transition between the roles of an examiner, a language teacher, and a dedicated tutor. You understand the challenges Vietnamese learners face and can adapt your instruction to their specific needs, including utilizing bilingual explanations for low-level learners.
 
-1. Listen and evaluate student responses naturally during the conversation
-2. Only provide detailed feedback and scoring when the session time is up, focusing on:
-   - Fluency and coherence (0-9)
-   - Vocabulary range and accuracy (0-9)
-   - Grammatical range and accuracy (0-9)
-   - Pronunciation (0-9)
+**As an Examiner:**
+* Accurately assess speaking proficiency based on four IELTS criteria: Fluency and Coherence, Lexical Resource, Grammatical Range and Accuracy, and Pronunciation.  
+* Provide band scores and detailed feedback referencing specific examples from the learner's speech.
+* Conduct mock speaking tests simulating the real IELTS exam environment.
 
-3. During the conversation:
-   - Ask natural follow-up questions based on student responses
-   - Create a comfortable learning environment
-   - Use both English and Vietnamese based on student's initial response language
-   - Maintain a natural conversation flow
-   - Only provide immediate correction for serious errors
+**As a Language Teacher:**
+* Begin by understanding the learner's current and target band scores
+* Identify strengths and weaknesses across the four criteria
+* Consider Vietnamese language transfer challenges
+* Provide bilingual explanations when needed
+* Encourage learners to verbalize thoughts in Vietnamese first if needed
 
-4. At the end of the session:
-   - Provide a comprehensive evaluation in JSON format
-   - Include specific examples from the conversation
-   - Give actionable improvement suggestions`;
+**As a Tutor:**
+* Provide clear instructions with bilingual support for low-level learners
+* Offer practice exercises and speaking prompts
+* Give detailed feedback on all four criteria
+* Compare and contrast English and Vietnamese grammar/pronunciation`;
 
-const part1SystemInstruction = `You are conducting IELTS Speaking Part 1.
-This part consists of general questions about familiar topics.
-- Ask one question at a time
-- Follow-up with related questions based on the candidate's response
-- Keep questions simple and direct
-- Focus on personal experiences and preferences
-- Maintain a friendly, conversational tone`;
+const part1SystemInstruction = `You are conducting IELTS Speaking Part 1 with Vietnamese learners.
+- Ask simple questions about familiar topics
+- Allow initial responses in Vietnamese for low-level learners
+- Provide vocabulary support in both languages
+- Focus on personal experiences
+- Maintain a friendly, encouraging tone
+- Give immediate feedback only for serious errors`;
 
-const part2SystemInstruction = `You are conducting IELTS Speaking Part 2 (Cue Card).
-- Give the candidate a topic to speak about for 1-2 minutes
+const part2SystemInstruction = `You are conducting IELTS Speaking Part 2 (Cue Card) with Vietnamese learners.
+- Present the cue card in both English and Vietnamese
 - Allow 1 minute preparation time
-- Listen to the response without interruption
-- Ask 1-2 follow-up questions after they finish
-- Topics should cover: describing people, places, objects, or events`;
+- Let students make notes in Vietnamese if needed
+- Listen without interruption for 1-2 minutes
+- Ask follow-up questions
+- Provide structured feedback on all criteria`;
 
-const part3SystemInstruction = `You are conducting IELTS Speaking Part 3.
-This part involves more abstract and analytical discussion.
-- Ask questions that require analysis and opinion
-- Explore broader implications of the topic
-- Challenge the candidate with why/how questions
-- Allow the candidate to develop their ideas
-- Connect responses to wider social contexts`;
+const part3SystemInstruction = `You are conducting IELTS Speaking Part 3 with Vietnamese learners.
+- Start with simpler questions before complex ones
+- Help learners transition from Vietnamese thinking to English expression
+- Encourage use of advanced structures
+- Guide critical thinking development
+- Connect to Vietnamese cultural context when relevant`;
 
-// Part 1 templates
+interface SpeakingTemplate {
+  id: string;
+  title: string;
+  titleVi: string;
+  titleEn: string;
+  description: string;
+  descriptionVi: string;
+  targetBand: number;
+  duration: number;
+  objectives: string[];
+  systemPrompt: string;
+  part: 1 | 2 | 3 | 'tutoring';
+  level: 'beginner' | 'intermediate' | 'advanced';
+  topics: string[];
+  sampleQuestions: {
+    en: string[];
+    vi: string[];
+  };
+}
+
 const part1Templates: SpeakingTemplate[] = [
   {
     id: 'p1_home_accommodation',
     title: 'Home & Accommodation',
     titleVi: 'Nhà ở & Chỗ ở',
     titleEn: 'Home & Accommodation',
+    description: 'Practice describing your home, accommodation preferences, and living arrangements',
+    descriptionVi: 'Luyện tập mô tả nhà ở, sở thích về chỗ ở và cách sắp xếp sinh hoạt',
+    targetBand: 6.5,
+    duration: 15,
+    objectives: ['Fluent description', 'Housing vocabulary', 'Personal preferences'],
+    systemPrompt: part1SystemInstruction,
     part: 1,
-    difficulty: 'easy',
-    systemPrompt: `${baseInstructions}\n${part1SystemInstruction}`,
-    category: 'daily_life',
-    description: 'Discuss your living situation and preferences',
-    descriptionVi: 'Thảo luận về tình hình và sở thích về nhà ở',
-    descriptionEn: 'Discuss your living situation and preferences',
-    taskType: 'task1',
-    level: 'Beginner',
-    targetBand: 6.0,
-    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
-    topics: ['Housing', 'Living Preferences', 'Accommodation'],
-    objectives: [
-      'Describe current living situation',
-      'Express preferences about housing',
-      'Compare different types of accommodation'
-    ],
-    duration: 5,
-    supportText: 'Remember to speak naturally and expand your answers with examples',
-    tags: ['Part 1', 'Introduction', 'Basic']
+    level: 'intermediate',
+    topics: ['Home description', 'Room preferences', 'Neighborhood'],
+    sampleQuestions: {
+      en: [
+        'What kind of accommodation do you live in?',
+        'What\'s your favorite room in your home?',
+        'How long have you lived there?'
+      ],
+      vi: [
+        'Bạn đang sống ở loại nhà như thế nào?',
+        'Phòng nào là phòng bạn thích nhất trong nhà?',
+        'Bạn đã sống ở đó bao lâu rồi?'
+      ]
+    }
   },
   {
     id: 'p1_family_relationships',
@@ -540,10 +559,8 @@ const part1Templates: SpeakingTemplate[] = [
     supportText: 'Remember to speak naturally and expand your answers with examples',
     tags: ['Part 1', 'Introduction', 'Basic']
   },
-
 ];
 
-// Part 2 templates
 const part2Templates: SpeakingTemplate[] = [
   {
     id: 'p2_traditional_festival',
@@ -597,9 +614,8 @@ const part2Templates: SpeakingTemplate[] = [
     supportText: 'Remember to speak naturally and expand your answers with examples',
     tags: ['Part 2', 'Description', 'Intermediate']
   }
-  ];
+];
 
-// Part 3 templates
 const part3Templates: SpeakingTemplate[] = [
   {
     id: 'p3_globalization_impact',
@@ -653,9 +669,8 @@ const part3Templates: SpeakingTemplate[] = [
     supportText: 'Remember to speak naturally and expand your answers with examples',
     tags: ['Part 3', 'Discussion', 'Advanced']
   }
-  ];
+];
 
-// Basic tutoring templates
 const basicTutoringTemplates: SpeakingTemplate[] = [
   {
     id: 'basic_pronunciation_practice',
@@ -711,9 +726,8 @@ const basicTutoringTemplates: SpeakingTemplate[] = [
     supportText: 'Remember to speak naturally and expand your answers with examples',
     tags: ['Tutoring', 'Grammar', 'Basic']
   }
-  ];
+];
 
-// Advanced tutoring templates
 const advancedTutoringTemplates: SpeakingTemplate[] = [
   {
     id: 'advanced_case_study_analysis',
@@ -769,9 +783,8 @@ const advancedTutoringTemplates: SpeakingTemplate[] = [
     supportText: 'Remember to speak naturally and expand your answers with examples',
     tags: ['Tutoring', 'Inversion', 'Advanced']
   }
-  ];
+];
 
-// Custom tutoring templates
 const customTutoringTemplates: SpeakingTemplate[] = [
   {
     id: 'tutoring_custom_lesson',
@@ -804,31 +817,15 @@ Max tokens: 4000`,
     supportText: 'Remember to speak naturally and expand your answers with examples',
     tags: ['Tutoring', 'Custom', 'Basic']
   }
-  ];
+];
 
-// Combine all tutoring templates
 const tutoringTemplates: SpeakingTemplate[] = [
   ...basicTutoringTemplates,
   ...advancedTutoringTemplates,
   ...customTutoringTemplates
-  ];
+];
 
-// Combine all templates
-const speakingTemplates: SpeakingTemplate[] = [
-  ...part1Templates,
-  ...part2Templates,
-  ...part3Templates,
-  ...tutoringTemplates
-  ];
+const speakingTemplates = [...part1Templates, ...part2Templates, ...part3Templates, ...basicTutoringTemplates, ...customTutoringTemplates];
 
-// Export everything
-export {
-  part1Templates,
-  part2Templates,
-  part3Templates,
-  basicTutoringTemplates,
-  advancedTutoringTemplates,
-  customTutoringTemplates,
-  tutoringTemplates,
-  speakingTemplates
-};
+export { part1Templates, part2Templates, part3Templates, basicTutoringTemplates, customTutoringTemplates };
+export { speakingTemplates };

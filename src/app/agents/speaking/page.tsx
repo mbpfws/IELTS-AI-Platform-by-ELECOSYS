@@ -1,568 +1,341 @@
 'use client';
 
-import React, { useState, useRef, useEffect } from 'react';
-import { SpeakingTemplate } from '@/types/speakingSession';
-import { part1Templates, part2Templates, part3Templates, tutoringTemplates } from '@/data/speakingTemplates';
-import { AudioRecorder } from './components/AudioRecorder';
-import './styles.css';
+import React, { useState, useCallback, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
+import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
+import { Button } from '@/components/ui/button';
+import { Sheet, SheetContent } from '@/components/ui/sheet';
+import { Progress } from '@/components/ui/progress';
+import { Badge } from '@/components/ui/badge';
+import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
+import { Slider } from '@/components/ui/slider';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Settings, User, Clock, Send, Mic, MessageSquare, Timer } from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { databaseService } from '@/services/databaseService';
+import { ieltsGeminiService } from '@/services/ieltsGeminiService';
 
-const tabs = [
+const TABS = [
   { 
     id: 'part1', 
-    label: 'PART 1', 
-    subLabel: 'PRACTICE', 
-    icon: '📚', 
-    description: 'Practice 40 common topics for IELTS Speaking Part 1',
-    supportText: '40 chủ đề luyện tập Part 1'
+    label: 'Part 1', 
+    description: 'Introduction & Interview',
+    color: 'from-blue-500/50 to-cyan-500/50'
   },
   { 
     id: 'part2', 
-    label: 'PART 2', 
-    subLabel: 'PRACTICE', 
-    icon: '📝', 
-    description: '50 cue cards organized by categories',
-    supportText: '50 chủ đề theo nhóm'
+    label: 'Part 2', 
+    description: 'Individual Long Turn',
+    color: 'from-green-500/50 to-emerald-500/50'
   },
   { 
     id: 'part3', 
-    label: 'PART 3', 
-    subLabel: 'PRACTICE', 
-    icon: '📖', 
-    description: 'In-depth discussion practice for Part 3',
-    supportText: 'Luyện tập thảo luận chuyên sâu'
+    label: 'Part 3', 
+    description: 'Two-way Discussion',
+    color: 'from-purple-500/50 to-pink-500/50'
   },
   { 
     id: 'tutoring', 
-    label: 'TUTORING', 
-    subLabel: 'LESSON', 
-    icon: '🎯', 
-    description: 'Free practice with AI Tutor',
-    supportText: 'Luyện tập tự do với AI Tutor'
+    label: 'Tutoring', 
+    description: 'Personalized Learning',
+    color: 'from-orange-500/50 to-red-500/50'
   }
 ];
 
-interface SessionResult {
-  overallBand: number;
-  fluencyScore: number;
-  vocabularyScore: number;
-  grammarScore: number;
-  pronunciationScore: number;
-  strengths: string[];
-  areasForImprovement: string[];
-  recommendedPractice: string[];
-  timestamp: number;
-  templateId: string;
-  duration: number;
-}
-
-interface Message {
-  id: string;
-  role: 'assistant' | 'user';
-  content: string;
-  timestamp: number;
-}
-
-interface SessionProps {
-  template: SpeakingTemplate;
-  duration?: number;
-  onSessionEnd: (result: SessionResult) => void;
-}
-
-function MessageDisplay({ message }: { message: Message }) {
-  return (
-    <div className={`flex ${message.role === 'assistant' ? 'justify-start' : 'justify-end'} mb-4`}>
-      <div className={`rounded-lg px-4 py-2 max-w-[80%] whitespace-pre-wrap ${
-        message.role === 'assistant' 
-          ? 'bg-blue-100 text-blue-900' 
-          : 'bg-green-100 text-green-900'
-      }`}>
-        {message.content}
-      </div>
-    </div>
-  );
-}
-
-const PracticeSession: React.FC<SessionProps> = ({ template, duration, onSessionEnd }) => {
-  const [timeRemaining, setTimeRemaining] = useState(0);
+const SpeakingPage: React.FC = () => {
+  const { theme } = useTheme();
+  const [selectedTab, setSelectedTab] = useState(TABS[0].id);
+  const [templates, setTemplates] = useState<Record<string, any[]>>({});
+  const [selectedTemplate, setSelectedTemplate] = useState<any | null>(null);
+  const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(false);
+  const [sessionDuration, setSessionDuration] = useState(15);
   const [isSessionActive, setIsSessionActive] = useState(false);
-  const [messages, setMessages] = useState<Message[]>([]);
-  const [audioBlob, setAudioBlob] = useState<Blob | null>(null);
-  const [transcript, setTranscript] = useState('');
-  const [sessionStartTime, setSessionStartTime] = useState<number | null>(null);
-  const [isInitializing, setIsInitializing] = useState(true);
-  const chatContainerRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages] = useState<any[]>([]);
+  const [isRecording, setIsRecording] = useState(false);
+  const [audioUrl, setAudioUrl] = useState<string | null>(null);
+  const [metrics, setMetrics] = useState<any>(null);
+  const [userName, setUserName] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [loading, setLoading] = useState(true);
 
-  // Initialize duration only once
   useEffect(() => {
-    const sessionDuration = duration || template.duration || 15;
-    const durationInSeconds = sessionDuration * 60;
-    setTimeRemaining(durationInSeconds);
-  }, [duration, template.duration]);
-
-  // Initialize session
-  useEffect(() => {
-    const initializeSession = async () => {
-      if (!isInitializing) return;
-
+    const loadTemplates = async () => {
       try {
-        setIsInitializing(true);
-        const response = await fetch('/api/process-audio', {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({
-            sessionData: {
-              part: 'speaking',
-              duration: timeRemaining,
-              timestamp: new Date().toISOString(),
-              topic: {
-                title: template.title,
-                description: template.description,
-                targetBand: template.targetBand,
-                systemPrompt: template.systemPrompt
-              }
-            },
-            isSessionStart: true
-          })
-        });
-
-        if (!response.ok) {
-          throw new Error('Failed to initialize session');
-        }
-
-        const data = await response.json();
-        if (data.success && data.response) {
-          setMessages([{
-            id: crypto.randomUUID(),
-            role: 'assistant',
-            content: data.response,
-            timestamp: Date.now()
-          }]);
-          setSessionStartTime(Date.now());
-          setIsSessionActive(true);
-        } else {
-          throw new Error('Invalid response from server');
-        }
+        const allTemplates = await databaseService.getTemplates();
+        // Organize templates by part
+        const organizedTemplates = allTemplates.reduce((acc: Record<string, any[]>, template) => {
+          const part = `part${template.parts[0]?.part || 1}`;
+          if (!acc[part]) acc[part] = [];
+          acc[part].push(template);
+          return acc;
+        }, {});
+        setTemplates(organizedTemplates);
       } catch (error) {
-        console.error('Error initializing session:', error);
-        // Add user-friendly error message to messages
-        setMessages([{
-          id: crypto.randomUUID(),
-          role: 'assistant',
-          content: 'Sorry, I had trouble starting our session. Please try refreshing the page.',
-          timestamp: Date.now()
-        }]);
+        console.error('Error loading templates:', error);
       } finally {
-        setIsInitializing(false);
+        setLoading(false);
       }
     };
+    loadTemplates();
+  }, []);
 
-    if (timeRemaining > 0) {
-      initializeSession();
-    }
-
-    return () => {
-      setIsSessionActive(false);
-    };
-  }, [timeRemaining, template]);
-
-  // Handle timer
-  useEffect(() => {
-    let timer: NodeJS.Timeout;
-    
-    if (isSessionActive && timeRemaining > 0) {
-      timer = setInterval(() => {
-        setTimeRemaining(prev => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            handleSessionEnd();
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
-    }
-
-    return () => {
-      if (timer) {
-        clearInterval(timer);
-      }
-    };
-  }, [isSessionActive, timeRemaining]);
-
-  useEffect(() => {
-    if (timeRemaining <= 0) {
-      const getFinalEvaluation = async () => {
-        const response = await fetch('/api/process-audio', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({
-            sessionContext: JSON.stringify(messages),
-            template: template.systemPrompt,
-            isEndOfSession: true
-          })
-        });
-        
-        const data = await response.json();
-        if (data.success) {
-          const evaluation = JSON.parse(data.response);
-          onSessionEnd({
-            ...evaluation,
-            timestamp: Date.now(),
-            templateId: template.id,
-            duration: timeRemaining
-          });
-        }
-      };
-      
-      getFinalEvaluation();
-      return;
-    }
-
-    const timer = setInterval(() => {
-      setTimeRemaining(prev => prev - 1);
-    }, 1000);
-
-    return () => clearInterval(timer);
-  }, [timeRemaining, messages, template, onSessionEnd]);
-
-  useEffect(() => {
-    if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
-    }
-  }, [messages]);
-
-  const handleTextSubmit = async (text: string) => {
+  const handleTemplateSelect = async (template: any) => {
     try {
-      const userMessage: Message = {
-        id: crypto.randomUUID(),
-        role: 'user',
-        content: text,
-        timestamp: Date.now()
-      };
+      // Create a new session when a template is selected
+      const session = await databaseService.createSession({
+        userId: 'current-user-id', // Replace with actual user ID from auth
+        templateId: template.id,
+        duration: template.duration
+      });
+      
+      // Navigate to the session or start the speaking test
+      // Add your navigation logic here
+    } catch (error) {
+      console.error('Error creating session:', error);
+    }
+  };
+
+  const startSession = async () => {
+    try {
+      setIsLoading(true);
+      if (!selectedTemplate || !userName) return;
+
+      const response = await ieltsGeminiService.initializeSession({
+        userName,
+        templatePrompt: selectedTemplate.system_prompt,
+      });
+
+      await setMessages([{ role: 'assistant', content: response.message }]);
+      setIsSessionActive(true);
+      setIsSessionDialogOpen(false);
+    } catch (error) {
+      console.error('Error starting session:', error);
+      setError('Failed to start session. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  const handleSendMessage = async (content: string, isAudio: boolean = false) => {
+    try {
+      setIsLoading(true);
+      const userMessage = { role: 'user', content };
       setMessages(prev => [...prev, userMessage]);
 
-      const response = await fetch('/api/process-audio', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          message: text,
-          sessionData: {
-            part: 'speaking',
-            duration: timeRemaining,
-            timestamp: new Date().toISOString(),
-            topic: {
-              title: template.title,
-              description: template.description,
-              targetBand: template.targetBand,
-              systemPrompt: template.systemPrompt
-            }
-          }
-        })
-      });
-
-      const data = await response.json();
-
-      if (data.success) {
-        const assistantMessage: Message = {
-          id: crypto.randomUUID(),
-          role: 'assistant',
-          content: data.response,
-          timestamp: Date.now()
-        };
-        setMessages(prev => [...prev, assistantMessage]);
-      }
-      return data;
-    } catch (error) {
-      console.error('Error sending text message:', error);
-      throw error;
-    }
-  };
-
-  const handleAudioSubmit = async (content: string, audioBlob: Blob) => {
-    try {
-      // Create a FormData object to handle the file upload
-      const formData = new FormData();
-      formData.append('audio', audioBlob, 'recording.webm');
-      formData.append('sessionData', JSON.stringify({
-        part: 'speaking',
-        duration: timeRemaining,
-        timestamp: new Date().toISOString(),
-        topic: {
-          title: template.title,
-          description: template.description,
-          targetBand: template.targetBand,
-          systemPrompt: template.systemPrompt
-        }
-      }));
-
-      const response = await fetch('/api/process-audio', {
-        method: 'POST',
-        body: formData // Don't set Content-Type header, browser will set it with boundary
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to process audio');
-      }
-
-      const data = await response.json();
-      if (data.success) {
-        const userMessage: Message = {
-          id: crypto.randomUUID(),
-          role: 'user',
-          content: data.transcription || content,
-          timestamp: Date.now()
-        };
-
-        const assistantMessage: Message = {
-          id: crypto.randomUUID(),
-          role: 'assistant',
-          content: data.response,
-          timestamp: Date.now()
-        };
-
-        setMessages(prev => [...prev, userMessage, assistantMessage]);
-      } else {
-        throw new Error(data.error || 'Failed to process audio');
-      }
-    } catch (error) {
-      console.error('Error processing audio:', error);
-      setMessages(prev => [...prev, {
-        id: crypto.randomUUID(),
-        role: 'assistant',
-        content: 'Sorry, I had trouble processing your audio. Please try again.',
-        timestamp: Date.now()
-      }]);
-    }
-  };
-
-  const handleSessionEnd = () => {
-    setIsSessionActive(false);
-    onSessionEnd({
-      overallBand: 0,
-      fluencyScore: 0,
-      vocabularyScore: 0,
-      grammarScore: 0,
-      pronunciationScore: 0,
-      strengths: [],
-      areasForImprovement: [],
-      recommendedPractice: [],
-      timestamp: Date.now(),
-      templateId: template.id,
-      duration: timeRemaining
-    });
-  };
-
-  return (
-    <div className="flex flex-col h-[calc(100vh-4rem)] gap-4 p-4">
-      <div className="flex-1 flex gap-4">
-        <div className="flex-1 bg-white rounded-lg shadow overflow-hidden flex flex-col">
-          <div 
-            ref={chatContainerRef}
-            className="flex-1 p-4 overflow-y-auto"
-          >
-            {messages.map((message, index) => (
-              <MessageDisplay key={message.id} message={message} />
-            ))}
-          </div>
-          <div className="p-4 border-t">
-            <AudioRecorder
-              onTextSubmit={handleTextSubmit}
-              onAudioSubmit={handleAudioSubmit}
-              isSessionActive={true}
-            />
-          </div>
-        </div>
-        <div className="w-80 bg-white rounded-lg shadow p-4">
-          <div className="mb-4">
-            <div className="text-lg font-bold">Time Remaining</div>
-            <div className="text-2xl">
-              {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
-            </div>
-          </div>
-          <div className="h-px bg-gray-200 my-4" />
-          <h3 className="font-bold mb-2">Notes</h3>
-          <textarea
-            className="w-full h-[calc(100%-8rem)] p-2 border rounded resize-none"
-            value={''}
-            onChange={(e) => {}}
-            placeholder="Take notes during your practice..."
-          />
-        </div>
-      </div>
-    </div>
-  );
-};
-
-const SessionSetup = ({ template, onStart }: { template: SpeakingTemplate; onStart: (duration: number) => void }) => {
-  const [duration, setDuration] = useState(15);
-  
-  return (
-    <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-lg p-8">
-      <h2 className="text-2xl font-bold mb-4">{template.title}</h2>
-      <p className="text-gray-600 mb-2">{template.description}</p>
-      {template.supportText && (
-        <p className="text-sm text-gray-500 mb-6">{template.supportText}</p>
-      )}
+      const response = await ieltsGeminiService.processMessage(content, isAudio);
+      const assistantMessage = { role: 'assistant', content: response.message };
       
-      <div className="mb-8">
-        <label className="block text-sm font-medium text-gray-700 mb-2">
-          Practice Duration (minutes)
-        </label>
-        <select 
-          value={duration}
-          onChange={(e) => setDuration(Number(e.target.value))}
-          className="block w-full rounded-md border-gray-300 shadow-sm focus:border-blue-500 focus:ring-blue-500"
-        >
-          <option value={15}>15 minutes</option>
-          <option value={30}>30 minutes</option>
-          <option value={45}>45 minutes</option>
-          {template.id === 'tutoring' && <option value={90}>90 minutes (Recommended)</option>}
-        </select>
-      </div>
-
-      <button
-        onClick={() => onStart(duration)}
-        className="w-full bg-blue-500 text-white py-3 px-6 rounded-lg hover:bg-blue-600 transition-colors"
-      >
-        Start Practice
-      </button>
-    </div>
-  );
-};
-
-const getTemplatesForTab = (tab: string): SpeakingTemplate[] => {
-  switch (tab) {
-    case 'part1': return part1Templates;
-    case 'part2': return part2Templates;
-    case 'part3': return part3Templates;
-    case 'tutoring': return tutoringTemplates;
-    default: return [];
-  }
-};
-
-const SpeakingPage = () => {
-  const [selectedTab, setSelectedTab] = useState('part1');
-  const [selectedTemplate, setSelectedTemplate] = useState<SpeakingTemplate | null>(null);
-  const [sessionStarted, setSessionStarted] = useState(false);
-  const [sessionDuration, setSessionDuration] = useState<number | undefined>(undefined);
-
-  const handleTemplateSelect = (template: SpeakingTemplate) => {
-    setSelectedTemplate(template);
+      setMessages(prev => [...prev, assistantMessage]);
+      
+      if (response.metrics) {
+        setMetrics(response.metrics);
+      }
+    } catch (error) {
+      console.error('Error sending message:', error);
+      setError('Failed to send message. Please try again.');
+    } finally {
+      setIsLoading(false);
+    }
   };
-
-  const handleSessionStart = (duration: number) => {
-    setSessionDuration(duration);
-    setSessionStarted(true);
-  };
-
-  const handleSessionEnd = (result: SessionResult) => {
-    setSessionStarted(false);
-    setSelectedTemplate(null);
-    setSessionDuration(undefined);
-  };
-
-  if (selectedTemplate && sessionStarted) {
-    return (
-      <PracticeSession 
-        template={selectedTemplate} 
-        duration={sessionDuration} 
-        onSessionEnd={handleSessionEnd} 
-      />
-    );
-  }
-
-  if (selectedTemplate) {
-    return (
-      <SessionSetup 
-        template={selectedTemplate} 
-        onStart={handleSessionStart} 
-      />
-    );
-  }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Navigation Tabs */}
-      <div className="border-b border-gray-200">
-        <nav className="flex space-x-4 px-4 sm:px-6 lg:px-8">
-          {tabs.map(tab => (
-            <button
-              key={tab.id}
-              className={`px-3 py-2 text-sm font-medium ${
-                selectedTab === tab.id
-                  ? 'border-b-2 border-blue-500 text-blue-600'
-                  : 'text-gray-500 hover:text-gray-700'
-              }`}
-              onClick={() => setSelectedTab(tab.id)}
-            >
-              <div className="flex items-center space-x-2">
-                <span>{tab.icon}</span>
-                <div>
-                  <div className="text-xs text-gray-400">{tab.subLabel}</div>
-                  <div>{tab.label}</div>
+    <div className="flex h-screen bg-background">
+      {/* Left Sidebar */}
+      <Sheet>
+        <SheetContent side="left" className="w-[300px] p-0">
+          <div className="flex flex-col h-full">
+            <div className="p-4 border-b">
+              <h2 className="text-lg font-semibold">Session Settings</h2>
+            </div>
+            {metrics && (
+              <div className="p-4">
+                <h3 className="text-sm font-medium mb-2">Performance Metrics</h3>
+                <div className="space-y-4">
+                  <div>
+                    <div className="flex justify-between text-sm">
+                      <span>Fluency</span>
+                      <span>{metrics.fluency.toFixed(1)}</span>
+                    </div>
+                    <Progress value={metrics.fluency * 10} className="h-2" />
+                  </div>
+                  {/* Add other metrics similarly */}
                 </div>
               </div>
-            </button>
-          ))}
-        </nav>
-      </div>
+            )}
+          </div>
+        </SheetContent>
+      </Sheet>
 
       {/* Main Content */}
-      <main className="max-w-7xl mx-auto py-6 sm:px-6 lg:px-8">
-        {/* Active Session */}
-        {sessionStarted && selectedTemplate ? (
-          <PracticeSession
-            template={selectedTemplate}
-            duration={sessionDuration}
-            onSessionEnd={handleSessionEnd}
-          />
-        ) : (
-          <>
-            {/* Section Header */}
-            <div className="px-4 sm:px-0">
-              <h2 className="text-lg font-semibold text-gray-900">
-                {tabs.find(t => t.id === selectedTab)?.description}
-              </h2>
-              <p className="mt-1 text-sm text-gray-600">
-                {tabs.find(t => t.id === selectedTab)?.supportText}
-              </p>
-            </div>
+      <main className="flex-1 overflow-hidden">
+        <div className="h-full flex flex-col">
+          {/* Template Selection */}
+          {!isSessionActive && (
+            <div className="p-6 space-y-6">
+              <Tabs value={selectedTab} onValueChange={setSelectedTab}>
+                <TabsList className="grid w-full grid-cols-4 gap-4">
+                  {TABS.map(tab => (
+                    <TabsTrigger
+                      key={tab.id}
+                      value={tab.id}
+                      className={`relative overflow-hidden rounded-lg p-4 transition-all ${
+                        selectedTab === tab.id ? 'bg-gradient-to-br ' + tab.color : ''
+                      }`}
+                    >
+                      <div className="relative z-10">
+                        <h3 className="font-semibold">{tab.label}</h3>
+                        <p className="text-sm opacity-80">{tab.description}</p>
+                      </div>
+                    </TabsTrigger>
+                  ))}
+                </TabsList>
 
-            {/* Template Grid */}
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6 p-6">
-              {getTemplatesForTab(selectedTab).map((template: SpeakingTemplate) => (
-                <div
-                  key={template.id}
-                  className="bg-white rounded-xl shadow-sm hover:shadow-lg cursor-pointer transform transition-all duration-300 hover:-translate-y-1"
-                  onClick={() => handleTemplateSelect(template)}
-                >
-                  <div className="p-6">
-                    <h3 className="text-lg font-medium text-gray-900">
-                      {template.title}
-                    </h3>
-                    <p className="mt-2 text-sm text-gray-500">
-                      {template.description}
-                    </p>
-                    <div className="mt-4 flex items-center">
-                      <span className="text-xs font-medium text-gray-500">
-                        Target Band: {template.targetBand}
-                      </span>
-                      <span className="mx-2 text-gray-300">•</span>
-                      <span className="text-xs font-medium text-gray-500">
-                        {template.duration / 60} mins
-                      </span>
-                    </div>
-                  </div>
+                {TABS.map(tab => (
+                  <TabsContent key={tab.id} value={tab.id} className="mt-6">
+                    <ScrollArea className="h-[calc(100vh-200px)]">
+                      <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 p-4">
+                        {templates[tab.id]?.map(template => (
+                          <Card
+                            key={template.id}
+                            className={`relative overflow-hidden cursor-pointer transition-all hover:scale-105 ${
+                              selectedTemplate?.id === template.id
+                                ? 'ring-2 ring-primary'
+                                : ''
+                            }`}
+                            onClick={() => setSelectedTemplate(template)}
+                          >
+                            <CardHeader>
+                              <CardTitle>
+                                <span className="block text-lg">{template.title_en}</span>
+                                <span className="block text-sm opacity-80">{template.title_vi}</span>
+                              </CardTitle>
+                              <div className="flex gap-2 mt-2">
+                                <Badge variant="outline">Band {template.target_band}</Badge>
+                                <Badge>{template.level}</Badge>
+                              </div>
+                            </CardHeader>
+                            <CardContent>
+                              <p className="text-sm">{template.description_en}</p>
+                              <p className="text-sm opacity-80 mt-1">{template.description_vi}</p>
+                            </CardContent>
+                          </Card>
+                        ))}
+                      </div>
+                    </ScrollArea>
+                  </TabsContent>
+                ))}
+              </Tabs>
+
+              {selectedTemplate && (
+                <div className="flex justify-center">
+                  <Button
+                    size="lg"
+                    onClick={() => setIsSessionDialogOpen(true)}
+                    className="px-8"
+                  >
+                    Start Practice
+                  </Button>
                 </div>
-              ))}
+              )}
             </div>
-          </>
-        )}
+          )}
+
+          {/* Active Session */}
+          {isSessionActive && (
+            <div className="flex-1 flex flex-col">
+              {/* Chat Messages */}
+              <ScrollArea className="flex-1 p-4">
+                <div className="space-y-4">
+                  {messages.map((message, i) => (
+                    <div
+                      key={i}
+                      className={`flex ${
+                        message.role === 'assistant' ? 'justify-start' : 'justify-end'
+                      }`}
+                    >
+                      <div
+                        className={`max-w-[80%] rounded-lg p-4 ${
+                          message.role === 'assistant'
+                            ? 'bg-muted'
+                            : 'bg-primary text-primary-foreground'
+                        }`}
+                      >
+                        {message.content}
+                      </div>
+                    </div>
+                  ))}
+                </div>
+              </ScrollArea>
+
+              {/* Input Area */}
+              <div className="border-t p-4">
+                <div className="flex items-center gap-4">
+                  <Button
+                    variant={isRecording ? 'destructive' : 'outline'}
+                    size="icon"
+                    onClick={() => setIsRecording(!isRecording)}
+                  >
+                    <Mic className="h-4 w-4" />
+                  </Button>
+                  {/* Add text input and send button */}
+                </div>
+              </div>
+            </div>
+          )}
+        </div>
       </main>
+
+      {/* Session Configuration Dialog */}
+      <Dialog open={isSessionDialogOpen} onOpenChange={setIsSessionDialogOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Configure Session</DialogTitle>
+          </DialogHeader>
+          <div className="space-y-4 py-4">
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Your Name</label>
+              <input
+                type="text"
+                value={userName}
+                onChange={(e) => setUserName(e.target.value)}
+                className="w-full p-2 border rounded-md"
+                placeholder="Enter your name"
+              />
+            </div>
+            <div className="space-y-2">
+              <label className="text-sm font-medium">Session Duration (minutes)</label>
+              <div className="flex items-center gap-4">
+                <Slider
+                  value={[sessionDuration]}
+                  onValueChange={([value]) => setSessionDuration(value)}
+                  min={5}
+                  max={120}
+                  step={5}
+                  className="flex-1"
+                />
+                <span className="w-12 text-right">{sessionDuration}</span>
+              </div>
+            </div>
+          </div>
+          <div className="flex justify-end gap-4">
+            <Button variant="outline" onClick={() => setIsSessionDialogOpen(false)}>
+              Cancel
+            </Button>
+            <Button onClick={startSession} disabled={!userName || isLoading}>
+              {isLoading ? 'Starting...' : 'Start Session'}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
+
+      {/* Error Message */}
+      {error && (
+        <div className="fixed top-0 left-0 w-full p-4 bg-red-500 text-white">
+          <p>{error}</p>
+        </div>
+      )}
     </div>
   );
 };

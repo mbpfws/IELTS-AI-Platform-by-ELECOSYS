@@ -1,14 +1,23 @@
-import { prisma } from '@/lib/prisma';
+import { createClient } from '@supabase/supabase-js';
 import { Template } from '@/types/template';
 import { v4 as uuidv4 } from 'uuid';
-import { 
-  Prisma,
-  SpeakingSession as Speaking_Session,
-  SpeakingMessage as Speaking_Message,
-  AudioRecording as Audio_Recording,
-  SpeakingMetrics as Speaking_Metrics,
-  SpeakingFeedback as Speaking_Feedback 
-} from '@prisma/client';
+import { ieltsGeminiService } from './ieltsGeminiService';
+
+// Initialize Supabase client with error handling
+const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!supabaseUrl || !supabaseKey) {
+  throw new Error('Missing Supabase environment variables');
+}
+
+const supabase = createClient(supabaseUrl, supabaseKey, {
+  auth: {
+    persistSession: true,
+    autoRefreshToken: true,
+    detectSessionInUrl: true
+  }
+});
 
 export interface PracticeSession {
   id: string;
@@ -34,6 +43,14 @@ export interface SessionFeedback {
   notes: string[];
 }
 
+export interface Message {
+  id: string;
+  role: 'user' | 'assistant' | 'system';
+  content: string;
+  timestamp: number;
+  audioUrl?: string;
+}
+
 export interface UserProgress {
   totalSessions: number;
   averageScores: {
@@ -48,203 +65,319 @@ export interface UserProgress {
   strongAreas: string[];
 }
 
-interface Message {
-  role: 'user' | 'assistant' | 'system';
-  content: string;
-  timestamp: number;
-  contentType?: 'text' | 'audio' | 'feedback';
-  audioUrl?: string;
+export interface SessionWithIncludes {
+  id: string;
+  user_id: string;
+  template_id?: string;
+  start_time: string;
+  end_time?: string;
+  duration: number;
+  status: string;
+  messages: Message[];
+  recordings: { url: string; duration: number }[];
+  metrics: {
+    pronunciation: number;
+    grammar: number;
+    vocabulary: number;
+    fluency: number;
+    coherence: number;
+  } | null;
+  feedback: {
+    content: string;
+    score: number;
+  } | null;
 }
 
-type SessionWithIncludes = Speaking_Session & {
-  messages: Speaking_Message[];
-  recordings: Audio_Recording[];
-  metrics: Speaking_Metrics | null;
-  feedback: Speaking_Feedback | null;
-};
-
-export class PracticeService {
+class PracticeService {
   private static instance: PracticeService;
-  private currentSession: SessionWithIncludes | null = null;
-  private sessionHistory: Map<string, Message[]> = new Map();
-  private sessionStartTime: number | null = null;
-  private sessionDuration: number | null = null;
-  private userId: string | null = null;
 
   private constructor() {}
 
-  static getInstance(): PracticeService {
+  public static getInstance(): PracticeService {
     if (!PracticeService.instance) {
       PracticeService.instance = new PracticeService();
     }
     return PracticeService.instance;
   }
 
-  async createSession(userId: string, template: Template): Promise<SessionWithIncludes> {
-    return await prisma.$transaction(async (tx) => {
-      const session = await tx.speakingSession.create({
-        data: {
-          userId,
-          duration: template.duration,
-          startTime: new Date(),
-        },
-        include: {
-          messages: true,
-          recordings: true,
-          metrics: true,
-          feedback: true,
-        },
-      });
-      return session;
-    });
-  }
-
-  startSession(sessionData: {
-    userId: string;
-    duration: number;
-    templateId: string;
-    startTime: number;
-  }): SessionWithIncludes | null {
+  async startSession(template: any, userName: string, duration: number) {
     try {
-      // Create a mock session object
-      this.currentSession = {
-        id: uuidv4(),
-        userId: sessionData.userId,
-        startTime: new Date(sessionData.startTime),
-        duration: sessionData.duration,
-        templateId: sessionData.templateId,
-        messages: [],
-        recordings: [],
-        metrics: null,
-        feedback: null
-      } as SessionWithIncludes;
+      console.log('Starting session with template:', template);
+      
+      // Validate template data
+      if (!template || typeof template !== 'object') {
+        throw new Error('Invalid template data');
+      }
 
-      // Store session details for timer tracking
-      this.sessionStartTime = sessionData.startTime;
-      this.sessionDuration = sessionData.duration;
-      this.userId = sessionData.userId;
+      // Initialize Gemini session first to ensure AI is ready
+      const aiResponse = await ieltsGeminiService.startSession(template, userName, duration);
+      
+      // Create session in database with explicit UUID for test user
+      const testUserId = uuidv4(); // Generate a unique UUID for each session
+      
+      // First, create the session
+      const sessionData = {
+        template_id: template.id || null, // Handle case where template has no ID
+        duration: Math.floor(duration * 60), // Convert to seconds and ensure integer
+        user_id: testUserId,
+        status: 'active',
+        start_time: new Date().toISOString()
+      };
+      
+      console.log('Creating session with data:', sessionData);
+      
+      // Test database connection first
+      const { error: testError } = await supabase
+        .from('ailts_sessions')
+        .select('id')
+        .limit(1);
+        
+      if (testError) {
+        console.error('Database connection error:', testError);
+        throw new Error(`Database connection error: ${testError.message}`);
+      }
+      
+      // Create session
+      const { data: createdSession, error: sessionError } = await supabase
+        .from('ailts_sessions')
+        .insert(sessionData)
+        .select('id')
+        .single();
 
-      return this.currentSession;
-    } catch (error) {
-      console.error('Error starting session:', error);
-      return null;
+      if (sessionError) {
+        console.error('Session creation error:', sessionError);
+        throw new Error(`Database error: ${sessionError.message}`);
+      }
+
+      if (!createdSession?.id) {
+        throw new Error('No session ID returned from database');
+      }
+
+      console.log('Session created with ID:', createdSession.id);
+
+      // Add initial user message
+      const userMessage = {
+        session_id: createdSession.id,
+        role: 'user',
+        content: `Hi, I'm ${userName}. I would like to practice IELTS Speaking about "${template.title}". The topic is: ${template.description}. I want to practice for ${duration} minutes. Can you be my tutor and help me improve my speaking skills?`,
+        content_type: 'text',
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log('Adding user message:', userMessage);
+
+      const { error: userMessageError } = await supabase
+        .from('ailts_messages')
+        .insert(userMessage);
+
+      if (userMessageError) {
+        console.error('User message error:', userMessageError);
+        throw new Error(`Failed to create user message: ${userMessageError.message}`);
+      }
+
+      // Add AI response message
+      const assistantMessage = {
+        session_id: createdSession.id,
+        role: 'assistant',
+        content: aiResponse.message,
+        content_type: 'text',
+        timestamp: new Date().toISOString()
+      };
+      
+      console.log('Adding assistant message:', assistantMessage);
+
+      const { error: assistantMessageError } = await supabase
+        .from('ailts_messages')
+        .insert(assistantMessage);
+
+      if (assistantMessageError) {
+        console.error('Assistant message error:', assistantMessageError);
+        throw new Error(`Failed to create assistant message: ${assistantMessageError.message}`);
+      }
+
+      // Get the complete session data
+      console.log('Retrieving complete session data');
+      
+      const { data: session, error: getSessionError } = await supabase
+        .from('ailts_sessions')
+        .select(`
+          *,
+          ailts_messages (*)
+        `)
+        .eq('id', createdSession.id)
+        .single();
+
+      if (getSessionError) {
+        console.error('Get session error:', getSessionError);
+        throw new Error(`Failed to retrieve session: ${getSessionError.message}`);
+      }
+
+      if (!session) {
+        throw new Error('Failed to retrieve session data');
+      }
+
+      console.log('Session retrieved successfully:', session);
+
+      return {
+        ...session,
+        initialMessage: aiResponse.message,
+        metrics: aiResponse.metrics
+      };
+    } catch (error: any) {
+      // Enhanced error logging
+      const errorDetails = {
+        message: error.message,
+        code: error.code,
+        details: error.details,
+        hint: error.hint,
+        statusCode: error.statusCode,
+        name: error.name,
+        stack: error.stack
+      };
+      console.error('Failed to start session with details:', errorDetails);
+      
+      // Re-throw with enhanced message
+      throw new Error(`Database error: ${error.message || 'Unknown database error'}`);
     }
   }
 
-  getCurrentSession(): SessionWithIncludes | null {
-    return this.currentSession;
-  }
-
-  endSession(sessionId: string) {
-    if (this.currentSession && this.currentSession.id === sessionId) {
-      // Reset session tracking
-      this.currentSession = null;
-      this.sessionStartTime = null;
-      this.sessionDuration = null;
-      this.userId = null;
-    }
-  }
-
-  getTimeRemaining(): number {
-    if (!this.sessionStartTime || !this.sessionDuration) {
-      return 0;
-    }
-
-    const elapsed = Date.now() - this.sessionStartTime;
-    const remaining = Math.max(0, this.sessionDuration - elapsed);
-    return Math.floor(remaining / 1000); // Convert to seconds
-  }
-
-  async addMessage(sessionId: string, content: string, role: 'user' | 'assistant' | 'system'): Promise<void> {
+  async submitAudio(sessionId: string, audioBlob: Blob) {
     try {
-      const message = await prisma.speakingMessage.create({
-        data: {
-          id: uuidv4(),
-          sessionId,
-          content,
-          role,
-          timestamp: new Date()
-        }
-      });
+      // Upload audio file
+      const audioFileName = `${sessionId}/${Date.now()}.webm`;
+      const { data: audioData, error: uploadError } = await supabase.storage
+        .from('recordings')
+        .upload(audioFileName, audioBlob);
 
-      const history = this.sessionHistory.get(sessionId) || [];
-      this.sessionHistory.set(sessionId, [...history, { role, content, timestamp: Date.now() }]);
+      if (uploadError) throw uploadError;
+
+      // Get public URL
+      const { data: { publicUrl } } = supabase.storage
+        .from('recordings')
+        .getPublicUrl(audioFileName);
+
+      // Get transcription from Gemini
+      const transcription = await ieltsGeminiService.transcribeAudio(audioBlob);
+
+      // Save message to database
+      const { data: message, error: messageError } = await supabase
+        .from('ailts_messages')
+        .insert({
+          session_id: sessionId,
+          role: 'user',
+          content: transcription,
+          content_type: 'audio',
+          audio_url: publicUrl
+        })
+        .select()
+        .single();
+
+      if (messageError) throw messageError;
+
+      return {
+        transcription,
+        audioUrl: publicUrl,
+        message
+      };
     } catch (error) {
-      console.error('Error adding message:', error);
+      console.error('Failed to submit audio:', error);
       throw error;
     }
   }
 
-  async addRecording(sessionId: string, url: string, duration: number): Promise<void> {
+  async getResponse(sessionId: string, userMessage: string) {
     try {
-      await prisma.audioRecording.create({
-        data: {
-          id: uuidv4(),
-          sessionId,
-          url,
-          duration
-        }
-      });
+      // Get session history
+      const { data: messages, error: historyError } = await supabase
+        .from('ailts_messages')
+        .select('role, content')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: true });
+
+      if (historyError) throw historyError;
+
+      // Get AI response
+      const response = await ieltsGeminiService.getResponse(messages, userMessage);
+
+      // Save AI response
+      const { data: message, error: messageError } = await supabase
+        .from('ailts_messages')
+        .insert({
+          session_id: sessionId,
+          role: 'assistant',
+          content: response.message,
+          content_type: 'text'
+        })
+        .select()
+        .single();
+
+      if (messageError) throw messageError;
+
+      // Update metrics if provided
+      if (response.metrics) {
+        await this.updateMetrics(sessionId, response.metrics);
+      }
+
+      return response;
     } catch (error) {
-      console.error('Error adding recording:', error);
+      console.error('Failed to get response:', error);
       throw error;
     }
   }
 
-  async updateMetrics(sessionId: string, metrics: Partial<Speaking_Metrics>): Promise<void> {
-    const { pronunciation, grammar, vocabulary, fluency, coherence } = metrics;
-    await prisma.speakingMetrics.upsert({
-      where: { sessionId },
-      create: {
-        sessionId,
-        pronunciation: pronunciation || 0,
-        grammar: grammar || 0,
-        vocabulary: vocabulary || 0,
-        fluency: fluency || 0,
-        coherence: coherence || 0,
-        averageResponseTime: 0,
-        totalWords: 0,
-      },
-      update: {
-        pronunciation,
-        grammar,
-        vocabulary,
-        fluency,
-        coherence,
-      },
-    });
+  async updateMetrics(sessionId: string, metrics: any) {
+    try {
+      const { error } = await supabase
+        .from('ailts_metrics')
+        .upsert({
+          session_id: sessionId,
+          ...metrics
+        });
+
+      if (error) throw error;
+    } catch (error) {
+      console.error('Failed to update metrics:', error);
+      throw error;
+    }
   }
 
-  async addFeedback(sessionId: string, content: string, score: number): Promise<void> {
-    await prisma.speakingFeedback.create({
-      data: {
-        sessionId,
-        content,
-        score,
-      },
-    });
-  }
+  async endSession(sessionId: string) {
+    try {
+      // Get session history
+      const { data: messages, error: historyError } = await supabase
+        .from('ailts_messages')
+        .select('role, content')
+        .eq('session_id', sessionId)
+        .order('created_at', { ascending: true });
 
-  async getSession(sessionId: string): Promise<SessionWithIncludes | null> {
-    return prisma.speakingSession.findUnique({
-      where: { id: sessionId },
-      include: {
-        messages: true,
-        recordings: true,
-        metrics: true,
-        feedback: true,
-      },
-    });
-  }
+      if (historyError) throw historyError;
 
-  async deleteSession(sessionId: string): Promise<void> {
-    await prisma.speakingSession.delete({
-      where: { id: sessionId },
-    });
-  }
+      // Get final feedback from Gemini
+      const feedback = await ieltsGeminiService.getFinalFeedback(messages);
 
-  getSessionHistory(sessionId: string): Message[] | undefined {
-    return this.sessionHistory.get(sessionId);
+      // Save feedback
+      await supabase
+        .from('ailts_feedback')
+        .insert({
+          session_id: sessionId,
+          content: feedback.summary,
+          score: feedback.score
+        });
+
+      // Update session status
+      await supabase
+        .from('ailts_sessions')
+        .update({
+          status: 'completed',
+          end_time: new Date().toISOString()
+        })
+        .eq('id', sessionId);
+
+      return feedback;
+    } catch (error) {
+      console.error('Failed to end session:', error);
+      throw error;
+    }
   }
 }
 

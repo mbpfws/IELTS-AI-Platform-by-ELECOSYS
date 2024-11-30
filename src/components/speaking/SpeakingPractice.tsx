@@ -85,10 +85,38 @@ export const SpeakingPractice = ({
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const { toast } = useToast();
 
-  const handleSessionComplete = () => {
+  const handleSessionComplete = async () => {
     setSessionActive(false);
-    if (onSessionEnd) {
-      onSessionEnd({});
+    setIsProcessing(true);
+
+    try {
+      // Get final feedback
+      const feedback = await practiceService.endSession(
+        practiceService.getCurrentSession()?.id || ''
+      );
+
+      // Add final feedback message
+      setMessages(prev => [
+        ...prev,
+        {
+          id: uuidv4(),
+          role: 'assistant',
+          content: `🎯 Session Complete!\n\n📊 Overall Band Score: ${feedback.overallBand}\n\n💪 Strengths:\n${feedback.strengths.map(s => `• ${s}`).join('\n')}\n\n🎯 Areas for Improvement:\n${feedback.areasForImprovement.map(s => `• ${s}`).join('\n')}\n\n📝 Recommended Practice:\n${feedback.recommendedPractice.map(s => `• ${s}`).join('\n')}`,
+          timestamp: Date.now()
+        }
+      ]);
+
+      if (onSessionEnd) {
+        onSessionEnd(feedback);
+      }
+    } catch (error) {
+      toast({
+        title: "Lỗi",
+        description: "Không thể kết thúc phiên. Vui lòng thử lại sau.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
     }
   };
 
@@ -102,12 +130,7 @@ export const SpeakingPractice = ({
     try {
       // Start practice session
       const startTime = Date.now();
-      const session = practiceService.startSession({
-        userId: 'user', // Replace with actual user ID
-        duration: duration, // Duration in seconds from timer dialog
-        templateId: topic,
-        startTime
-      });
+      const session = practiceService.startSession('user');
 
       if (!session) {
         throw new Error('Failed to start session');
@@ -191,7 +214,44 @@ export const SpeakingPractice = ({
 
   const handleAudioSubmit = async () => {
     if (!audioBlob || !sessionActive) return;
-    await handleSend();
+    setIsProcessing(true);
+
+    try {
+      // Process audio through practice service
+      const response = await practiceService.processAudioMessage(
+        practiceService.getCurrentSession()?.id || '',
+        audioBlob
+      );
+
+      // Add messages to chat
+      setMessages(prev => [
+        ...prev,
+        {
+          id: uuidv4(),
+          role: 'user',
+          content: '🎤 Audio message sent',
+          timestamp: Date.now()
+        },
+        {
+          id: uuidv4(),
+          role: 'assistant',
+          content: response.content,
+          timestamp: Date.now()
+        }
+      ]);
+
+      // Clear audio states
+      setAudioBlob(null);
+      setAudioUrl(null);
+    } catch (error) {
+      toast({
+        title: "Lỗi",
+        description: "Không thể xử lý audio. Vui lòng thử lại sau.",
+        variant: "destructive"
+      });
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   useEffect(() => {

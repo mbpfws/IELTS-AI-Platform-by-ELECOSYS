@@ -1,6 +1,7 @@
 export type TestType = 'part1' | 'part2' | 'part3' | 'mock_test' | 'free_style' | 'advanced' | 'task1' | 'task2' | 'PART1' | 'PART2' | 'PART3';
 export type CEFRLevel = 'A1' | 'A2' | 'B1' | 'B2' | 'C1' | 'C2' | 'All Levels';
 export type IELTSBand = '4.0-5.0' | '5.0-6.0' | '6.0-7.0' | '7.0-8.0' | '7.0-8.5' | '7.0-9.0' | 'Any';
+export type SpeakingPart = 1 | 2 | 3;
 
 export interface BaseTemplate {
   id: string;
@@ -9,16 +10,22 @@ export interface BaseTemplate {
   part: string;
   taskType: string;
   level: string;
-  targetBand: number;
-  criteria: string[];
+  targetBand: IELTSBand;
+  criteria?: string[];
   duration?: number;
   supportText?: string;
   tags?: string[];
   category?: string;
 }
 
-export interface Template extends BaseTemplate {
-  systemPrompt: string;
+export interface Template {
+  id: string;
+  title: string;
+  description: string;
+  duration: number;
+  parts: SpeakingPart[];
+  createdAt?: Date;
+  updatedAt?: Date;
 }
 
 export interface WritingTemplate extends BaseTemplate {
@@ -26,7 +33,11 @@ export interface WritingTemplate extends BaseTemplate {
   systemPrompt: string;
   taskType: 'task1' | 'task2';
   level: CEFRLevel;
-  targetBand: IELTSBand;
+  titleVi: string;
+  descriptionVi: string;
+  titleEn: string;
+  descriptionEn: string;
+  topics: string[];
 }
 
 export interface SpeakingTemplate extends BaseTemplate {
@@ -36,10 +47,9 @@ export interface SpeakingTemplate extends BaseTemplate {
   descriptionEn: string;
   taskType: 'task1' | 'task2' | 'lesson';
   level: CEFRLevel;
-  targetBand?: IELTSBand;
-  criteria?: readonly ('task_response' | 'coherence_cohesion' | 'lexical_resource' | 'grammatical_range')[];
-  topics?: string[];
-  objectives?: string[];
+  criteria?: ('task_response' | 'coherence_cohesion' | 'lexical_resource' | 'grammatical_range')[];
+  topics: string[];
+  objectives: string[];
   questions?: string[];
   cueCard?: string;
   systemPrompt: string;

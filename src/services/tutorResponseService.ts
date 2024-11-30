@@ -1,4 +1,5 @@
 import { FeedbackMetrics } from '../data/speakingTutorSession';
+import { ieltsGeminiService } from './ieltsGeminiService';
 
 interface TutorResponse {
   message: string;
@@ -28,55 +29,55 @@ export class TutorResponseService {
 I'll be your IELTS Speaking tutor today. We'll be discussing ${topic} - a common topic in IELTS Speaking tests.
 
 I'm here to help you practice and improve your:
-🗣️ Fluency and pronunciation
-📚 Vocabulary and expression
-✨ Grammar and structure
-💡 Ideas and examples
+🗣️ Fluency and Coherence
+📚 Lexical Resource
+✨ Grammatical Range and Accuracy
+🎯 Pronunciation
 
-Ready to begin? Let's start with your thoughts on ${topic}!`
+Let me know how long you'd like to practice today, and we'll get started!`
     };
   }
 
-  public generateFeedback(metrics: FeedbackMetrics): TutorResponse {
-    const strengths = this.getStrengths(metrics);
-    const improvements = this.getImprovements(metrics);
-    const encouragement = this.getRandomEncouragement();
-
+  public async generateFeedback(metrics: FeedbackMetrics): Promise<TutorResponse> {
+    const feedback = await ieltsGeminiService.getFinalFeedback();
+    
     return {
       message: `Here's my feedback on your response.`,
-      richTextContent: `${encouragement}
+      richTextContent: `
+📊 Overall Band Score: ${feedback.overallBand}
 
 💪 Your Strengths:
-${strengths.map(s => `• ${s}`).join('\n')}
+${this.formatPoints(feedback.fluencyAndCoherence.strengths, '🗣️ Fluency & Coherence')}
+${this.formatPoints(feedback.lexicalResource.strengths, '📚 Lexical Resource')}
+${this.formatPoints(feedback.grammaticalRange.strengths, '✨ Grammar')}
+${this.formatPoints(feedback.pronunciation.strengths, '🎯 Pronunciation')}
 
-🎯 Areas to Focus On:
-${improvements.map(i => `• ${i}`).join('\n')}
+🎯 Areas for Improvement:
+${this.formatPoints(feedback.fluencyAndCoherence.improvements, '🗣️ Fluency & Coherence')}
+${this.formatPoints(feedback.lexicalResource.improvements, '📚 Lexical Resource')}
+${this.formatPoints(feedback.grammaticalRange.improvements, '✨ Grammar')}
+${this.formatPoints(feedback.pronunciation.improvements, '🎯 Pronunciation')}
 
-📊 Detailed Breakdown:
-🗣️ Pronunciation: ${metrics.pronunciation}/9.0
-    ${this.getMetricFeedback('pronunciation', metrics.pronunciation)}
-📚 Vocabulary: ${metrics.vocabulary}/9.0
-    ${this.getMetricFeedback('vocabulary', metrics.vocabulary)}
-✨ Grammar: ${metrics.grammar}/9.0
-    ${this.getMetricFeedback('grammar', metrics.grammar)}
-🌊 Fluency: ${metrics.fluency}/9.0
-    ${this.getMetricFeedback('fluency', metrics.fluency)}
-🔄 Coherence: ${metrics.coherence}/9.0
-    ${this.getMetricFeedback('coherence', metrics.coherence)}
+📝 Detailed Feedback:
+${feedback.detailedFeedback}
 
-💡 Quick Tip: ${this.getQuickTip(metrics)}
-
-Would you like to practice any specific area I mentioned?`
+🔜 Next Steps:
+${feedback.nextSteps.map(step => `• ${step}`).join('\n')}`
     };
+  }
+
+  private formatPoints(points: string[], category: string): string {
+    if (!points || points.length === 0) return '';
+    return `${category}:\n${points.map(point => `• ${point}`).join('\n')}\n`;
   }
 
   private getRandomGreeting(): string {
     const greetings = [
-      "Hi there",
       "Hello",
+      "Hi",
       "Welcome",
-      "Great to meet you",
-      "Nice to meet you"
+      "Xin chào",
+      "Good to see you"
     ];
     return greetings[Math.floor(Math.random() * greetings.length)];
   }
