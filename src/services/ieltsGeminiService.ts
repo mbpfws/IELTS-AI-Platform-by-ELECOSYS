@@ -57,16 +57,16 @@ class IELTSGeminiService {
 By incorporating bilingual support and understanding the specific needs of Vietnamese learners, you will effectively guide them towards achieving their desired IELTS speaking band score. Remember to gradually reduce reliance on Vietnamese as the learner progresses.`;
 
   constructor() {
-    const genAI = new GoogleGenerativeAI(process.env.NEXT_PUBLIC_GEMINI_API_KEY || '');
-    this.model = genAI.getGenerativeModel({
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('NEXT_PUBLIC_GEMINI_API_KEY is not set');
+    }
+    const genAI = new GoogleGenerativeAI(apiKey);
+    this.model = genAI.getGenerativeModel({ 
       model: "learnlm-1.5-pro-experimental",
       generationConfig: {
-        temperature: 1,
-        topP: 0.95,
-        topK: 64,
-        maxOutputTokens: 5000,
-      },
-      tools: [{codeExecution: {}}],
+        maxOutputTokens: 4000,
+      }
     });
   }
 

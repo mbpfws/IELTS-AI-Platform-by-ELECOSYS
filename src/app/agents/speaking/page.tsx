@@ -97,6 +97,11 @@ const SpeakingPage: React.FC = () => {
   }, []);
 
   const handleTemplateSelect = (template: any) => {
+    if (!template?.id) {
+      setError('Invalid template selected');
+      return;
+    }
+    console.log('Selected template:', template);
     setSelectedTemplate(template);
     setIsSessionDialogOpen(true);
   };
@@ -104,35 +109,64 @@ const SpeakingPage: React.FC = () => {
   const startSession = async () => {
     try {
       setIsLoading(true);
-      if (!selectedTemplate || !userName) {
-        throw new Error('Template and user name are required');
+      setError(null); // Clear any previous errors
+
+      // Validate required fields
+      if (!selectedTemplate?.id) {
+        throw new Error('Please select a valid template to start the session');
+      }
+      if (!userName.trim()) {
+        throw new Error('Please enter your name to start the session');
       }
 
-      // First create the session
+      console.log('Starting session with template:', {
+        id: selectedTemplate.id,
+        title: selectedTemplate.title_en || selectedTemplate.title,
+        duration: sessionDuration
+      });
+
+      // Create the session
       const sessionResponse = await databaseService.createSession({
         templateId: selectedTemplate.id,
         duration: sessionDuration
       });
 
-      if (!sessionResponse || !sessionResponse.template || !sessionResponse.template.parts || sessionResponse.template.parts.length === 0) {
-        throw new Error('Invalid session or template data');
+      console.log('Session created:', sessionResponse);
+
+      // Validate session response
+      if (!sessionResponse?.id) {
+        throw new Error('Failed to create session - invalid session ID');
+      }
+      if (!sessionResponse?.template?.parts?.length) {
+        throw new Error('Invalid template data - no parts found');
       }
 
-      // Then initialize the Gemini service with the session
+      // Get the initial prompt
       const prompt = `Part ${sessionResponse.template.parts[0].part}: ${sessionResponse.template.parts[0].prompt}`;
-      const response = await ieltsGeminiService.initializeSession({
+      
+      // Initialize Gemini service
+      const geminiResponse = await ieltsGeminiService.initializeSession({
         userName,
         templatePrompt: prompt,
-        sessionId: sessionResponse.id, // Use session ID here
+        sessionId: sessionResponse.id,
         duration: sessionDuration
       });
 
-      setMessages([{ role: 'assistant', content: response.message }]);
+      console.log('Session initialized with Gemini:', geminiResponse);
+
+      if (!geminiResponse?.message) {
+        throw new Error('Failed to get initial response from AI tutor');
+      }
+
+      // Update UI state
+      setMessages([{ role: 'assistant', content: geminiResponse.message }]);
       setIsSessionActive(true);
       setIsSessionDialogOpen(false);
+      
     } catch (error) {
-      console.error('Error starting session:', error);
-      setError('Failed to start session. Please try again.');
+      console.error('Session initialization failed:', error);
+      setError(error instanceof Error ? error.message : 'Failed to start session. Please try again.');
+      setIsSessionActive(false);
     } finally {
       setIsLoading(false);
     }

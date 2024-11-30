@@ -69,17 +69,42 @@ export class DatabaseService {
     if (this.isProduction) {
       return await supabaseService.createSession(data);
     } else {
-      const response = await fetch('/api/sessions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify(data),
-      });
-      if (!response.ok) {
-        throw new Error('Failed to create session');
+      try {
+        // First verify that the template exists
+        const template = await prisma.speaking_Template.findUnique({
+          where: { id: data.templateId },
+          include: { parts: true }
+        });
+
+        if (!template) {
+          throw new Error(`Template with ID ${data.templateId} not found`);
+        }
+
+        // Create the session with the verified template
+        const session = await prisma.speaking_Session.create({
+          data: {
+            userId: data.userId || null,
+            templateId: data.templateId,
+            duration: data.duration,
+          },
+          include: {
+            template: {
+              include: {
+                parts: true
+              }
+            }
+          }
+        });
+        
+        if (!session) {
+          throw new Error('Failed to create session');
+        }
+        
+        return session;
+      } catch (error) {
+        console.error('Error creating session:', error);
+        throw new Error(error instanceof Error ? error.message : 'Failed to create session');
       }
-      return await response.json();
     }
   }
 
