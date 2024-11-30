@@ -55,6 +55,45 @@ const part1Templates: Template[] = [
     duration: 4,
     targetBand: 6.0,
     systemPrompt: "You are an IELTS examiner conducting Part 1 of the speaking test, focusing on hobbies and leisure activities."
+  },
+  {
+    id: "part1-4",
+    titleEn: "Home and Accommodation",
+    titleVi: "Nhà ở và Chỗ ở",
+    description: "Questions about where you live and your home",
+    descriptionEn: "Questions about where you live and your home",
+    descriptionVi: "Các câu hỏi về nơi bạn sống và nhà của bạn",
+    level: "beginner",
+    topics: ["home", "accommodation", "living"],
+    duration: 4,
+    targetBand: 6.0,
+    systemPrompt: "You are an IELTS examiner conducting Part 1 of the speaking test, focusing on home and living arrangements."
+  },
+  {
+    id: "part1-5",
+    titleEn: "Daily Routine and Lifestyle",
+    titleVi: "Thói quen và Lối sống Hàng ngày",
+    description: "Questions about your daily activities and lifestyle",
+    descriptionEn: "Questions about your daily activities and lifestyle",
+    descriptionVi: "Các câu hỏi về hoạt động hàng ngày và lối sống của bạn",
+    level: "beginner",
+    topics: ["routine", "lifestyle", "daily life"],
+    duration: 4,
+    targetBand: 6.0,
+    systemPrompt: "You are an IELTS examiner conducting Part 1 of the speaking test, focusing on daily routines and lifestyle habits."
+  },
+  {
+    id: "part1-6",
+    titleEn: "Weather and Seasons",
+    titleVi: "Thời tiết và Mùa",
+    description: "Questions about weather preferences and seasonal activities",
+    descriptionEn: "Questions about weather preferences and seasonal activities",
+    descriptionVi: "Các câu hỏi về sở thích thời tiết và hoạt động theo mùa",
+    level: "beginner",
+    topics: ["weather", "seasons", "climate"],
+    duration: 4,
+    targetBand: 6.0,
+    systemPrompt: "You are an IELTS examiner conducting Part 1 of the speaking test, focusing on weather and seasonal preferences."
   }
 ];
 
@@ -97,6 +136,45 @@ const part2Templates: Template[] = [
     duration: 3,
     targetBand: 6.5,
     systemPrompt: "You are an IELTS examiner conducting Part 2 of the speaking test. Ask the candidate to describe a memorable event."
+  },
+  {
+    id: "part2-4",
+    titleEn: "Describing an Object",
+    titleVi: "Mô tả một Vật thể",
+    description: "Talk about an important object or possession",
+    descriptionEn: "Talk about an important object or possession",
+    descriptionVi: "Nói về một vật thể hoặc tài sản quan trọng",
+    level: "intermediate",
+    topics: ["objects", "possessions", "description"],
+    duration: 3,
+    targetBand: 6.5,
+    systemPrompt: "You are an IELTS examiner conducting Part 2 of the speaking test. Ask the candidate to describe a meaningful object they own."
+  },
+  {
+    id: "part2-5",
+    titleEn: "Describing a Photograph",
+    titleVi: "Mô tả một Bức ảnh",
+    description: "Describe a memorable photograph",
+    descriptionEn: "Describe a memorable photograph",
+    descriptionVi: "Mô tả một bức ảnh đáng nhớ",
+    level: "intermediate",
+    topics: ["photographs", "memories", "description"],
+    duration: 3,
+    targetBand: 6.5,
+    systemPrompt: "You are an IELTS examiner conducting Part 2 of the speaking test. Ask the candidate to describe a photograph that means something to them."
+  },
+  {
+    id: "part2-6",
+    titleEn: "Describing a Journey",
+    titleVi: "Mô tả một Chuyến đi",
+    description: "Talk about a memorable journey or trip",
+    descriptionEn: "Talk about a memorable journey or trip",
+    descriptionVi: "Nói về một chuyến đi đáng nhớ",
+    level: "intermediate",
+    topics: ["travel", "journey", "experiences"],
+    duration: 3,
+    targetBand: 6.5,
+    systemPrompt: "You are an IELTS examiner conducting Part 2 of the speaking test. Ask the candidate to describe a journey that was significant to them."
   }
 ];
 
@@ -139,6 +217,45 @@ const part3Templates: Template[] = [
     duration: 4,
     targetBand: 7.0,
     systemPrompt: "You are an IELTS examiner conducting Part 3 of the speaking test. Engage in a discussion about environmental issues and sustainability."
+  },
+  {
+    id: "part3-4",
+    titleEn: "Education and Learning",
+    titleVi: "Giáo dục và Học tập",
+    description: "Discuss modern education systems and learning methods",
+    descriptionEn: "Discuss modern education systems and learning methods",
+    descriptionVi: "Thảo luận về hệ thống giáo dục và phương pháp học tập hiện đại",
+    level: "advanced",
+    topics: ["education", "learning", "teaching"],
+    duration: 4,
+    targetBand: 7.0,
+    systemPrompt: "You are an IELTS examiner conducting Part 3 of the speaking test. Engage in a discussion about education systems and learning approaches."
+  },
+  {
+    id: "part3-5",
+    titleEn: "Work and Career Development",
+    titleVi: "Công việc và Phát triển Nghề nghiệp",
+    description: "Discuss career choices and workplace trends",
+    descriptionEn: "Discuss career choices and workplace trends",
+    descriptionVi: "Thảo luận về lựa chọn nghề nghiệp và xu hướng nơi làm việc",
+    level: "advanced",
+    topics: ["work", "career", "professional development"],
+    duration: 4,
+    targetBand: 7.0,
+    systemPrompt: "You are an IELTS examiner conducting Part 3 of the speaking test. Discuss modern workplace trends and career development."
+  },
+  {
+    id: "part3-6",
+    titleEn: "Media and Communication",
+    titleVi: "Truyền thông và Giao tiếp",
+    description: "Discuss the impact of media and modern communication",
+    descriptionEn: "Discuss the impact of media and modern communication",
+    descriptionVi: "Thảo luận về tác động của truyền thông và giao tiếp hiện đại",
+    level: "advanced",
+    topics: ["media", "communication", "social media"],
+    duration: 4,
+    targetBand: 7.0,
+    systemPrompt: "You are an IELTS examiner conducting Part 3 of the speaking test. Engage in a discussion about media influence and communication changes."
   }
 ];
 
