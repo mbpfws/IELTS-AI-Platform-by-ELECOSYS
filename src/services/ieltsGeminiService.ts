@@ -72,6 +72,10 @@ By incorporating bilingual support and understanding the specific needs of Vietn
 
   async initializeSession(config: SessionConfig): Promise<SessionResponse> {
     try {
+      if (!config.templateId || !config.userName || !config.templatePrompt) {
+        throw new Error('Missing required session configuration');
+      }
+
       // Create a new chat session with proper history order
       this.chatSession = this.model.startChat({
         history: [
@@ -108,7 +112,7 @@ By incorporating bilingual support and understanding the specific needs of Vietn
       };
     } catch (error) {
       console.error('Error initializing session:', error);
-      throw error;
+      throw new Error(error instanceof Error ? error.message : 'Failed to initialize session');
     }
   }
 

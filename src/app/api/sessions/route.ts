@@ -8,7 +8,7 @@ export async function POST(request: Request) {
     const data = await request.json();
     const session = await prisma.speaking_Session.create({
       data: {
-        userId: data.userId,
+        userId: data.userId || null,
         templateId: data.templateId,
         duration: data.duration,
       },

@@ -62,7 +62,7 @@ export class DatabaseService {
 
   // Session Management
   async createSession(data: {
-    userId: string;
+    userId?: string;
     templateId: string;
     duration: number;
   }) {

@@ -96,44 +96,34 @@ const SpeakingPage: React.FC = () => {
     loadTemplates();
   }, []);
 
-  const handleTemplateSelect = async (template: any) => {
-    try {
-      // Create a new session when a template is selected
-      const session = await databaseService.createSession({
-        userId: 'current-user-id', // Replace with actual user ID from auth
-        templateId: template.id,
-        duration: template.duration
-      });
-      
-      // Navigate to the session or start the speaking test
-      // Add your navigation logic here
-    } catch (error) {
-      console.error('Error creating session:', error);
-    }
+  const handleTemplateSelect = (template: any) => {
+    setSelectedTemplate(template);
+    setIsSessionDialogOpen(true);
   };
 
   const startSession = async () => {
     try {
       setIsLoading(true);
-      if (!selectedTemplate || !userName) return;
+      if (!selectedTemplate || !userName) {
+        throw new Error('Template and user name are required');
+      }
 
       // First create the session
-      const session = await databaseService.createSession({
-        userId: '00000000-0000-0000-0000-000000000000', // Anonymous user for now
+      const sessionResponse = await databaseService.createSession({
         templateId: selectedTemplate.id,
         duration: sessionDuration
       });
 
-      if (!session || !session.template || !session.template.parts || session.template.parts.length === 0) {
+      if (!sessionResponse || !sessionResponse.template || !sessionResponse.template.parts || sessionResponse.template.parts.length === 0) {
         throw new Error('Invalid session or template data');
       }
 
       // Then initialize the Gemini service with the session
-      const prompt = `Part ${session.template.parts[0].part}: ${session.template.parts[0].prompt}`;
+      const prompt = `Part ${sessionResponse.template.parts[0].part}: ${sessionResponse.template.parts[0].prompt}`;
       const response = await ieltsGeminiService.initializeSession({
         userName,
         templatePrompt: prompt,
-        templateId: session.id, // Use the session ID instead of template ID
+        templateId: sessionResponse.id,
         duration: sessionDuration
       });
 
@@ -234,7 +224,7 @@ const SpeakingPage: React.FC = () => {
                                 ? 'ring-2 ring-primary'
                                 : ''
                             }`}
-                            onClick={() => setSelectedTemplate(template)}
+                            onClick={() => handleTemplateSelect(template)}
                           >
                             <CardHeader>
                               <CardTitle>
