@@ -52,11 +52,11 @@ export class DatabaseService {
     if (this.isProduction) {
       return await supabaseService.getTemplates();
     } else {
-      return await prisma.speaking_Template.findMany({
-        include: {
-          parts: true
-        }
-      });
+      const response = await fetch('/api/templates');
+      if (!response.ok) {
+        throw new Error('Failed to fetch templates');
+      }
+      return await response.json();
     }
   }
 
@@ -69,13 +69,17 @@ export class DatabaseService {
     if (this.isProduction) {
       return await supabaseService.createSession(data);
     } else {
-      return await prisma.speaking_Session.create({
-        data: {
-          userId: data.userId,
-          templateId: data.templateId,
-          duration: data.duration,
-        }
+      const response = await fetch('/api/sessions', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       });
+      if (!response.ok) {
+        throw new Error('Failed to create session');
+      }
+      return await response.json();
     }
   }
 
@@ -93,15 +97,17 @@ export class DatabaseService {
         content: data.content
       });
     } else {
-      return await prisma.speaking_Message.create({
-        data: {
-          sessionId: data.sessionId,
-          content: data.content,
-          role: data.role,
-          responseTime: data.responseTime,
-          wordCount: data.wordCount
-        }
+      const response = await fetch('/api/messages', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
       });
+      if (!response.ok) {
+        throw new Error('Failed to add message');
+      }
+      return await response.json();
     }
   }
 
@@ -117,12 +123,17 @@ export class DatabaseService {
     if (this.isProduction) {
       return await supabaseService.updateSessionMetrics(sessionId, metrics);
     } else {
-      return await prisma.speaking_Metrics.create({
-        data: {
-          sessionId,
-          ...metrics
-        }
+      const response = await fetch(`/api/sessions/${sessionId}/metrics`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(metrics),
       });
+      if (!response.ok) {
+        throw new Error('Failed to update metrics');
+      }
+      return await response.json();
     }
   }
 
@@ -130,20 +141,11 @@ export class DatabaseService {
     if (this.isProduction) {
       return await supabaseService.getSessionMessages(sessionId);
     } else {
-      return await prisma.speaking_Session.findUnique({
-        where: { id: sessionId },
-        include: {
-          messages: true,
-          metrics: true,
-          feedback: true,
-          recordings: true,
-          template: {
-            include: {
-              parts: true
-            }
-          }
-        }
-      });
+      const response = await fetch(`/api/sessions/${sessionId}`);
+      if (!response.ok) {
+        throw new Error('Failed to fetch session details');
+      }
+      return await response.json();
     }
   }
 }

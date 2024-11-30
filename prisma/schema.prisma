@@ -117,8 +117,13 @@ model Speaking_Feedback {
 model Speaking_Template {
   id            String            @id @default(uuid())
   title         String
+  title_vi      String?
   description   String
+  description_vi String?
   duration      Int              // Duration in minutes
+  level         String           @default("beginner") // beginner, intermediate, advanced
+  target_band   Float           @default(6.0)
+  topics_json   String?         @default("[]") // Store topics as JSON string
   parts         Speaking_Part[]
   sessions      Speaking_Session[]
   createdAt     DateTime         @default(now())

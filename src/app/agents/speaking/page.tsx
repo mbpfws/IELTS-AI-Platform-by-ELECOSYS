@@ -63,17 +63,32 @@ const SpeakingPage: React.FC = () => {
   useEffect(() => {
     const loadTemplates = async () => {
       try {
+        setLoading(true);
         const allTemplates = await databaseService.getTemplates();
+        
         // Organize templates by part
         const organizedTemplates = allTemplates.reduce((acc: Record<string, any[]>, template) => {
-          const part = `part${template.parts[0]?.part || 1}`;
+          // Extract part number from type (e.g., "part1" -> "part1")
+          const part = template.type;
           if (!acc[part]) acc[part] = [];
-          acc[part].push(template);
+          acc[part].push({
+            ...template,
+            // Ensure all required fields are present
+            title_en: template.title_en || template.title || 'Untitled',
+            title_vi: template.title_vi || template.title || 'Chưa có tiêu đề',
+            description_en: template.description_en || template.description || '',
+            description_vi: template.description_vi || template.description || '',
+            level: template.level || 'beginner',
+            target_band: template.target_band || 6.0,
+          });
           return acc;
         }, {});
+        
         setTemplates(organizedTemplates);
+        console.log('Loaded templates:', organizedTemplates); // Debug log
       } catch (error) {
         console.error('Error loading templates:', error);
+        setError('Failed to load templates. Please try refreshing the page.');
       } finally {
         setLoading(false);
       }
@@ -105,6 +120,8 @@ const SpeakingPage: React.FC = () => {
       const response = await ieltsGeminiService.initializeSession({
         userName,
         templatePrompt: selectedTemplate.system_prompt,
+        templateId: selectedTemplate.id,
+        duration: sessionDuration
       });
 
       await setMessages([{ role: 'assistant', content: response.message }]);

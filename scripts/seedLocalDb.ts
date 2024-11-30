@@ -274,8 +274,13 @@ async function seedTemplates() {
       await prisma.speaking_Template.create({
         data: {
           title: template.titleEn,
+          title_vi: template.titleVi,
           description: template.descriptionEn || template.description,
+          description_vi: template.descriptionVi,
           duration: template.duration,
+          level: template.level,
+          target_band: template.targetBand,
+          topics_json: JSON.stringify(template.topics),
           parts: {
             create: [{
               part: 1,
@@ -291,8 +296,13 @@ async function seedTemplates() {
       await prisma.speaking_Template.create({
         data: {
           title: template.titleEn,
+          title_vi: template.titleVi,
           description: template.descriptionEn || template.description,
+          description_vi: template.descriptionVi,
           duration: template.duration,
+          level: template.level,
+          target_band: template.targetBand,
+          topics_json: JSON.stringify(template.topics),
           parts: {
             create: [{
               part: 2,
@@ -308,8 +318,13 @@ async function seedTemplates() {
       await prisma.speaking_Template.create({
         data: {
           title: template.titleEn,
+          title_vi: template.titleVi,
           description: template.descriptionEn || template.description,
+          description_vi: template.descriptionVi,
           duration: template.duration,
+          level: template.level,
+          target_band: template.targetBand,
+          topics_json: JSON.stringify(template.topics),
           parts: {
             create: [{
               part: 3,
