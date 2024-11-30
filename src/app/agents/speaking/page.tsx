@@ -69,11 +69,12 @@ const SpeakingPage: React.FC = () => {
         // Organize templates by part
         const organizedTemplates = allTemplates.reduce((acc: Record<string, any[]>, template) => {
           // Extract part number from type (e.g., "part1" -> "part1")
-          const part = template.type;
+          const part = template.type || 'part1'; // Default to part1 if type is missing
           if (!acc[part]) acc[part] = [];
           acc[part].push({
             ...template,
             // Ensure all required fields are present
+            id: template.id,
             title_en: template.title_en || template.title || 'Untitled',
             title_vi: template.title_vi || template.title || 'Chưa có tiêu đề',
             description_en: template.description_en || template.description || '',
@@ -98,6 +99,7 @@ const SpeakingPage: React.FC = () => {
 
   const handleTemplateSelect = (template: any) => {
     if (!template?.id) {
+      console.error('Invalid template:', template);
       setError('Invalid template selected');
       return;
     }
@@ -143,6 +145,7 @@ const SpeakingPage: React.FC = () => {
 
       // Get the initial prompt
       const prompt = `Part ${sessionResponse.template.parts[0].part}: ${sessionResponse.template.parts[0].prompt}`;
+      console.log('Using prompt:', prompt);
       
       // Initialize Gemini service
       const geminiResponse = await ieltsGeminiService.initializeSession({

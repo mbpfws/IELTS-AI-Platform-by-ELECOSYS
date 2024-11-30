@@ -78,18 +78,23 @@ export class DatabaseService {
           body: JSON.stringify(data),
         });
 
+        const responseData = await response.json().catch(() => null);
+
         if (!response.ok) {
-          const errorData = await response.json();
-          throw new Error(errorData.error || 'Failed to create session');
+          const errorMessage = responseData?.error || `Failed to create session (${response.status})`;
+          throw new Error(errorMessage);
         }
 
-        const session = await response.json();
-        
-        if (!session?.id || !session?.template?.parts?.length) {
+        if (!responseData) {
+          throw new Error('Empty response received from server');
+        }
+
+        if (!responseData.id || !responseData.template?.parts?.length) {
+          console.error('Invalid session data:', responseData);
           throw new Error('Invalid session data received from server');
         }
         
-        return session;
+        return responseData;
       } catch (error) {
         console.error('Error creating session:', error);
         throw error instanceof Error ? error : new Error('Failed to create session');
