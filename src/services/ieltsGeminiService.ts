@@ -1,5 +1,5 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
-import { supabaseService } from './supabaseService';
+import { databaseService } from './databaseService';
 import { v4 as uuidv4 } from 'uuid';
 
 interface SessionConfig {
@@ -84,37 +84,21 @@ By incorporating bilingual support and understanding the specific needs of Vietn
         ]
       });
 
-      // Validate template exists before creating session
-      const templates = await supabaseService.getTemplates();
-      const template = templates.find(t => t.id === config.templateId);
-      if (!template) {
-        throw new Error('Template not found');
-      }
-
-      // Create a session in Supabase with proper UUID
-      const session = await supabaseService.createSession({
-        user_id: '00000000-0000-0000-0000-000000000000', // Default anonymous user ID
-        template_id: config.templateId,
-        duration: config.duration || 15,
-      });
-
-      this.currentSessionId = session.id;
-
       // Get the initial response
       const result = await this.chatSession.sendMessage({ text: "Please introduce yourself as my IELTS tutor and explain how this session will proceed." });
       const response = result.response;
       const text = response.text();
 
-      // Create the first message in Supabase
-      await supabaseService.createMessage({
-        session_id: session.id,
-        role: 'assistant',
+      // Create the first message in the database
+      await databaseService.addMessageToSession({
+        sessionId: config.templateId,
         content: text,
+        role: 'assistant'
       });
 
       return {
         message: text,
-        session_id: session.id,
+        session_id: config.templateId,
         metrics: {
           fluency: 0,
           lexical: 0,
@@ -134,11 +118,11 @@ By incorporating bilingual support and understanding the specific needs of Vietn
         throw new Error('No active session. Please start a new session first.');
       }
 
-      // Create user message in Supabase
-      await supabaseService.createMessage({
+      // Create user message in database
+      await databaseService.createMessage({
         session_id: this.currentSessionId,
-        role: 'user',
         content,
+        role: 'user'
       });
 
       // Process with Gemini
@@ -149,11 +133,11 @@ By incorporating bilingual support and understanding the specific needs of Vietn
       const response = result.response;
       const text = response.text();
 
-      // Create assistant message in Supabase
-      await supabaseService.createMessage({
+      // Create assistant message in database
+      await databaseService.createMessage({
         session_id: this.currentSessionId,
-        role: 'assistant',
         content: text,
+        role: 'assistant'
       });
 
       // Extract metrics if this was an audio response
@@ -161,7 +145,7 @@ By incorporating bilingual support and understanding the specific needs of Vietn
       if (isAudio) {
         metrics = this.extractMetrics(text);
         if (metrics) {
-          await supabaseService.updateSessionMetrics(this.currentSessionId, metrics);
+          await databaseService.updateSessionMetrics(this.currentSessionId, metrics);
         }
       }
 
@@ -218,21 +202,21 @@ By incorporating bilingual support and understanding the specific needs of Vietn
         const response = result.response;
         const text = response.text();
 
-        // Create final message in Supabase
-        await supabaseService.createMessage({
+        // Create final message in database
+        await databaseService.createMessage({
           session_id: this.currentSessionId,
-          role: 'assistant',
           content: text,
+          role: 'assistant'
         });
 
         // Extract final metrics if any
         const metrics = this.extractMetrics(text);
         if (metrics) {
-          await supabaseService.updateSessionMetrics(this.currentSessionId, metrics);
+          await databaseService.updateSessionMetrics(this.currentSessionId, metrics);
         }
 
         // End the session
-        await supabaseService.endSession(this.currentSessionId);
+        await databaseService.endSession(this.currentSessionId);
         this.currentSessionId = null;
         this.chatSession = null;
       }

@@ -11,6 +11,13 @@ export async function POST(request: Request) {
         userId: data.userId,
         templateId: data.templateId,
         duration: data.duration,
+      },
+      include: {
+        template: {
+          include: {
+            parts: true
+          }
+        }
       }
     });
 

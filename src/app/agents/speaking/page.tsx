@@ -117,14 +117,27 @@ const SpeakingPage: React.FC = () => {
       setIsLoading(true);
       if (!selectedTemplate || !userName) return;
 
-      const response = await ieltsGeminiService.initializeSession({
-        userName,
-        templatePrompt: selectedTemplate.system_prompt,
+      // First create the session
+      const session = await databaseService.createSession({
+        userId: '00000000-0000-0000-0000-000000000000', // Anonymous user for now
         templateId: selectedTemplate.id,
         duration: sessionDuration
       });
 
-      await setMessages([{ role: 'assistant', content: response.message }]);
+      if (!session || !session.template || !session.template.parts || session.template.parts.length === 0) {
+        throw new Error('Invalid session or template data');
+      }
+
+      // Then initialize the Gemini service with the session
+      const prompt = `Part ${session.template.parts[0].part}: ${session.template.parts[0].prompt}`;
+      const response = await ieltsGeminiService.initializeSession({
+        userName,
+        templatePrompt: prompt,
+        templateId: session.id, // Use the session ID instead of template ID
+        duration: sessionDuration
+      });
+
+      setMessages([{ role: 'assistant', content: response.message }]);
       setIsSessionActive(true);
       setIsSessionDialogOpen(false);
     } catch (error) {
