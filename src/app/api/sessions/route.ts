@@ -6,6 +6,29 @@ const prisma = new PrismaClient();
 export async function POST(request: Request) {
   try {
     const data = await request.json();
+
+    // Validate required fields
+    if (!data.templateId) {
+      return NextResponse.json(
+        { error: 'Template ID is required' },
+        { status: 400 }
+      );
+    }
+
+    // First verify that the template exists
+    const template = await prisma.speaking_Template.findUnique({
+      where: { id: data.templateId },
+      include: { parts: true }
+    });
+
+    if (!template) {
+      return NextResponse.json(
+        { error: `Template with ID ${data.templateId} not found` },
+        { status: 404 }
+      );
+    }
+
+    // Create the session with the verified template
     const session = await prisma.speaking_Session.create({
       data: {
         userId: data.userId || null,
@@ -25,7 +48,7 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Error creating session:', error);
     return NextResponse.json(
-      { error: 'Failed to create session' },
+      { error: error instanceof Error ? error.message : 'Failed to create session' },
       { status: 500 }
     );
   } finally {
