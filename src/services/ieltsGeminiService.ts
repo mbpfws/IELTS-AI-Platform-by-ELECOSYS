@@ -196,22 +196,38 @@ By incorporating bilingual support and understanding the specific needs of Vietn
 
   async initializeSession(config: SessionConfig): Promise<SessionResponse> {
     try {
-      // Create new chat session
-      this.chatSession = this.model.startChat({
-        history: [
-          {
-            role: 'user',
-            parts: [{ text: this.systemInstruction }]
-          }
-        ]
-      });
+      const chat = this.model.startChat();
+      
+      // Set initial system context
+      await chat.sendMessage(this.systemInstruction);
+      
+      // Start with template content but keep it natural
+      const startSessionPrompt = `Template Content for Reference:
+      ${config.templatePrompt}
 
-      // Generate session ID
-      this.currentSessionId = uuidv4();
+      You are a friendly IELTS speaking tutor. Keep responses natural:
+      1. Start with a simple welcome and the first topic
+      2. Ask only ONE question at a time
+      3. Stay focused on the current topic
+      4. Be conversational, not too formal5. Adaptive Teaching Techniques:** Employ various teaching methodologies based on the learner's needs and learning style. This includes:
+      6.Direct Instruction:** Explain specific grammar rules, vocabulary, or pronunciation concepts relevant to IELTS speaking. **For low-level learners, provide explanations and examples in both English and Vietnamese when necessary to ensure understanding.**  Use Vietnamese to clarify complex concepts or illustrate subtle differences between English and Vietnamese.
+      7.Guided Practice:** Provide structured exercises and activities like topic brainstorming, idea generation, and answer structuring.  Encourage learners to verbalize their thoughts in Vietnamese if it helps them formulate their ideas before expressing them in English.
+      8.Communicative Activities:** Engage learners in role-plays, discussions, and debates to practice spontaneous speaking. Allow learners to initially use Vietnamese if they struggle to express themselves fluently in English, gradually transitioning to full English use.
+      9.Feedback and Error Correction:** Offer constructive feedback focusing on areas for improvement, using clear examples and explanations. **For low-level learners, use Vietnamese to explain the nature of errors and suggest corrections, if needed.**  Point out common mistakes Vietnamese speakers make and provide targeted strategies for overcoming them.
+      10.Targeted Criteria Practice:** Design activities that specifically focus on improving each of the four assessment criteria.  Adapt these activities to suit the needs of Vietnamese learners, incorporating bilingual support where appropriate.
+      
+      Keep your response natural.
+      
 
-      // Initialize session state
+      Begin the session naturally, focusing on the first topic from the template.`;
+
+      const response = await chat.sendMessage(startSessionPrompt);
+      const responseText = response.response.text();
+
+      this.chatSession = chat;
+      this.currentSessionId = config.sessionId;
       this.sessionState = {
-        timeRemaining: config.duration ? config.duration * 60 : 900, // Default 15 minutes
+        timeRemaining: (config.duration || 15) * 60,
         isRecording: false,
         currentMode: 'audio',
         metrics: {
@@ -223,48 +239,19 @@ By incorporating bilingual support and understanding the specific needs of Vietn
         notes: [],
         currentPart: 1,
         templateContent: config.templatePrompt,
-        lastQuestion: '',
+        lastQuestion: responseText,
         conversationHistory: []
       };
 
-      // Start session timer
       this.startSessionTimer();
-
-      // Generate initial response
-      const initialPrompt = `
-        Student Name: ${config.userName}
-        Template Content: ${config.templatePrompt}
-        Duration: ${config.duration || 15} minutes
-
-        Start the IELTS speaking practice session. 
-        1. Introduce yourself as an IELTS speaking tutor
-        2. Briefly explain how the session will work
-        3. Give the first question from the template
-        4. For low-level learners, provide Vietnamese translation of the question
-        
-        Keep your response natural and encouraging.
-      `;
-
-      const response = await this.chatSession.sendMessage(initialPrompt);
-      const responseText = response.response.text();
-
-      // Update conversation history
-      this.sessionState.conversationHistory.push({
-        role: 'assistant',
-        content: responseText
-      });
-      
-      this.sessionState.lastQuestion = responseText;
-
       return {
         message: responseText,
         session_id: this.currentSessionId,
         metrics: this.sessionState.metrics
       };
-
     } catch (error) {
       console.error('Error initializing session:', error);
-      throw new Error('Failed to initialize session. Please try again.');
+      throw error;
     }
   }
 

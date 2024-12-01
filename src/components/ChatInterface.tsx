@@ -1,264 +1,300 @@
 "use client";
 
 import { useState, useEffect, useRef } from 'react';
-import { FiSend, FiMic, FiMessageSquare, FiClock, FiX, FiPlayCircle, FiPauseCircle, FiStopCircle } from 'react-icons/fi';
+import { FiSend, FiRefreshCw } from 'react-icons/fi';
+import { geminiService } from '@/services/geminiService';
+import type { AgentType } from '@/types';
+import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
-import { Textarea } from "@/components/ui/textarea";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import type { AgentType } from '@/types';
 import SessionSidebar from './SessionSidebar';
+import type { ChatMessage } from '@/types/chat';
 import AudioRecorder from './AudioRecorder';
 import { LearningMetrics } from "@/types/learningMetrics";
 import { Progress } from "@/components/ui/progress";
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { geminiService } from '@/services/geminiService';
-
-interface Message {
-  role: 'assistant' | 'user';
-  content: string;
-  id?: string;
-}
 
 interface ChatInterfaceProps {
-  messages: Message[];
-  onSendMessage: (content: string, isAudio?: boolean) => Promise<void>;
-  isLoading: boolean;
-  metrics: {
-    fluency: number;
-    lexical: number;
-    grammar: number;
-    pronunciation: number;
-  };
-  sessionDuration: number;
-  isSessionActive: boolean;
-  onEndSession: () => void;
-  inputMode: 'text' | 'audio';
-  audioState: {
-    isRecording: boolean;
-    isPaused: boolean;
-    audioUrl?: string;
-    duration: number;
-  };
-  textMessage: string;
-  onTextMessageChange: (value: string) => void;
-  onToggleInputMode: () => void;
-  onStartRecording: () => void;
-  onStopRecording: () => void;
-  onPauseRecording: () => void;
-  onResumeRecording: () => void;
-  processingAudio: boolean;
-  timeRemaining: number;
+  agentType: AgentType;
+  systemInstruction: string;
+  templatePrompt?: string;
+  sessionId?: string;
+  customConfig?: {
+    modelName?: string;
+    temperature?: number;
+    topP?: number;
+    maxOutputTokens?: number;
+  }
 }
 
-const ChatInterface: React.FC<ChatInterfaceProps> = ({
-  messages,
-  onSendMessage,
-  isLoading,
-  metrics,
-  sessionDuration,
-  isSessionActive,
-  onEndSession,
-  inputMode,
-  audioState,
-  textMessage,
-  onTextMessageChange,
-  onToggleInputMode,
-  onStartRecording,
-  onStopRecording,
-  onPauseRecording,
-  onResumeRecording,
-  processingAudio,
-  timeRemaining,
-}) => {
+function ChatInterface({ agentType, systemInstruction, templatePrompt, sessionId, customConfig }: ChatInterfaceProps) {
+  const [messages, setMessages] = useState<ChatMessage[]>([]);
+  const [input, setInput] = useState('');
+  const [isLoading, setIsLoading] = useState(false);
+  const [isProcessing, setIsProcessing] = useState(false);
+  const [isClient, setIsClient] = useState(false);
+  const [metrics, setMetrics] = useState<LearningMetrics>({
+    sessionId: sessionId || '',
+    timestamp: new Date(),
+    duration: 0,
+    energyScore: {
+      engagement: 85,
+      comprehension: 80,
+      progress: 70,
+      confidence: 75
+    },
+    performance: {
+      taskResponse: 6.5,
+      coherenceCohesion: 6.0,
+      lexicalResource: 6.5,
+      grammaticalRange: 6.0
+    },
+    learningProgress: {
+      completedObjectives: [],
+      masteredConcepts: [],
+      areasForImprovement: [],
+      recommendedNextSteps: []
+    },
+    interactionMetrics: {
+      totalQuestions: 0,
+      questionsAnswered: 0,
+      averageResponseTime: 0,
+      clarificationRequests: 0
+    },
+    adaptivityMetrics: {
+      difficultyAdjustments: 0,
+      conceptRevisits: 0,
+      alternativeExplanations: 0,
+      customizedExamples: 0
+    },
+    feedback: {
+      strengthPoints: [],
+      improvementAreas: [],
+      bandScoreEstimate: 0,
+      confidenceLevel: 0
+    }
+  });
+
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
-  useEffect(() => {
+  const scrollToBottom = () => {
     messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
+  useEffect(() => {
+    scrollToBottom();
   }, [messages]);
 
-  return (
-    <div className="flex-1 flex flex-col h-screen">
-      {/* Chat Header */}
-      <header className="border-b border-border/40 p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="flex items-center justify-between max-w-[1200px] mx-auto">
-          <div className="flex items-center gap-4">
-            <Button 
-              variant="ghost" 
-              size="sm"
-              onClick={() => {
-                if (confirm('Are you sure you want to end this session?')) {
-                  onEndSession();
-                }
-              }}
-            >
-              <FiX className="h-4 w-4 mr-2" />
-              End Session
-            </Button>
-            <div className="flex items-center gap-2">
-              <FiClock className="h-4 w-4 text-muted-foreground" />
-              <span className="text-sm font-medium">
-                {Math.floor(timeRemaining / 60)}:{(timeRemaining % 60).toString().padStart(2, '0')}
-              </span>
-            </div>
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="flex flex-col gap-2">
-              <div className="grid grid-cols-2 gap-4">
-                <div className="flex flex-col">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Fluency</span>
-                    <span>{metrics.fluency.toFixed(1)}</span>
-                  </div>
-                  <Progress value={metrics.fluency * 11.11} className="h-2" />
-                </div>
-                <div className="flex flex-col">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Lexical</span>
-                    <span>{metrics.lexical.toFixed(1)}</span>
-                  </div>
-                  <Progress value={metrics.lexical * 11.11} className="h-2" />
-                </div>
-                <div className="flex flex-col">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Grammar</span>
-                    <span>{metrics.grammar.toFixed(1)}</span>
-                  </div>
-                  <Progress value={metrics.grammar * 11.11} className="h-2" />
-                </div>
-                <div className="flex flex-col">
-                  <div className="flex justify-between text-sm mb-1">
-                    <span>Pronunciation</span>
-                    <span>{metrics.pronunciation.toFixed(1)}</span>
-                  </div>
-                  <Progress value={metrics.pronunciation * 11.11} className="h-2" />
-                </div>
-              </div>
-            </div>
-          </div>
-        </div>
-      </header>
+  useEffect(() => {
+    setIsClient(true);
+  }, []);
 
-      {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-[800px] mx-auto space-y-4">
+  useEffect(() => {
+    if (isClient && templatePrompt && sessionId) {
+      const initialMessage: ChatMessage = {
+        role: 'assistant',
+        content: templatePrompt,
+        timestamp: Date.now(),
+        id: `initial-${sessionId}`
+      };
+      setMessages([initialMessage]);
+    }
+  }, [isClient, templatePrompt, sessionId]);
+
+  const updateMetrics = (userMessage: string, aiResponse: string) => {
+    setMetrics(prev => ({
+      ...prev,
+      interactionMetrics: {
+        ...prev.interactionMetrics,
+        totalQuestions: prev.interactionMetrics.totalQuestions + 1,
+        questionsAnswered: prev.interactionMetrics.questionsAnswered + 1,
+      },
+      energyScore: {
+        ...prev.energyScore,
+        progress: Math.min(100, prev.energyScore.progress + 5)
+      }
+    }));
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!input.trim() || isLoading) return;
+
+    const userMessage: ChatMessage = {
+      role: 'user',
+      content: input.trim(),
+      timestamp: Date.now(),
+      id: `user-${Date.now()}`
+    };
+
+    setMessages(prevMessages => [...prevMessages, userMessage]);
+    setInput('');
+    setIsLoading(true);
+
+    try {
+      const response = await geminiService.generateResponse(
+        input.trim(),
+        systemInstruction,
+        customConfig
+      );
+
+      const assistantMessage: ChatMessage = {
+        role: 'assistant',
+        content: response,
+        timestamp: Date.now(),
+        id: `assistant-${Date.now()}`
+      };
+
+      setMessages(prevMessages => [...prevMessages, assistantMessage]);
+      updateMetrics(input.trim(), response);
+    } catch (error) {
+      console.error('Error generating response:', error);
+      const errorMessage: ChatMessage = {
+        role: 'assistant',
+        content: 'Sorry, I encountered an error. Please try again.',
+        timestamp: Date.now(),
+        id: `error-${Date.now()}`
+      };
+      setMessages(prevMessages => [...prevMessages, errorMessage]);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
+  if (!isClient) {
+    return <div className="flex-1 flex items-center justify-center">Loading...</div>;
+  }
+
+  return (
+    <div className="flex h-[calc(100vh-4rem)]">
+      <div className="flex-1 flex flex-col max-w-5xl mx-auto">
+        <div className="flex-1 overflow-y-auto p-4 space-y-4">
           {messages.map((message, index) => (
             <div
-              key={message.id || index}
+              key={message.id}
               className={cn(
-                'flex',
-                message.role === 'assistant' ? 'justify-start' : 'justify-end'
+                "max-w-3xl mx-auto p-4 rounded-lg",
+                message.role === 'user'
+                  ? "ml-auto bg-blue-500 text-white"
+                  : "bg-white shadow-md"
               )}
             >
-              <div
-                className={cn(
-                  'max-w-[80%] rounded-lg p-4',
-                  message.role === 'assistant'
-                    ? 'bg-muted/50 text-foreground'
-                    : 'bg-primary text-primary-foreground'
-                )}
-              >
-                <div className="prose dark:prose-invert max-w-none">
-                  <ReactMarkdown remarkPlugins={[remarkGfm]}>
-                    {message.content}
-                  </ReactMarkdown>
-                </div>
-              </div>
+              <ReactMarkdown remarkPlugins={[remarkGfm]}>
+                {message.content}
+              </ReactMarkdown>
             </div>
           ))}
+          {isLoading && (
+            <div className="flex items-center space-x-2 text-slate-500 max-w-3xl mx-auto">
+              <span>AI đang suy nghĩ</span>
+              <div className="animate-pulse">...</div>
+            </div>
+          )}
           <div ref={messagesEndRef} />
+        </div>
+
+        <div className="p-4 border-t max-w-3xl mx-auto w-full">
+          <form onSubmit={handleSubmit} className="flex space-x-2">
+            <Input
+              value={input}
+              onChange={(e) => setInput(e.target.value)}
+              placeholder="Nhập tin nhắn của bạn..."
+              disabled={isLoading}
+              className="flex-1"
+            />
+            <Button type="submit" disabled={isLoading}>
+              <FiSend className="h-5 w-5" />
+            </Button>
+          </form>
         </div>
       </div>
 
-      {/* Chat Input */}
-      <div className="border-t border-border/40 p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-        <div className="max-w-[800px] mx-auto flex gap-4">
-          <Button
-            variant="outline"
-            size="icon"
-            onClick={onToggleInputMode}
-            className={cn(
-              'transition-colors',
-              inputMode === 'audio' && 'bg-primary text-primary-foreground'
-            )}
-            disabled={isLoading}
-          >
-            {inputMode === 'audio' ? <FiMic className="h-4 w-4" /> : <FiMessageSquare className="h-4 w-4" />}
-          </Button>
-          
-          {inputMode === 'audio' ? (
-            <div className="flex-1 flex items-center gap-2">
-              {audioState.isRecording ? (
-                <>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={audioState.isPaused ? onResumeRecording : onPauseRecording}
-                    className="transition-colors hover:bg-muted"
-                  >
-                    {audioState.isPaused ? (
-                      <FiPlayCircle className="h-4 w-4" />
-                    ) : (
-                      <FiPauseCircle className="h-4 w-4" />
-                    )}
-                  </Button>
-                  <Button
-                    variant="outline"
-                    size="icon"
-                    onClick={onStopRecording}
-                    className="transition-colors hover:bg-destructive hover:text-destructive-foreground"
-                  >
-                    <FiStopCircle className="h-4 w-4" />
-                  </Button>
-                </>
-              ) : (
-                <Button
-                  onClick={onStartRecording}
-                  variant="outline"
-                  size="icon"
-                  className="transition-colors hover:bg-primary hover:text-primary-foreground"
-                  disabled={isLoading}
-                >
-                  <FiMic className="h-4 w-4" />
-                </Button>
-              )}
-              {audioState.audioUrl && (
-                <audio src={audioState.audioUrl} controls className="flex-1 h-10" />
-              )}
-              {audioState.audioUrl && (
-                <Button
-                  onClick={() => onSendMessage(audioState.audioUrl!, true)}
-                  disabled={isLoading}
-                  className="transition-colors"
-                >
-                  <FiSend className="h-4 w-4" />
-                </Button>
-              )}
+      {/* Learning Metrics Sidebar */}
+      <div className="w-80 border-l bg-slate-50 overflow-y-auto p-4">
+        <div className="space-y-4">
+          <Card>
+            <div className="p-4">
+              <h3 className="text-lg font-semibold mb-3 bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+                Năng lượng học tập
+              </h3>
+              <div className="space-y-4">
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Mức độ tập trung</p>
+                  <Progress value={metrics.energyScore.engagement} className="h-2" />
+                  <p className="text-xs text-right mt-1">{metrics.energyScore.engagement}%</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Mức độ hiểu bài</p>
+                  <Progress value={metrics.energyScore.comprehension} className="h-2" />
+                  <p className="text-xs text-right mt-1">{metrics.energyScore.comprehension}%</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Tiến độ</p>
+                  <Progress value={metrics.energyScore.progress} className="h-2" />
+                  <p className="text-xs text-right mt-1">{metrics.energyScore.progress}%</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600 mb-1">Độ tự tin</p>
+                  <Progress value={metrics.energyScore.confidence} className="h-2" />
+                  <p className="text-xs text-right mt-1">{metrics.energyScore.confidence}%</p>
+                </div>
+              </div>
             </div>
-          ) : (
-            <div className="flex-1 flex gap-2">
-              <Textarea
-                value={textMessage}
-                onChange={(e) => onTextMessageChange(e.target.value)}
-                placeholder="Type your message..."
-                className="flex-1 min-h-[44px] resize-none"
-                rows={1}
-                disabled={isLoading}
-              />
-              <Button
-                onClick={() => {
-                  onSendMessage(textMessage);
-                  onTextMessageChange('');
-                }}
-                disabled={!textMessage.trim() || isLoading}
-                className="transition-colors"
-              >
-                <FiSend className="h-4 w-4" />
-              </Button>
+          </Card>
+
+          <Card>
+            <div className="p-4">
+              <h3 className="text-lg font-semibold mb-3 bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+                Điểm số IELTS
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-slate-600">Task Response</p>
+                  <p className="text-lg font-medium">{metrics.performance.taskResponse}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Coherence</p>
+                  <p className="text-lg font-medium">{metrics.performance.coherenceCohesion}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Lexical</p>
+                  <p className="text-lg font-medium">{metrics.performance.lexicalResource}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Grammar</p>
+                  <p className="text-lg font-medium">{metrics.performance.grammaticalRange}</p>
+                </div>
+              </div>
             </div>
-          )}
+          </Card>
+
+          <Card>
+            <div className="p-4">
+              <h3 className="text-lg font-semibold mb-3 bg-gradient-to-r from-blue-600 to-cyan-500 bg-clip-text text-transparent">
+                Thống kê tương tác
+              </h3>
+              <div className="grid grid-cols-2 gap-4">
+                <div>
+                  <p className="text-sm text-slate-600">Số câu hỏi</p>
+                  <p className="text-lg font-medium">{metrics.interactionMetrics.totalQuestions}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Đã trả lời</p>
+                  <p className="text-lg font-medium">{metrics.interactionMetrics.questionsAnswered}</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Thời gian TB</p>
+                  <p className="text-lg font-medium">{Math.round(metrics.interactionMetrics.averageResponseTime / 1000)}s</p>
+                </div>
+                <div>
+                  <p className="text-sm text-slate-600">Yêu cầu làm rõ</p>
+                  <p className="text-lg font-medium">{metrics.interactionMetrics.clarificationRequests}</p>
+                </div>
+              </div>
+            </div>
+          </Card>
         </div>
       </div>
     </div>
