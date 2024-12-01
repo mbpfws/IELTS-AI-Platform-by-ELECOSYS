@@ -312,9 +312,25 @@ const SpeakingPage: React.FC = () => {
         duration: sessionDuration
       });
 
+      const initialPrompt = `
+        This is an IELTS Speaking practice session for Part ${selectedTemplate.category}.
+        Topic: ${selectedTemplate.title}
+        Level: ${selectedTemplate.level}
+        Target Band: ${selectedTemplate.targetBand}
+        
+        ${selectedTemplate.prompt}
+        
+        Please start by introducing yourself as an IELTS tutor and begin with the first question.
+        Remember to:
+        1. Keep it natural and conversational
+        2. Provide Vietnamese translations for low-level learners
+        3. Give constructive feedback
+        4. Focus on the four IELTS speaking criteria
+      `;
+
       const sessionConfig = {
         userName: userName.trim(),
-        templatePrompt: selectedTemplate.prompt,
+        templatePrompt: initialPrompt,
         duration: sessionDuration,
       };
 
