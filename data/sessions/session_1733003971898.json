@@ -1,0 +1,74 @@
+{
+  "id": "session_1733003971898",
+  "templateId": "p1_2024q3_transportation_advanced",
+  "duration": 15,
+  "createdAt": "2024-11-30T21:59:31.898Z",
+  "status": "active",
+  "messages": [],
+  "metrics": null,
+  "feedback": null,
+  "template": {
+    "id": "p1_2024q3_transportation_advanced",
+    "title": "Transportation & Roads (2024 Q3)",
+    "titleVi": "Giao thông & Đường xá (Quý 3/2024)",
+    "titleEn": "Transportation & Roads (2024 Q3)",
+    "description": "Advanced discussion of transportation systems and urban infrastructure",
+    "descriptionVi": "Thảo luận nâng cao về hệ thống giao thông và cơ sở hạ tầng đô thị",
+    "descriptionEn": "Advanced discussion of transportation systems and urban infrastructure",
+    "part": 1,
+    "difficulty": "hard",
+    "taskType": "task1",
+    "systemPrompt": "This is a Band 7.0 IELTS Speaking session focusing on transportation and urban infrastructure for 2024 Q3.\n\nKey Band 7.0 Requirements:\n- Use sophisticated vocabulary related to transportation and infrastructure\n- Demonstrate complex grammatical structures\n- Provide detailed responses with specific examples\n- Show clear pronunciation and natural intonation\n\nTeaching Strategy for Band 7.0:\n1. Response Structure:\n   - Initial statement with technical vocabulary\n   - Detailed explanation using complex grammar\n   - Personal experience or observation\n   - Thoughtful conclusion\n\n2. Advanced Transportation Vocabulary:\n   - Infrastructure: transportation network, urban mobility, traffic management systems\n   - Development: sustainable transportation, infrastructure development, urban planning\n   - Features: dedicated cycling lanes, pedestrian-friendly design, traffic calming measures\n   Vietnamese translations:\n   - \"transportation network\" = \"mạng lưới giao thông\"\n   - \"urban mobility\" = \"di chuyển đô thị\"\n   - \"traffic management\" = \"quản lý giao thông\"\n\n3. Complex Grammar Patterns:\n   - Present perfect continuous: \"The city has been implementing new traffic measures\"\n   - Passive voice: \"The roads are being upgraded to accommodate more cyclists\"\n   - Conditionals: \"If the infrastructure were better maintained, we would see fewer traffic issues\"\n\n4. Sample Band 7.0 Answers:\n   Q: \"Do you think the roads in your city need improvement?\"\n   A: \"While our city's transportation infrastructure has seen significant development (main point), there's still considerable room for enhancement, particularly in terms of sustainable mobility solutions (sophisticated detail). Having experienced the daily commute for several years (personal context), I've observed that the integration of smart traffic management systems could greatly alleviate congestion during peak hours (specific elaboration). This would not only improve traffic flow but also contribute to a more environmentally conscious urban transport network (complex conclusion).\"\n\n5. Assessment Focus:\n   - Vocabulary: Transportation terminology\n   - Grammar: Complex structures and tense usage\n   - Coherence: Logical flow and idea development\n   - Pronunciation: Clear articulation of technical terms\n\nRemember: Maintain sophistication while keeping responses natural and engaging.",
+    "category": "Urban Development",
+    "level": "Advanced",
+    "targetBand": 7,
+    "criteria": [
+      "Fluency",
+      "Vocabulary",
+      "Grammar",
+      "Pronunciation"
+    ],
+    "topics": [
+      "Transportation",
+      "Infrastructure",
+      "Urban Planning",
+      "Development"
+    ],
+    "objectives": [
+      "Learn transportation-related vocabulary",
+      "Use complex grammar structures naturally",
+      "Develop detailed responses about urban infrastructure"
+    ],
+    "duration": 240,
+    "supportText": "Focus on sophisticated vocabulary and complex grammar structures for discussing transportation.",
+    "tags": [
+      "2024q3",
+      "forecast",
+      "transportation",
+      "band7",
+      "advanced"
+    ],
+    "questions": [
+      "Do you think the roads in your city need improvement?",
+      "What is the condition of the roads in your city like?",
+      "How do people cross the road in the city where you live?",
+      "Are the roads and streets in the area where you live busy?",
+      "Did you have a bike when you were young?",
+      "Did you ride a bike when you were little?",
+      "Did you ride a bike to school?",
+      "Do you ride a bike when you go out now?",
+      "Do you like riding a bicycle?",
+      "Are there many young people riding bicycles in Vietnam?",
+      "Would you cycle more in the future?",
+      "Do you think bicycles would do well in your city?"
+    ],
+    "parts": [
+      {
+        "part": 1,
+        "prompt": "This is a Band 7.0 IELTS Speaking session focusing on transportation and urban infrastructure for 2024 Q3.\n\nKey Band 7.0 Requirements:\n- Use sophisticated vocabulary related to transportation and infrastructure\n- Demonstrate complex grammatical structures\n- Provide detailed responses with specific examples\n- Show clear pronunciation and natural intonation\n\nTeaching Strategy for Band 7.0:\n1. Response Structure:\n   - Initial statement with technical vocabulary\n   - Detailed explanation using complex grammar\n   - Personal experience or observation\n   - Thoughtful conclusion\n\n2. Advanced Transportation Vocabulary:\n   - Infrastructure: transportation network, urban mobility, traffic management systems\n   - Development: sustainable transportation, infrastructure development, urban planning\n   - Features: dedicated cycling lanes, pedestrian-friendly design, traffic calming measures\n   Vietnamese translations:\n   - \"transportation network\" = \"mạng lưới giao thông\"\n   - \"urban mobility\" = \"di chuyển đô thị\"\n   - \"traffic management\" = \"quản lý giao thông\"\n\n3. Complex Grammar Patterns:\n   - Present perfect continuous: \"The city has been implementing new traffic measures\"\n   - Passive voice: \"The roads are being upgraded to accommodate more cyclists\"\n   - Conditionals: \"If the infrastructure were better maintained, we would see fewer traffic issues\"\n\n4. Sample Band 7.0 Answers:\n   Q: \"Do you think the roads in your city need improvement?\"\n   A: \"While our city's transportation infrastructure has seen significant development (main point), there's still considerable room for enhancement, particularly in terms of sustainable mobility solutions (sophisticated detail). Having experienced the daily commute for several years (personal context), I've observed that the integration of smart traffic management systems could greatly alleviate congestion during peak hours (specific elaboration). This would not only improve traffic flow but also contribute to a more environmentally conscious urban transport network (complex conclusion).\"\n\n5. Assessment Focus:\n   - Vocabulary: Transportation terminology\n   - Grammar: Complex structures and tense usage\n   - Coherence: Logical flow and idea development\n   - Pronunciation: Clear articulation of technical terms\n\nRemember: Maintain sophistication while keeping responses natural and engaging."
+      }
+    ]
+  },
+  "timeRemaining": 749,
+  "updatedAt": "2024-11-30T22:02:25.525Z"
+}

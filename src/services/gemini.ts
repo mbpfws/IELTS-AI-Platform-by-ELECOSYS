@@ -11,7 +11,7 @@ interface AgentConfig {
 
 const DEFAULT_CONFIG: AgentConfig = {
   modelName: "learnlm-1.5-pro-experimental",
-  temperature: 0.7,
+  temperature: 1.0,
   topP: 0.8,
   maxOutputTokens: 12048
 };

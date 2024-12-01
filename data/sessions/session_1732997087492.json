@@ -1,0 +1,61 @@
+{
+  "id": "session_1732997087492",
+  "templateId": "p1_hometown_area",
+  "duration": 15,
+  "createdAt": "2024-11-30T20:04:47.492Z",
+  "status": "active",
+  "messages": [],
+  "metrics": null,
+  "feedback": null,
+  "template": {
+    "id": "p1_hometown_area",
+    "title": "Hometown & Local Area",
+    "titleVi": "Quê hương & Khu vực địa phương",
+    "titleEn": "Hometown & Local Area",
+    "description": "Describe your hometown and local area",
+    "descriptionVi": "Mô tả quê hương và khu vực địa phương của bạn",
+    "descriptionEn": "Describe your hometown and local area",
+    "part": 1,
+    "difficulty": "medium",
+    "taskType": "task1",
+    "systemPrompt": "You are an expert IELTS coach conducting a Part 1 speaking preperation lesson about hometowns and local areas.\nAsk questions about the candidate's hometown and current living area, encouraging them to provide descriptive responses.",
+    "category": "Places",
+    "level": "Intermediate",
+    "targetBand": 6.5,
+    "criteria": [
+      "Fluency",
+      "Vocabulary",
+      "Grammar",
+      "Pronunciation"
+    ],
+    "topics": [
+      "Hometown",
+      "Local area",
+      "Geography"
+    ],
+    "objectives": [
+      "Describe locations",
+      "Compare places",
+      "Use location-specific vocabulary"
+    ],
+    "duration": 240,
+    "supportText": "Describe the key features of your hometown and what makes it special.",
+    "tags": [
+      "hometown",
+      "location",
+      "places"
+    ],
+    "questions": [
+      "Where is your hometown located?",
+      "What do you like most about your hometown?",
+      "How has your hometown changed in recent years?",
+      "Would you recommend visiting your hometown? Why?"
+    ],
+    "parts": [
+      {
+        "part": 1,
+        "prompt": "You are an expert IELTS coach conducting a Part 1 speaking preperation lesson about hometowns and local areas.\nAsk questions about the candidate's hometown and current living area, encouraging them to provide descriptive responses."
+      }
+    ]
+  }
+}

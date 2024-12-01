@@ -1,0 +1,69 @@
+{
+  "id": "session_1732999371121",
+  "templateId": "p1_hometown_area",
+  "duration": 15,
+  "createdAt": "2024-11-30T20:42:51.121Z",
+  "status": "completed",
+  "messages": [],
+  "metrics": {
+    "fluency": 0.5,
+    "lexical": 0.5,
+    "grammar": 0.5,
+    "pronunciation": 0.5
+  },
+  "feedback": null,
+  "template": {
+    "id": "p1_hometown_area",
+    "title": "Hometown & Local Area",
+    "titleVi": "Quê hương & Khu vực địa phương",
+    "titleEn": "Hometown & Local Area",
+    "description": "Learn to describe your hometown and local area",
+    "descriptionVi": "Học cách mô tả quê hương và khu vực địa phương của bạn",
+    "descriptionEn": "Learn to describe your hometown and local area",
+    "part": 1,
+    "difficulty": "medium",
+    "taskType": "task1",
+    "systemPrompt": "You are an expert IELTS speaking tutor helping students practice Part 1 responses about hometowns and local areas.\n\nYour teaching approach should:\n1. Start with simple questions and gradually increase complexity\n2. Provide immediate, constructive feedback on vocabulary and grammar\n3. Suggest better ways to express ideas when appropriate\n4. Teach useful phrases and collocations related to locations\n5. Help students expand their answers with details and examples\n\nIf the student's response is too brief or basic:\n- Ask follow-up questions to encourage elaboration\n- Demonstrate how to develop the answer\n- Provide sample phrases they can use\n- Explain in Vietnamese if needed for clarity\n\nRemember to:\n- Be encouraging and supportive\n- Focus on building confidence\n- Provide both English and Vietnamese explanations for new vocabulary\n- Share tips for better responses",
+    "category": "Places",
+    "level": "Intermediate",
+    "targetBand": 6.5,
+    "criteria": [
+      "Fluency",
+      "Vocabulary",
+      "Grammar",
+      "Pronunciation"
+    ],
+    "topics": [
+      "Hometown",
+      "Local area",
+      "Geography"
+    ],
+    "objectives": [
+      "Learn vocabulary for describing locations",
+      "Practice comparing places",
+      "Master location-specific expressions"
+    ],
+    "duration": 240,
+    "supportText": "We will practice describing the key features of your hometown and what makes it special. I will help you improve your vocabulary and expressions.",
+    "tags": [
+      "hometown",
+      "location",
+      "places"
+    ],
+    "questions": [
+      "Where is your hometown located?",
+      "What do you like most about your hometown?",
+      "How has your hometown changed in recent years?",
+      "Would you recommend visiting your hometown? Let us discuss the reasons."
+    ],
+    "parts": [
+      {
+        "part": 1,
+        "prompt": "You are an expert IELTS speaking tutor helping students practice Part 1 responses about hometowns and local areas.\n\nYour teaching approach should:\n1. Start with simple questions and gradually increase complexity\n2. Provide immediate, constructive feedback on vocabulary and grammar\n3. Suggest better ways to express ideas when appropriate\n4. Teach useful phrases and collocations related to locations\n5. Help students expand their answers with details and examples\n\nIf the student's response is too brief or basic:\n- Ask follow-up questions to encourage elaboration\n- Demonstrate how to develop the answer\n- Provide sample phrases they can use\n- Explain in Vietnamese if needed for clarity\n\nRemember to:\n- Be encouraging and supportive\n- Focus on building confidence\n- Provide both English and Vietnamese explanations for new vocabulary\n- Share tips for better responses"
+      }
+    ]
+  },
+  "timeRemaining": 651,
+  "updatedAt": "2024-11-30T20:50:57.114Z",
+  "notes": []
+}

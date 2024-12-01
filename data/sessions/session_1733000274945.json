@@ -1,0 +1,63 @@
+{
+  "id": "session_1733000274945",
+  "templateId": "p1_home_accommodation",
+  "duration": 15,
+  "createdAt": "2024-11-30T20:57:54.945Z",
+  "status": "active",
+  "messages": [],
+  "metrics": null,
+  "feedback": null,
+  "template": {
+    "id": "p1_home_accommodation",
+    "title": "Home & Accommodation",
+    "titleVi": "Nhà ở & Chỗ ở",
+    "titleEn": "Home & Accommodation",
+    "description": "Learn to discuss your living situation and preferences",
+    "descriptionVi": "Học cách thảo luận về tình hình và sở thích về nhà ở",
+    "descriptionEn": "Learn to discuss your living situation and preferences",
+    "part": 1,
+    "difficulty": "medium",
+    "taskType": "task1",
+    "systemPrompt": "This is a Part 1 IELTS Speaking session focusing on home and accommodation.\n\nTopic Guidance:\n- This topic covers: current living situation, types of housing, preferences, and local area\n- Questions are direct and personal, requiring simple but detailed responses\n- Responses should be 2-3 sentences long, showing natural elaboration\n\nTeaching Focus:\n- Housing vocabulary: apartment, neighborhood, facilities, amenities\n- Common collocations: spacious apartment, convenient location, residential area\n- Descriptive language: comfortable, modern, traditional, convenient\n- Expression of preferences: \"I prefer... because...\", \"I'd rather... since...\"\n\nVietnamese Support Examples:\n- \"Spacious\" = \"rộng rãi\" (e.g., \"My apartment is quite spacious\" = \"Căn hộ của tôi khá rộng rãi\")\n- \"Convenient location\" = \"vị trí thuận tiện\" (e.g., \"I live in a convenient location\" = \"Tôi sống ở một vị trí thuận tiện\")\n\nResponse Development Guide:\n1. Start with a direct answer\n2. Add one relevant detail\n3. Give a simple reason or example\n\nExample Answer Structure:\nQ: \"Where do you live?\"\nA: \"I live in an apartment (direct answer) in the city center (detail). It's very convenient because it's close to my workplace (reason).\"\n\nRemember: Keep responses natural and conversational - this is a casual discussion, not a presentation.",
+    "category": "Housing",
+    "level": "Intermediate",
+    "targetBand": 6.5,
+    "criteria": [
+      "Fluency",
+      "Vocabulary",
+      "Grammar",
+      "Pronunciation"
+    ],
+    "topics": [
+      "Housing",
+      "Lifestyle",
+      "Personal preferences"
+    ],
+    "objectives": [
+      "Learn vocabulary for describing homes",
+      "Practice expressing preferences about accommodation",
+      "Master housing-related expressions"
+    ],
+    "duration": 240,
+    "supportText": "We will practice describing your living situation, preferences, and ideal home. I will help you improve your vocabulary and expressions.",
+    "tags": [
+      "housing",
+      "lifestyle",
+      "preferences"
+    ],
+    "questions": [
+      "Can you tell me about where you live?",
+      "What type of home do you prefer, and why?",
+      "What are some things you like about your current home?",
+      "Would you prefer to live in a house or an apartment? Let's discuss the reasons."
+    ],
+    "parts": [
+      {
+        "part": 1,
+        "prompt": "This is a Part 1 IELTS Speaking session focusing on home and accommodation.\n\nTopic Guidance:\n- This topic covers: current living situation, types of housing, preferences, and local area\n- Questions are direct and personal, requiring simple but detailed responses\n- Responses should be 2-3 sentences long, showing natural elaboration\n\nTeaching Focus:\n- Housing vocabulary: apartment, neighborhood, facilities, amenities\n- Common collocations: spacious apartment, convenient location, residential area\n- Descriptive language: comfortable, modern, traditional, convenient\n- Expression of preferences: \"I prefer... because...\", \"I'd rather... since...\"\n\nVietnamese Support Examples:\n- \"Spacious\" = \"rộng rãi\" (e.g., \"My apartment is quite spacious\" = \"Căn hộ của tôi khá rộng rãi\")\n- \"Convenient location\" = \"vị trí thuận tiện\" (e.g., \"I live in a convenient location\" = \"Tôi sống ở một vị trí thuận tiện\")\n\nResponse Development Guide:\n1. Start with a direct answer\n2. Add one relevant detail\n3. Give a simple reason or example\n\nExample Answer Structure:\nQ: \"Where do you live?\"\nA: \"I live in an apartment (direct answer) in the city center (detail). It's very convenient because it's close to my workplace (reason).\"\n\nRemember: Keep responses natural and conversational - this is a casual discussion, not a presentation."
+      }
+    ]
+  },
+  "timeRemaining": 766,
+  "updatedAt": "2024-11-30T21:00:55.318Z"
+}

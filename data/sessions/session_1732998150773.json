@@ -1,0 +1,60 @@
+{
+  "id": "session_1732998150773",
+  "templateId": "fluency_1",
+  "duration": 15,
+  "createdAt": "2024-11-30T20:22:30.773Z",
+  "status": "completed",
+  "messages": [],
+  "metrics": {
+    "fluency": 0,
+    "lexical": 0,
+    "grammar": 0,
+    "pronunciation": 0
+  },
+  "feedback": null,
+  "template": {
+    "id": "fluency_1",
+    "titleEn": "Fluency Builder",
+    "titleVi": "Xây dựng độ trôi chảy",
+    "descriptionEn": "Develop natural speaking flow and confidence",
+    "descriptionVi": "Phát triển khả năng nói tự nhiên và tự tin",
+    "taskType": "lesson",
+    "level": "Intermediate",
+    "targetBand": 7,
+    "category": "Fluency",
+    "criteria": [
+      "Fluency",
+      "Coherence",
+      "Speaking Speed",
+      "Natural Flow"
+    ],
+    "topics": [
+      "Fluency",
+      "Speaking skills"
+    ],
+    "objectives": [
+      "Improve speaking speed",
+      "Reduce hesitation",
+      "Use natural fillers",
+      "Develop rhythm in speech"
+    ],
+    "duration": 30,
+    "difficulty": "medium",
+    "systemPrompt": "You are an IELTS Speaking tutor focusing on building fluency.",
+    "supportText": "Practice speaking continuously without long pauses.",
+    "tags": [
+      "Fluency",
+      "Speaking",
+      "Practice"
+    ],
+    "parts": [
+      {
+        "part": "tutoring",
+        "prompt": "You are an IELTS Speaking tutor focusing on building fluency."
+      }
+    ]
+  },
+  "timeRemaining": 875,
+  "updatedAt": "2024-11-30T20:23:17.660Z",
+  "notes": []
+}

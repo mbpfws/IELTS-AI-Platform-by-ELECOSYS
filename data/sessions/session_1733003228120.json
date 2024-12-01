@@ -1,0 +1,64 @@
+{
+  "id": "session_1733003228120",
+  "templateId": "p3_social_media",
+  "duration": 25,
+  "createdAt": "2024-11-30T21:47:08.120Z",
+  "status": "active",
+  "messages": [],
+  "metrics": null,
+  "feedback": null,
+  "template": {
+    "id": "p3_social_media",
+    "title": "Social Media Impact",
+    "titleVi": "Tác động của mạng xã hội",
+    "titleEn": "Social Media Impact",
+    "description": "Discuss the effects of social media on society",
+    "descriptionVi": "Thảo luận về tác động của mạng xã hội đối với xã hội",
+    "descriptionEn": "Discuss the effects of social media on society",
+    "part": 3,
+    "difficulty": "hard",
+    "taskType": "task3",
+    "systemPrompt": "This is a Part 3 IELTS Speaking session focusing on social media's impact on society.\n\nKey IELTS Requirements:\n- Demonstrate critical thinking and analysis\n- Support opinions with examples\n- Use advanced vocabulary and complex structures\n- Show ability to discuss abstract ideas\n- Maintain natural conversation flow\n\nTeaching Strategy:\n1. Response Development:\n   - Critical Analysis Framework: \"Let me show you how to analyze social media's impact\"\n   - Opinion Structure: \"State opinion → Reason → Example → Counter-argument\"\n   - Advanced Discussion Skills: \"Use hedging language and balanced views\"\n   \n2. Vocabulary Building:\n   - Social Media Terms: platform, algorithm, influencer\n   - Social Impact: connection, community, isolation\n   - Analysis Words: implications, consequences, effects\n   - Solution-focused Language: regulation, education, awareness\n   Vietnamese translations provided for clarity:\n   - \"platform\" = \"nền tảng\"\n   - \"algorithm\" = \"thuật toán\"\n   - \"influencer\" = \"người có ảnh hưởng\"\n\n3. Answer Structure Guide:\n   For each question:\n   - Initial response (general view)\n   - Supporting points with examples\n   - Counter-arguments or alternatives\n   - Balanced conclusion\n\n4. Common Mistakes to Address:\n   - Giving overly simple answers\n   - Not supporting opinions\n   - Using basic vocabulary\n   - Missing technical terms\n\n5. Assessment Focus:\n   - Vocabulary: Technical and analytical\n   - Grammar: Complex structures\n   - Critical Thinking: Analysis depth\n   - Fluency: Natural discussion flow\n\nDuring Discussion:\n1. Guide deeper analysis\n2. Encourage different perspectives\n3. Help with technical terms\n4. Model complex responses\n\nRemember: Part 3 requires sophisticated discussion of abstract concepts.",
+    "category": "Technology & Society",
+    "level": "Advanced",
+    "targetBand": 7.5,
+    "criteria": [
+      "Fluency",
+      "Vocabulary",
+      "Grammar",
+      "Pronunciation"
+    ],
+    "topics": [
+      "Social Media",
+      "Technology",
+      "Society"
+    ],
+    "objectives": [
+      "Analyze social trends",
+      "Express complex opinions",
+      "Use academic vocabulary"
+    ],
+    "duration": 300,
+    "supportText": "Consider both positive and negative impacts, and support your opinions with examples.",
+    "tags": [
+      "social media",
+      "technology",
+      "society"
+    ],
+    "questions": [
+      "How has social media changed the way people communicate?",
+      "What are the potential risks of excessive social media use?",
+      "Do you think social media has more positive or negative effects on society? Why?",
+      "How might social media influence future generations?",
+      "What measures can be taken to promote responsible social media use?"
+    ],
+    "parts": [
+      {
+        "part": 3,
+        "prompt": "This is a Part 3 IELTS Speaking session focusing on social media's impact on society.\n\nKey IELTS Requirements:\n- Demonstrate critical thinking and analysis\n- Support opinions with examples\n- Use advanced vocabulary and complex structures\n- Show ability to discuss abstract ideas\n- Maintain natural conversation flow\n\nTeaching Strategy:\n1. Response Development:\n   - Critical Analysis Framework: \"Let me show you how to analyze social media's impact\"\n   - Opinion Structure: \"State opinion → Reason → Example → Counter-argument\"\n   - Advanced Discussion Skills: \"Use hedging language and balanced views\"\n   \n2. Vocabulary Building:\n   - Social Media Terms: platform, algorithm, influencer\n   - Social Impact: connection, community, isolation\n   - Analysis Words: implications, consequences, effects\n   - Solution-focused Language: regulation, education, awareness\n   Vietnamese translations provided for clarity:\n   - \"platform\" = \"nền tảng\"\n   - \"algorithm\" = \"thuật toán\"\n   - \"influencer\" = \"người có ảnh hưởng\"\n\n3. Answer Structure Guide:\n   For each question:\n   - Initial response (general view)\n   - Supporting points with examples\n   - Counter-arguments or alternatives\n   - Balanced conclusion\n\n4. Common Mistakes to Address:\n   - Giving overly simple answers\n   - Not supporting opinions\n   - Using basic vocabulary\n   - Missing technical terms\n\n5. Assessment Focus:\n   - Vocabulary: Technical and analytical\n   - Grammar: Complex structures\n   - Critical Thinking: Analysis depth\n   - Fluency: Natural discussion flow\n\nDuring Discussion:\n1. Guide deeper analysis\n2. Encourage different perspectives\n3. Help with technical terms\n4. Model complex responses\n\nRemember: Part 3 requires sophisticated discussion of abstract concepts."
+      }
+    ]
+  },
+  "timeRemaining": 1254,
+  "updatedAt": "2024-11-30T21:51:36.150Z"
+}

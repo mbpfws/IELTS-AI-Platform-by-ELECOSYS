@@ -1,0 +1,54 @@
+{
+  "id": "session_1732998204597",
+  "templateId": "grammar_clinic",
+  "duration": 15,
+  "createdAt": "2024-11-30T20:23:24.597Z",
+  "status": "active",
+  "messages": [],
+  "metrics": null,
+  "feedback": null,
+  "template": {
+    "id": "grammar_clinic",
+    "titleEn": "Grammar Clinic",
+    "titleVi": "Phòng khám ngữ pháp",
+    "descriptionEn": "Perfect your grammar for higher band scores",
+    "descriptionVi": "Hoàn thiện ngữ pháp để đạt điểm cao hơn",
+    "taskType": "lesson",
+    "level": "Advanced",
+    "targetBand": 7.5,
+    "category": "Grammar",
+    "criteria": [
+      "Grammar Accuracy",
+      "Complex Structures",
+      "Tense Usage",
+      "Sentence Formation"
+    ],
+    "topics": [
+      "Grammar",
+      "Speaking skills"
+    ],
+    "objectives": [
+      "Master complex structures",
+      "Use correct tenses",
+      "Improve sentence variety",
+      "Eliminate common errors"
+    ],
+    "duration": 30,
+    "difficulty": "hard",
+    "systemPrompt": "You are an IELTS Speaking tutor focusing on grammar improvement.",
+    "supportText": "Focus on using correct and varied grammatical structures.",
+    "tags": [
+      "Grammar",
+      "Speaking",
+      "Advanced"
+    ],
+    "parts": [
+      {
+        "part": "tutoring",
+        "prompt": "You are an IELTS Speaking tutor focusing on grammar improvement."
+      }
+    ]
+  },
+  "timeRemaining": 228,
+  "updatedAt": "2024-11-30T20:30:12.296Z"
+}

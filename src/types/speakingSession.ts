@@ -34,26 +34,47 @@ export interface Message {
 export interface SpeakingTemplate {
   id: string;
   title: string;
-  part: 1 | 2 | 3;
-  difficulty: 'easy' | 'medium' | 'hard';
-  systemPrompt: string;
-  category: string;
-  description: string;
   titleVi: string;
   titleEn: string;
+  description?: string;
   descriptionVi: string;
   descriptionEn: string;
-  taskType: 'task1' | 'task2' | 'lesson';
-  level: string;
+  systemPrompt: string;
+  questions?: string[];
+  category: string;
+  level: 'Beginner' | 'Intermediate' | 'Advanced';
   targetBand: number;
   criteria: string[];
-  topics: string[];
-  objectives: string[];
-  questions?: string[];
-  cueCard?: string;
-  duration: number;
-  supportText: string;
-  tags: string[];
+  topics?: string[];
+  difficulty: 'easy' | 'medium' | 'hard';
+  taskType: 'task1' | 'task2' | 'task3' | 'lesson';
+  duration?: number;
+  supportText?: string;
+  tags?: string[];
+  part?: number;
+  objectives?: string[];
+}
+
+export interface TemplateFilters {
+  category?: string;
+  level?: string;
+  targetBand?: number;
+  difficulty?: string;
+  taskType?: string;
+  searchQuery?: string;
+  tags?: string[];
+}
+
+export type SortOption = 
+  | 'title'
+  | 'level'
+  | 'targetBand'
+  | 'difficulty'
+  | 'category';
+
+export interface SortConfig {
+  field: SortOption;
+  direction: 'asc' | 'desc';
 }
 
 export interface SpeakingSession {

@@ -21,10 +21,10 @@
       "static/chunks/main-app.js",
       "static/chunks/app/api/templates/route.js"
     ],
-    "/api/sessions/route": [
+    "/agents/writing/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",
-      "static/chunks/app/api/sessions/route.js"
+      "static/chunks/app/agents/writing/page.js"
     ]
   }
 }

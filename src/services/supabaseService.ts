@@ -77,6 +77,7 @@ class SupabaseService {
   private readonly TEMPLATE_TOPICS_TABLE = 'ailts_template_topics';
   private readonly TEMPLATE_VOCABULARY_TABLE = 'ailts_template_vocabulary';
   private readonly RECORDINGS_BUCKET = 'ielts-recordings';
+  private readonly TUTORING_TEMPLATES_TABLE = 'tutoring_templates';
 
   async getTemplates(type?: string): Promise<IELTSTemplate[]> {
     try {
@@ -321,6 +322,35 @@ class SupabaseService {
       return data?.map(r => r.public_url) || [];
     } catch (error) {
       console.error('Error fetching session recordings:', error);
+      throw error;
+    }
+  }
+
+  async saveTutoringTemplate(template: any): Promise<any> {
+    try {
+      const { data, error } = await supabase
+        .from(this.TUTORING_TEMPLATES_TABLE)
+        .insert([template])
+        .select();
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error saving tutoring template:', error);
+      throw error;
+    }
+  }
+
+  async getTutoringTemplates(): Promise<any[]> {
+    try {
+      const { data, error } = await supabase
+        .from(this.TUTORING_TEMPLATES_TABLE)
+        .select('*');
+
+      if (error) throw error;
+      return data;
+    } catch (error) {
+      console.error('Error fetching tutoring templates:', error);
       throw error;
     }
   }

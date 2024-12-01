@@ -1,63 +1,56 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
-
-const prisma = new PrismaClient();
+import { part1Templates } from '@/data/speakingTemplates/part1';
+import { part2Templates } from '@/data/speakingTemplates/part2';
+import { part3Templates } from '@/data/speakingTemplates/part3';
+import { tutoringLessons } from '@/data/speakingTemplates/tutoring';
 
 export async function GET() {
   try {
-    const templates = await prisma.speaking_Template.findMany({
-      include: {
-        parts: {
-          orderBy: {
-            part: 'asc'
-          }
-        }
-      }
-    });
+    // Convert templates to the expected format
+    const templates = [
+      ...part1Templates.map(template => ({
+        ...template,
+        type: 'part1',
+        title_en: template.titleEn,
+        title_vi: template.titleVi,
+        description_en: template.descriptionEn,
+        description_vi: template.descriptionVi,
+        target_band: template.targetBand
+      })),
+      ...part2Templates.map(template => ({
+        ...template,
+        type: 'part2',
+        title_en: template.titleEn,
+        title_vi: template.titleVi,
+        description_en: template.descriptionEn,
+        description_vi: template.descriptionVi,
+        target_band: template.targetBand
+      })),
+      ...part3Templates.map(template => ({
+        ...template,
+        type: 'part3',
+        title_en: template.titleEn,
+        title_vi: template.titleVi,
+        description_en: template.descriptionEn,
+        description_vi: template.descriptionVi,
+        target_band: template.targetBand
+      })),
+      ...tutoringLessons.map(template => ({
+        ...template,
+        type: 'tutoring',
+        title_en: template.titleEn,
+        title_vi: template.titleVi,
+        description_en: template.descriptionEn,
+        description_vi: template.descriptionVi,
+        target_band: template.targetBand,
+        objectives: template.objectives || [],
+        criteria: template.criteria || []
+      }))
+    ];
 
-    if (!templates || templates.length === 0) {
-      console.log('No templates found in database');
-      return NextResponse.json([]);
-    }
-
-    console.log(`Found ${templates.length} templates`);
-
-    // Transform the templates to match the expected format
-    const formattedTemplates = templates.map(template => {
-      // Ensure we have at least one part
-      if (!template.parts || template.parts.length === 0) {
-        console.warn(`Template ${template.id} has no parts`);
-      }
-
-      const firstPart = template.parts[0];
-      return {
-        id: template.id,
-        type: `part${firstPart?.part || 1}`,
-        title: template.title,
-        title_en: template.title,
-        title_vi: template.title_vi || template.title,
-        description: template.description,
-        description_en: template.description,
-        description_vi: template.description_vi || template.description,
-        level: template.level,
-        topics: JSON.parse(template.topics_json || '[]'),
-        duration: template.duration,
-        target_band: template.target_band,
-        parts: template.parts,
-        created_at: template.createdAt.toISOString(),
-        updated_at: template.updatedAt.toISOString()
-      };
-    });
-
-    console.log('Templates formatted successfully');
-    return NextResponse.json(formattedTemplates);
+    return NextResponse.json(templates);
   } catch (error) {
     console.error('Error fetching templates:', error);
-    return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to fetch templates' },
-      { status: 500 }
-    );
-  } finally {
-    await prisma.$disconnect();
+    return NextResponse.json({ error: 'Failed to fetch templates' }, { status: 500 });
   }
 }

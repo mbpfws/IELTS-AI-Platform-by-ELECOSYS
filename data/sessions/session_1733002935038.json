@@ -1,0 +1,64 @@
+{
+  "id": "session_1733002935038",
+  "templateId": "p1_technology",
+  "duration": 15,
+  "createdAt": "2024-11-30T21:42:15.038Z",
+  "status": "active",
+  "messages": [],
+  "metrics": null,
+  "feedback": null,
+  "template": {
+    "id": "p1_technology",
+    "title": "Technology Usage",
+    "titleVi": "Sử dụng công nghệ",
+    "titleEn": "Technology Usage",
+    "description": "Learn to discuss how you use technology in daily life",
+    "descriptionVi": "Học cách thảo luận về việc sử dụng công nghệ trong cuộc sống hàng ngày",
+    "descriptionEn": "Learn to discuss how you use technology in daily life",
+    "part": 1,
+    "difficulty": "medium",
+    "taskType": "task1",
+    "systemPrompt": "This is a Part 1 IELTS Speaking session focusing on technology and daily life.\n\nKey IELTS Requirements:\n- Part 1 answers should be 2-3 sentences (20-30 seconds)\n- Show range of vocabulary and grammatical structures\n- Maintain natural fluency without long pauses\n- Use clear pronunciation with proper stress and intonation\n\nTeaching Strategy:\n1. First Response:\n   - Model the expected answer length and structure\n   - Point out key vocabulary: \"Let me show you how to describe technology usage: frequently, occasionally, rarely\"\n   - Demonstrate natural elaboration: \"Instead of just saying 'I use my phone a lot', say 'I frequently use my phone to stay connected with friends and family'\"\n\n2. Vocabulary Building:\n   - Technology Types: smartphone, computer, tablet\n   - Usage: frequently, occasionally, rarely\n   - Purposes: communication, entertainment, education\n   - Benefits: convenient, efficient, time-saving\n   Vietnamese translations provided for clarity:\n   - \"frequently\" = \"thường xuyên\"\n   - \"occasionally\" = \"thỉnh thoảng\"\n   - \"rarely\" = \"hiếm khi\"\n\n3. Answer Structure Training:\n   Basic: \"I use my phone a lot.\"\n   Better: \"I frequently use my phone (main point) to stay connected with friends and family (purpose). It's convenient and efficient (benefits).\"\n\n4. Common Mistakes to Address:\n   - Using simple vocabulary (a lot → frequently/often)\n   - Not explaining technology usage\n   - Missing benefits and purposes\n\n5. Assessment Focus:\n   - Vocabulary: Technology-specific terms\n   - Grammar: Present simple, present continuous for habits\n   - Fluency: Natural expression of technology usage\n   - Pronunciation: Technology names and usage terms\n\nAfter each response:\n1. Highlight what was done well\n2. Provide specific vocabulary or grammar improvements\n3. Model the enhanced version\n4. Have student practice the improved version\n\nRemember: Every interaction should teach something specific about IELTS speaking skills.",
+    "category": "Modern Life",
+    "level": "Intermediate",
+    "targetBand": 6.5,
+    "criteria": [
+      "Fluency",
+      "Vocabulary",
+      "Grammar",
+      "Pronunciation"
+    ],
+    "topics": [
+      "Technology",
+      "Digital Life",
+      "Modern Habits"
+    ],
+    "objectives": [
+      "Learn vocabulary for describing technology usage patterns",
+      "Practice expressing opinions about digital tools",
+      "Master technology-related expressions"
+    ],
+    "duration": 240,
+    "supportText": "We will practice talking about how and why you use different technologies in your daily life. I will help you improve your vocabulary and expressions.",
+    "tags": [
+      "technology",
+      "digital",
+      "modern life"
+    ],
+    "questions": [
+      "What kind of technology do you use most often?",
+      "How much time do you spend on your phone each day?",
+      "What do you mainly use the internet for?",
+      "Do you think technology has made your life easier? Why/why not?",
+      "What is your favorite app or website? Why do you like it? Let's discuss the reasons."
+    ],
+    "parts": [
+      {
+        "part": 1,
+        "prompt": "This is a Part 1 IELTS Speaking session focusing on technology and daily life.\n\nKey IELTS Requirements:\n- Part 1 answers should be 2-3 sentences (20-30 seconds)\n- Show range of vocabulary and grammatical structures\n- Maintain natural fluency without long pauses\n- Use clear pronunciation with proper stress and intonation\n\nTeaching Strategy:\n1. First Response:\n   - Model the expected answer length and structure\n   - Point out key vocabulary: \"Let me show you how to describe technology usage: frequently, occasionally, rarely\"\n   - Demonstrate natural elaboration: \"Instead of just saying 'I use my phone a lot', say 'I frequently use my phone to stay connected with friends and family'\"\n\n2. Vocabulary Building:\n   - Technology Types: smartphone, computer, tablet\n   - Usage: frequently, occasionally, rarely\n   - Purposes: communication, entertainment, education\n   - Benefits: convenient, efficient, time-saving\n   Vietnamese translations provided for clarity:\n   - \"frequently\" = \"thường xuyên\"\n   - \"occasionally\" = \"thỉnh thoảng\"\n   - \"rarely\" = \"hiếm khi\"\n\n3. Answer Structure Training:\n   Basic: \"I use my phone a lot.\"\n   Better: \"I frequently use my phone (main point) to stay connected with friends and family (purpose). It's convenient and efficient (benefits).\"\n\n4. Common Mistakes to Address:\n   - Using simple vocabulary (a lot → frequently/often)\n   - Not explaining technology usage\n   - Missing benefits and purposes\n\n5. Assessment Focus:\n   - Vocabulary: Technology-specific terms\n   - Grammar: Present simple, present continuous for habits\n   - Fluency: Natural expression of technology usage\n   - Pronunciation: Technology names and usage terms\n\nAfter each response:\n1. Highlight what was done well\n2. Provide specific vocabulary or grammar improvements\n3. Model the enhanced version\n4. Have student practice the improved version\n\nRemember: Every interaction should teach something specific about IELTS speaking skills."
+      }
+    ]
+  },
+  "timeRemaining": 645,
+  "updatedAt": "2024-11-30T21:47:29.551Z"
+}

@@ -1,7 +1,52 @@
 import { NextResponse } from 'next/server';
-import { PrismaClient } from '@prisma/client';
+import { part1Templates } from '@/data/speakingTemplates/part1';
+import { part2Templates } from '@/data/speakingTemplates/part2';
+import { part3Templates } from '@/data/speakingTemplates/part3';
+import { tutoringLessons } from '@/data/speakingTemplates/tutoring';
+import fs from 'fs/promises';
+import path from 'path';
 
-const prisma = new PrismaClient();
+// Helper function to find template by ID
+function findTemplateById(templateId: string) {
+  const allTemplates = [
+    ...part1Templates, 
+    ...part2Templates, 
+    ...part3Templates,
+    ...tutoringLessons
+  ];
+  return allTemplates.find(template => template.id === templateId);
+}
+
+// Session storage path
+const SESSION_DIR = path.join(process.cwd(), 'data', 'sessions');
+
+// Ensure session directory exists
+async function ensureSessionDir() {
+  try {
+    await fs.access(SESSION_DIR);
+  } catch {
+    await fs.mkdir(SESSION_DIR, { recursive: true });
+  }
+}
+
+// Save session to file
+async function saveSession(session: any) {
+  await ensureSessionDir();
+  const filePath = path.join(SESSION_DIR, `${session.id}.json`);
+  await fs.writeFile(filePath, JSON.stringify(session, null, 2));
+  return session;
+}
+
+// Get session from file
+async function getSession(sessionId: string) {
+  const filePath = path.join(SESSION_DIR, `${sessionId}.json`);
+  try {
+    const data = await fs.readFile(filePath, 'utf-8');
+    return JSON.parse(data);
+  } catch (error) {
+    return null;
+  }
+}
 
 export async function POST(request: Request) {
   try {
@@ -15,11 +60,8 @@ export async function POST(request: Request) {
       );
     }
 
-    // First verify that the template exists
-    const template = await prisma.speaking_Template.findUnique({
-      where: { id: data.templateId },
-      include: { parts: true }
-    });
+    // Find the template
+    const template = findTemplateById(data.templateId);
 
     if (!template) {
       return NextResponse.json(
@@ -28,38 +70,42 @@ export async function POST(request: Request) {
       );
     }
 
-    // Create the session with the verified template
-    const session = await prisma.speaking_Session.create({
-      data: {
-        userId: data.userId || null,
-        templateId: data.templateId,
-        duration: data.duration,
-      },
-      include: {
-        template: {
-          include: {
-            parts: true
-          }
-        }
+    // Create session data
+    const session = {
+      id: `session_${Date.now()}`,
+      templateId: data.templateId,
+      duration: data.duration || 300,
+      createdAt: new Date(),
+      status: 'active',
+      messages: [],
+      metrics: null,
+      feedback: null,
+      template: {
+        ...template,
+        parts: [{
+          part: template.part || 'tutoring',
+          prompt: template.systemPrompt
+        }]
       }
-    });
+    };
+
+    // Save session to file
+    await saveSession(session);
 
     return NextResponse.json(session);
   } catch (error) {
     console.error('Error creating session:', error);
     return NextResponse.json(
-      { error: error instanceof Error ? error.message : 'Failed to create session' },
+      { error: 'Failed to create session' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
   }
 }
 
 export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
-    const sessionId = searchParams.get('id');
+    const sessionId = searchParams.get('sessionId');
 
     if (!sessionId) {
       return NextResponse.json(
@@ -68,20 +114,7 @@ export async function GET(request: Request) {
       );
     }
 
-    const session = await prisma.speaking_Session.findUnique({
-      where: { id: sessionId },
-      include: {
-        messages: true,
-        metrics: true,
-        feedback: true,
-        recordings: true,
-        template: {
-          include: {
-            parts: true
-          }
-        }
-      }
-    });
+    const session = await getSession(sessionId);
 
     if (!session) {
       return NextResponse.json(
@@ -97,7 +130,46 @@ export async function GET(request: Request) {
       { error: 'Failed to fetch session' },
       { status: 500 }
     );
-  } finally {
-    await prisma.$disconnect();
+  }
+}
+
+// Helper function to update session
+export async function PATCH(request: Request) {
+  try {
+    const data = await request.json();
+    const { sessionId, updates } = data;
+
+    if (!sessionId) {
+      return NextResponse.json(
+        { error: 'Session ID is required' },
+        { status: 400 }
+      );
+    }
+
+    const session = await getSession(sessionId);
+    if (!session) {
+      return NextResponse.json(
+        { error: 'Session not found' },
+        { status: 404 }
+      );
+    }
+
+    // Update session with new data
+    const updatedSession = {
+      ...session,
+      ...updates,
+      updatedAt: new Date()
+    };
+
+    // Save updated session
+    await saveSession(updatedSession);
+
+    return NextResponse.json(updatedSession);
+  } catch (error) {
+    console.error('Error updating session:', error);
+    return NextResponse.json(
+      { error: 'Failed to update session' },
+      { status: 500 }
+    );
   }
 }

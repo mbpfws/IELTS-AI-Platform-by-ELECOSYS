@@ -1,8 +1,15 @@
 import { PrismaClient } from '@prisma/client';
 import { supabaseService } from './supabaseService';
 
-// Initialize Prisma Client
-const prisma = new PrismaClient();
+declare global {
+  var prisma: PrismaClient | undefined;
+}
+
+const prisma = global.prisma || new PrismaClient();
+
+if (process.env.NODE_ENV !== 'production') {
+  global.prisma = prisma;
+}
 
 export class DatabaseService {
   private static instance: DatabaseService;
@@ -48,15 +55,121 @@ export class DatabaseService {
     }
   }
 
+  async syncTemplates() {
+    try {
+      if (this.isProduction) {
+        return await supabaseService.syncTemplates();
+      }
+
+      const part1Templates = (await import('@/data/speakingTemplates/part1')).part1Templates;
+      const part2Templates = (await import('@/data/speakingTemplates/part2')).part2Templates;
+      const part3Templates = (await import('@/data/speakingTemplates/part3')).part3Templates;
+
+      const allTemplates = [
+        ...part1Templates.map(t => ({ ...t, type: 'part1' })),
+        ...part2Templates.map(t => ({ ...t, type: 'part2' })),
+        ...part3Templates.map(t => ({ ...t, type: 'part3' }))
+      ];
+
+      for (const template of allTemplates) {
+        await prisma.speaking_Template.upsert({
+          where: {
+            id: template.id
+          },
+          update: {
+            title: template.title,
+            title_en: template.title,
+            title_vi: template.title,
+            description: template.systemPrompt,
+            description_en: template.systemPrompt,
+            description_vi: template.systemPrompt,
+            level: template.level.toLowerCase(),
+            duration: 15,
+            target_band: template.difficulty === 'easy' ? 5.0 : 
+                        template.difficulty === 'medium' ? 6.0 : 7.0,
+            topics_json: JSON.stringify(template.questions || []),
+            type: template.type
+          },
+          create: {
+            id: template.id,
+            title: template.title,
+            title_en: template.title,
+            title_vi: template.title,
+            description: template.systemPrompt,
+            description_en: template.systemPrompt,
+            description_vi: template.systemPrompt,
+            level: template.level.toLowerCase(),
+            duration: 15,
+            target_band: template.difficulty === 'easy' ? 5.0 : 
+                        template.difficulty === 'medium' ? 6.0 : 7.0,
+            topics_json: JSON.stringify(template.questions || []),
+            type: template.type
+          }
+        });
+      }
+
+      return await this.getTemplates();
+    } catch (error) {
+      console.error('Error syncing templates:', error);
+      throw error;
+    }
+  }
+
   async getTemplates() {
     if (this.isProduction) {
       return await supabaseService.getTemplates();
     } else {
-      const response = await fetch('/api/templates');
-      if (!response.ok) {
-        throw new Error('Failed to fetch templates');
+      try {
+        // First sync templates
+        await this.syncTemplates();
+        
+        // Then get from database
+        const templates = await prisma.speaking_Template.findMany({
+          orderBy: {
+            createdAt: 'asc'
+          }
+        });
+
+        return templates.map(template => ({
+          ...template,
+          topics: JSON.parse(template.topics_json || '[]'),
+          created_at: template.createdAt.toISOString(),
+          updated_at: template.updatedAt.toISOString()
+        }));
+      } catch (error) {
+        console.error('Error getting templates:', error);
+        throw error;
       }
-      return await response.json();
+    }
+  }
+
+  async saveTutoringTemplate(template: any) {
+    try {
+      if (this.isProduction) {
+        return await supabaseService.saveTutoringTemplate(template);
+      } else {
+        const result = await prisma.tutoring_Template.create({
+          data: template
+        });
+        return result;
+      }
+    } catch (error) {
+      console.error('Error saving tutoring template:', error);
+      throw error;
+    }
+  }
+
+  async getTutoringTemplates() {
+    try {
+      if (this.isProduction) {
+        return await supabaseService.getTutoringTemplates();
+      } else {
+        const templates = await prisma.tutoring_Template.findMany();
+        return templates;
+      }
+    } catch (error) {
+      console.error('Error fetching tutoring templates:', error);
+      throw error;
     }
   }
 
@@ -163,6 +276,33 @@ export class DatabaseService {
       const response = await fetch(`/api/sessions/${sessionId}`);
       if (!response.ok) {
         throw new Error('Failed to fetch session details');
+      }
+      return await response.json();
+    }
+  }
+
+  async updateSession(sessionId: string, data: {
+    metrics?: {
+      fluency: number;
+      lexical: number;
+      grammar: number;
+      pronunciation: number;
+    };
+    notes?: string[];
+    status?: 'active' | 'completed';
+  }) {
+    if (this.isProduction) {
+      return await supabaseService.updateSession(sessionId, data);
+    } else {
+      const response = await fetch(`/api/sessions/${sessionId}`, {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify(data),
+      });
+      if (!response.ok) {
+        throw new Error('Failed to update session');
       }
       return await response.json();
     }

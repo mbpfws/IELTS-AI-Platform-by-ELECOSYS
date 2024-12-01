@@ -1,0 +1,63 @@
+{
+  "id": "session_1732998618893",
+  "templateId": "p1_work_studies",
+  "duration": 15,
+  "createdAt": "2024-11-30T20:30:18.893Z",
+  "status": "active",
+  "messages": [],
+  "metrics": null,
+  "feedback": null,
+  "template": {
+    "id": "p1_work_studies",
+    "title": "Work & Studies",
+    "titleVi": "Công việc & Học tập",
+    "titleEn": "Work & Studies",
+    "description": "Talk about your work or study experience",
+    "descriptionVi": "Nói về kinh nghiệm làm việc hoặc học tập",
+    "descriptionEn": "Talk about your work or study experience",
+    "part": 1,
+    "difficulty": "medium",
+    "taskType": "task1",
+    "systemPrompt": "You are an IELTS examiner conducting a Part 1 speaking test lesson about work and studies.\nAsk questions about the candidate's work or study life, encouraging them to provide detailed responses about their experiences and preferences.",
+    "category": "Career",
+    "level": "Intermediate",
+    "targetBand": 6.5,
+    "criteria": [
+      "Fluency",
+      "Vocabulary",
+      "Grammar",
+      "Pronunciation"
+    ],
+    "topics": [
+      "Work",
+      "Education",
+      "Career goals"
+    ],
+    "objectives": [
+      "Describe job responsibilities",
+      "Express career aspirations",
+      "Use professional vocabulary"
+    ],
+    "duration": 240,
+    "supportText": "Focus on your current work/study situation and your future plans.",
+    "tags": [
+      "work",
+      "education",
+      "career"
+    ],
+    "questions": [
+      "What do you do for work/study?",
+      "Why did you choose this field?",
+      "What do you enjoy most about your work/studies?",
+      "What are your future career plans?"
+    ],
+    "parts": [
+      {
+        "part": 1,
+        "prompt": "You are an IELTS examiner conducting a Part 1 speaking test lesson about work and studies.\nAsk questions about the candidate's work or study life, encouraging them to provide detailed responses about their experiences and preferences."
+      }
+    ]
+  },
+  "timeRemaining": 788,
+  "updatedAt": "2024-11-30T20:32:32.520Z"
+}

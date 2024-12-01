@@ -1,3 +1,8 @@
 node_modules
 node_modules
 .env
+.next
+.git
+.next/cache/webpack/client-development-fallback/index.pack.gz
+.gitignore
+index.lock

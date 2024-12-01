@@ -1,0 +1,48 @@
+{
+  "id": "session_1733003478609",
+  "templateId": "p1_basic_weather",
+  "duration": 15,
+  "createdAt": "2024-11-30T21:51:18.609Z",
+  "status": "completed",
+  "messages": [],
+  "metrics": {
+    "fluency": 1,
+    "lexical": 1,
+    "grammar": 1,
+    "pronunciation": 1
+  },
+  "feedback": null,
+  "template": {
+    "id": "p1_basic_weather",
+    "title": "Simple Weather Talk",
+    "titleVi": "Nói về thởi tiết đơn giản",
+    "titleEn": "Simple Weather Talk",
+    "descriptionVi": "Mô tả thởi tiết bằng từ ngữ đơn giản",
+    "descriptionEn": "Describe weather using simple words",
+    "systemPrompt": "I'll help you talk about weather using easy English.\n\nKey Points (Đơn giản):\n1. Basic weather types (sunny, rainy, hot, cold)\n2. Simple seasons\n3. Easy activities in different weather\n4. Simple preferences\n\nTeaching Focus (Trọng tâm):\n1. Weather words\n2. Basic adjectives\n3. Simple present tense\n4. Like/don't like\n\nRemember: Use simple words to describe weather. Short answers are good.\n\nExample Answer:\nQ: \"What's the weather like in your country?\"\nA: \"It's very hot in my country. We have sun most of the time. I like sunny days because I can go outside.\"",
+    "questions": [
+      "What's the weather like today?",
+      "Do you like hot or cold weather?",
+      "What do you do when it rains?",
+      "What's your favorite season?"
+    ],
+    "category": "Weather",
+    "level": "Beginner",
+    "targetBand": 5,
+    "criteria": [
+      "Fluency",
+      "Vocabulary",
+      "Grammar",
+      "Pronunciation"
+    ],
+    "parts": [
+      {
+        "part": "tutoring",
+        "prompt": "I'll help you talk about weather using easy English.\n\nKey Points (Đơn giản):\n1. Basic weather types (sunny, rainy, hot, cold)\n2. Simple seasons\n3. Easy activities in different weather\n4. Simple preferences\n\nTeaching Focus (Trọng tâm):\n1. Weather words\n2. Basic adjectives\n3. Simple present tense\n4. Like/don't like\n\nRemember: Use simple words to describe weather. Short answers are good.\n\nExample Answer:\nQ: \"What's the weather like in your country?\"\nA: \"It's very hot in my country. We have sun most of the time. I like sunny days because I can go outside.\""
+      }
+    ]
+  },
+  "timeRemaining": 849,
+  "updatedAt": "2024-11-30T21:52:28.074Z",
+  "notes": []
+}
