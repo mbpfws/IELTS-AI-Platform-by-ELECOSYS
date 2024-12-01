@@ -1167,6 +1167,9 @@ select {
 .min-w-\[8rem\] {
   min-width: 8rem;
 }
+.min-w-\[100px\] {
+  min-width: 100px;
+}
 .max-w-3xl {
   max-width: 48rem;
 }

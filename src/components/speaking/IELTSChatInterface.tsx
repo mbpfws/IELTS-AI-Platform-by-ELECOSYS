@@ -15,8 +15,9 @@ import {
 } from 'lucide-react';
 import { Message, SessionState } from '@/types/speakingSession';
 import RichTextMessage from './RichTextMessage';
-import AudioRecorder from '../AudioRecorder';
+import { AudioRecorder } from '@/app/agents/speaking/components/AudioRecorder';
 import { LearningMetrics } from "@/types/learningMetrics";
+import { cn } from "@/lib/utils";
 
 interface IELTSChatInterfaceProps {
   sessionId: string;
@@ -96,6 +97,12 @@ export default function IELTSChatInterface({
             <Timer className="w-4 h-4 mr-1" />
             {formatTime(timeRemaining)}
           </Badge>
+          {isRecording && (
+            <Badge variant="destructive" className="animate-pulse">
+              <Mic className="w-4 h-4 mr-1" />
+              Recording...
+            </Badge>
+          )}
         </div>
         <div className="flex gap-2">
           <Button
@@ -134,35 +141,34 @@ export default function IELTSChatInterface({
           </ScrollArea>
 
           {/* Input Area */}
-          <div className="mt-4">
-            <form onSubmit={handleSubmit} className="flex gap-2">
-              <Input
-                value={input}
-                onChange={(e) => setInput(e.target.value)}
-                placeholder="Type your message..."
-                disabled={isProcessing || isRecording}
-                className="flex-1"
-              />
-              <Button 
-                type="submit" 
-                disabled={isProcessing || isRecording || !input.trim()}
-              >
-                Send
-              </Button>
-              <Button
-                type="button"
-                variant={isRecording ? "destructive" : "secondary"}
-                onClick={() => setIsRecording(!isRecording)}
-              >
-                {isRecording ? <StopCircle className="w-4 h-4" /> : <Mic className="w-4 h-4" />}
-              </Button>
+          <div className="p-4 border-t">
+            <form onSubmit={handleSubmit} className="flex flex-col gap-2">
+              <div className="flex items-center gap-2">
+                <Input
+                  value={input}
+                  onChange={(e) => setInput(e.target.value)}
+                  placeholder="Type your message..."
+                  disabled={isProcessing || isRecording}
+                  className="flex-1"
+                />
+                <AudioRecorder
+                  onRecordingComplete={handleAudioComplete}
+                  onRecordingStart={() => setIsRecording(true)}
+                  onRecordingStop={() => setIsRecording(false)}
+                  disabled={isProcessing}
+                />
+                <Button 
+                  type="submit" 
+                  disabled={!input.trim() || isProcessing || isRecording}
+                  className={cn(
+                    "min-w-[100px]",
+                    isProcessing && "animate-pulse"
+                  )}
+                >
+                  {isProcessing ? "Processing..." : "Send"}
+                </Button>
+              </div>
             </form>
-            {isRecording && (
-              <AudioRecorder
-                onComplete={handleAudioComplete}
-                onCancel={() => setIsRecording(false)}
-              />
-            )}
           </div>
         </CardContent>
       </Card>

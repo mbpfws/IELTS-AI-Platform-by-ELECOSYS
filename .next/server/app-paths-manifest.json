@@ -1,7 +1,6 @@
 {
-  "/api/templates/route": "app/api/templates/route.js",
   "/api/sessions/route": "app/api/sessions/route.js",
   "/agents/speaking/page": "app/agents/speaking/page.js",
-  "/agents/speaking/session/page": "app/agents/speaking/session/page.js",
-  "/page": "app/page.js"
+  "/page": "app/page.js",
+  "/agents/speaking/session/page": "app/agents/speaking/session/page.js"
 }

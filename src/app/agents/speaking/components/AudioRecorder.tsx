@@ -2,7 +2,7 @@
 
 import React, { useState, useRef, useEffect } from 'react';
 import { Button } from '@/components/ui/button';
-import { Mic, Square, Play, Download, Pause } from 'lucide-react';
+import { Mic, Square, Play, Download } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 
 interface AudioRecorderProps {
@@ -70,6 +70,7 @@ export function AudioRecorder({
       }, 1000);
     } catch (error) {
       console.error('Error starting recording:', error);
+      alert('Unable to access microphone. Please ensure you have granted microphone permissions.');
     }
   };
 
@@ -116,106 +117,57 @@ export function AudioRecorder({
     }
   };
 
-  const formatTime = (seconds: number) => {
-    const mins = Math.floor(seconds / 60);
-    const secs = seconds % 60;
-    return `${mins}:${secs.toString().padStart(2, '0')}`;
-  };
-
   return (
-    <motion.div 
-      className="recorder-container p-4 rounded-lg border bg-card"
-      initial={{ opacity: 0, y: 20 }}
-      animate={{ opacity: 1, y: 0 }}
-      transition={{ duration: 0.3 }}
-    >
-      <div className="flex flex-col space-y-4">
-        <div className="flex items-center justify-between">
-          <div className="flex items-center space-x-4">
-            <AnimatePresence mode="wait">
-              {isRecording ? (
-                <motion.div
-                  key="recording"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                >
-                  {isPaused ? (
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={resumeRecording}
-                      disabled={disabled}
-                    >
-                      <Play className="h-4 w-4" />
-                    </Button>
-                  ) : (
-                    <Button
-                      variant="outline"
-                      size="icon"
-                      onClick={pauseRecording}
-                      disabled={disabled}
-                    >
-                      <Pause className="h-4 w-4" />
-                    </Button>
-                  )}
-                </motion.div>
-              ) : (
-                <motion.div
-                  key="start"
-                  initial={{ scale: 0 }}
-                  animate={{ scale: 1 }}
-                  exit={{ scale: 0 }}
-                >
-                  <Button
-                    variant="default"
-                    size="icon"
-                    onClick={startRecording}
-                    disabled={disabled}
-                  >
-                    <Mic className="h-4 w-4" />
-                  </Button>
-                </motion.div>
-              )}
-            </AnimatePresence>
+    <div className="flex items-center gap-2">
+      {!isRecording && !audioUrl && (
+        <Button
+          type="button"
+          variant="secondary"
+          onClick={startRecording}
+          disabled={disabled}
+          className="relative"
+        >
+          <Mic className="w-4 h-4" />
+        </Button>
+      )}
 
-            {isRecording && (
-              <Button
-                variant="destructive"
-                size="icon"
-                onClick={stopRecording}
-                disabled={disabled}
-              >
-                <Square className="h-4 w-4" />
-              </Button>
-            )}
-          </div>
-
-          <span className="text-sm font-medium">
-            {formatTime(duration)}
+      {isRecording && (
+        <>
+          <Button
+            type="button"
+            variant="destructive"
+            onClick={stopRecording}
+            className="animate-pulse"
+          >
+            <Square className="w-4 h-4" />
+          </Button>
+          <span className="text-sm text-muted-foreground">
+            {Math.floor(duration / 60)}:{(duration % 60).toString().padStart(2, '0')}
           </span>
+        </>
+      )}
 
-          {recordedBlob && (
-            <Button
-              variant="outline"
-              size="icon"
-              onClick={downloadRecording}
-              disabled={disabled}
-            >
-              <Download className="h-4 w-4" />
-            </Button>
-          )}
-        </div>
-
-        {audioUrl && (
-          <audio
-            ref={audioRef}
-            src={audioUrl}
-            controls
-            className="w-full"
-          />
-        )}
-      </div>
-    </motion.div>
+      {audioUrl && !isRecording && (
+        <>
+          <audio ref={audioRef} src={audioUrl} className="hidden" />
+          <Button
+            type="button"
+            variant="outline"
+            onClick={() => audioRef.current?.play()}
+            className="w-8 h-8 p-0"
+          >
+            <Play className="w-4 h-4" />
+          </Button>
+          <Button
+            type="button"
+            variant="secondary"
+            onClick={startRecording}
+            className="w-8 h-8 p-0"
+          >
+            <Mic className="w-4 h-4" />
+          </Button>
+        </>
+      )}
+    </div>
   );
 }
