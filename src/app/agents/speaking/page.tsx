@@ -16,7 +16,7 @@ import { part1Templates } from '@/data/speakingTemplates/part1';
 import { part2Templates } from '@/data/speakingTemplates/part2';
 import { part3Templates } from '@/data/speakingTemplates/part3';
 import { tutoringTemplates } from '@/data/speakingTemplates/tutoring';
-import ChatInterface from "@/components/ChatInterface"; // updated import statement
+import ChatInterface from "@/components/ChatInterface"; 
 import { 
   Settings, User, Clock, Send, Mic, MessageSquare, Timer, 
   PauseCircle, PlayCircle, StopCircle, Save, X 
@@ -101,43 +101,50 @@ const SpeakingPage: React.FC = () => {
   console.log('Templates:', safeTemplates);
 
   const [selectedTab, setSelectedTab] = useState('part1');
+
+  // Filter states
+  const [selectedLevel, setSelectedLevel] = useState('all');
+  const [selectedBand, setSelectedBand] = useState('all');
+  const [selectedDifficulty, setSelectedDifficulty] = useState('all');
+
+  // Template selection and session states
   const [selectedTemplate, setSelectedTemplate] = useState<SpeakingTemplate | null>(null);
-  const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(true); // Show dialog by default
+  const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(false); 
   const [sessionDuration, setSessionDuration] = useState(15);
   const [isSessionActive, setIsSessionActive] = useState(false);
-  const initialMessages: Message[] = [
-    {
-      role: 'assistant',
-      content: "Hi! I'm your IELTS Speaking teacher today. Let's practice Part 1 together in a relaxed way, focusing on home and accommodation.\n\nBefore we start, remember:\n- Take your time to answer\n- It's okay to make mistakes\n- I'll help you with vocabulary and grammar\n\nFirst question: Could you tell me about where you live? (Bạn có thể cho tôi biết về nơi bạn đang sống không?)\n\nTip: You can start with 'I live in...' and don't worry if you need to mix Vietnamese and English - I'm here to help!",
-      id: 'initial-message'
-    }
-  ];
-  const [messages, setMessages] = useState<Message[]>(initialMessages);
+  const [userName, setUserName] = useState('');
+
+  // Chat states
+  const [messages, setMessages] = useState<Message[]>([]);
   const [metrics, setMetrics] = useState<SessionMetrics>({
     fluency: 0,
     lexical: 0,
     grammar: 0,
-    pronunciation: 0
+    pronunciation: 0,
   });
-  const [userName, setUserName] = useState('');
   const [isLoading, setIsLoading] = useState(false);
-  const [error, setError] = useState<string | null>(null);
-  const [loading, setLoading] = useState(true);
+
+  // Audio states
+  const [audioState, setAudioState] = useState<'idle' | 'recording' | 'paused'>('idle');
+  const [processingAudio, setProcessingAudio] = useState(false);
+  const [inputMode, setInputMode] = useState<'audio' | 'text'>('audio');
+  const [textMessage, setTextMessage] = useState('');
+  const [timeRemaining, setTimeRemaining] = useState(0);
+
+  // Filtered templates
+  const filteredTemplates = useMemo(() => {
+    return safeTemplates.part1.filter((template) => {
+      const levelMatch = selectedLevel === 'all' || template.level === selectedLevel;
+      const bandMatch = selectedBand === 'all' || template.targetBand.toString() === selectedBand;
+      const difficultyMatch = selectedDifficulty === 'all' || template.difficulty === selectedDifficulty;
+      return levelMatch && bandMatch && difficultyMatch;
+    });
+  }, [selectedLevel, selectedBand, selectedDifficulty]);
 
   // New state for enhanced features
   const [notes, setNotes] = useState<Note[]>([]);
   const [isNotesOpen, setIsNotesOpen] = useState(false);
   const [newNote, setNewNote] = useState('');
-  const [timeRemaining, setTimeRemaining] = useState(0);
-  const [inputMode, setInputMode] = useState<'audio' | 'text'>('audio');
-  const [audioState, setAudioState] = useState<AudioRecorderState>({
-    isRecording: false,
-    isPaused: false,
-    duration: 0,
-    audioUrl: null
-  });
-  const [textMessage, setTextMessage] = useState('');
-  const [processingAudio, setProcessingAudio] = useState(false);
 
   // Refs
   const mediaRecorderRef = useRef<MediaRecorder | null>(null);
@@ -258,16 +265,6 @@ const SpeakingPage: React.FC = () => {
     setTemplates(currentTemplates);
   }, [selectedTab]);
 
-  // Filter and sort templates
-  const filteredTemplates = useMemo(() => {
-    return safeTemplates.part1.filter((template) => {
-      const levelMatch = selectedLevel === 'all' || template.level === selectedLevel;
-      const bandMatch = selectedBand === 'all' || template.targetBand.toString() === selectedBand;
-      const difficultyMatch = selectedDifficulty === 'all' || template.difficulty === selectedDifficulty;
-      return levelMatch && bandMatch && difficultyMatch;
-    });
-  }, [selectedLevel, selectedBand, selectedDifficulty]);
-
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     debouncedSearch(e.target.value);
@@ -311,58 +308,37 @@ const SpeakingPage: React.FC = () => {
   // Audio recording handlers
   const startRecording = async () => {
     try {
-      const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-      const mediaRecorder = new MediaRecorder(stream);
-      mediaRecorderRef.current = mediaRecorder;
-      audioChunksRef.current = [];
-
-      mediaRecorder.ondataavailable = (event) => {
-        if (event.data.size > 0) {
-          audioChunksRef.current.push(event.data);
-        }
-      };
-
-      mediaRecorder.onstop = () => {
-        const audioBlob = new Blob(audioChunksRef.current, { type: 'audio/webm' });
-        const audioUrl = URL.createObjectURL(audioBlob);
-        setAudioState(prev => ({
-          ...prev,
-          audioUrl,
-          isRecording: false
-        }));
-      };
-
-      mediaRecorder.start();
-      setAudioState(prev => ({
-        ...prev,
-        isRecording: true,
-        isPaused: false
-      }));
+      setAudioState('recording');
+      await ieltsGeminiService.startRecording();
     } catch (error) {
-      console.error('Error starting recording:', error);
-      setError('Failed to start recording. Please check your microphone permissions.');
+      console.error('Failed to start recording:', error);
+      setAudioState('idle');
+    }
+  };
+
+  const stopRecording = async () => {
+    try {
+      setAudioState('idle');
+      setProcessingAudio(true);
+      const audioData = await ieltsGeminiService.stopRecording();
+      if (audioData) {
+        await handleSendMessage(audioData);
+      }
+    } catch (error) {
+      console.error('Failed to stop recording:', error);
+    } finally {
+      setProcessingAudio(false);
     }
   };
 
   const pauseRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'recording') {
-      mediaRecorderRef.current.pause();
-      setAudioState(prev => ({ ...prev, isPaused: true }));
-    }
+    setAudioState('paused');
+    ieltsGeminiService.pauseRecording();
   };
 
   const resumeRecording = () => {
-    if (mediaRecorderRef.current && mediaRecorderRef.current.state === 'paused') {
-      mediaRecorderRef.current.resume();
-      setAudioState(prev => ({ ...prev, isPaused: false }));
-    }
-  };
-
-  const stopRecording = () => {
-    if (mediaRecorderRef.current) {
-      mediaRecorderRef.current.stop();
-      mediaRecorderRef.current.stream.getTracks().forEach(track => track.stop());
-    }
+    setAudioState('recording');
+    ieltsGeminiService.resumeRecording();
   };
 
   // Note management
@@ -384,183 +360,94 @@ const SpeakingPage: React.FC = () => {
   };
 
   const handleTemplateSelect = (template: SpeakingTemplate) => {
-    if (!template?.id) {
-      console.error('Invalid template:', template);
-      setError('Invalid template selected');
-      return;
-    }
-    console.log('Selected template:', template);
     setSelectedTemplate(template);
     setIsSessionDialogOpen(true);
   };
 
-  const startSession = useCallback(async () => {
-    if (!userName.trim()) return;
-    
+  const startSession = async () => {
+    if (!selectedTemplate || !userName.trim()) return;
+
     try {
       setIsLoading(true);
-      
-      // Stop any ongoing recording
-      if (audioState.isRecording) {
-        stopRecording();
+      const sessionConfig = {
+        userName: userName.trim(),
+        templatePrompt: selectedTemplate.prompt,
+        duration: sessionDuration,
+      };
+
+      const session = await ieltsGeminiService.initializeSession(sessionConfig);
+      if (session) {
+        setTimeRemaining(sessionDuration * 60);
+        setIsSessionActive(true);
+        setIsSessionDialogOpen(false);
+        setMessages([{
+          role: 'assistant',
+          content: session.message,
+        }]);
+        if (session.metrics) {
+          setMetrics(session.metrics);
+        }
       }
-
-      if (!selectedTemplate?.id) {
-        throw new Error('Please select a valid template to start the session');
-      }
-      if (!userName.trim()) {
-        throw new Error('Please enter your name to start the session');
-      }
-
-      console.log('Starting session with template:', {
-        id: selectedTemplate.id,
-        title: selectedTemplate.title_en || selectedTemplate.title,
-        duration: sessionDuration
-      });
-
-      const sessionResponse = await fetch('/api/sessions', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          templateId: selectedTemplate.id,
-          duration: sessionDuration
-        })
-      });
-
-      if (!sessionResponse.ok) {
-        throw new Error('Failed to create session');
-      }
-
-      const sessionData = await sessionResponse.json();
-
-      if (!sessionData?.id || !sessionData?.template?.parts?.length) {
-        throw new Error('Failed to create session - invalid session data');
-      }
-
-      const prompt = `Part ${sessionData.template.parts[0].part}: ${sessionData.template.parts[0].prompt}`;
-      
-      const geminiResponse = await ieltsGeminiService.initializeSession({
-        userName,
-        templatePrompt: prompt,
-        sessionId: sessionData.id,
-        duration: sessionDuration
-      });
-
-      if (!geminiResponse?.message) {
-        throw new Error('Failed to get initial response from AI tutor');
-      }
-
-      // Initialize session state
-      setMessages([{ role: 'assistant', content: geminiResponse.message }]);
-      setTimeRemaining(sessionDuration * 60);
-      setMetrics(geminiResponse.metrics || {
-        fluency: 0,
-        lexical: 0,
-        grammar: 0,
-        pronunciation: 0
-      });
-      setIsSessionActive(true);
-      setIsSessionDialogOpen(false);
-      setNotes([]);
-      
     } catch (error) {
-      console.error('Session initialization failed:', error);
-      setError(error instanceof Error ? error.message : 'Failed to start session');
-      setIsSessionActive(false);
+      console.error('Failed to start session:', error);
     } finally {
       setIsLoading(false);
     }
-  }, [userName, sessionDuration, selectedTemplate]);
+  };
 
-  const handleSendMessage = async (content: string, isAudio: boolean = false) => {
+  const handleSendMessage = async (content: string) => {
     try {
       setIsLoading(true);
-      const userMessage: Message = { role: 'user', content };
+      const userMessage: Message = {
+        role: 'user',
+        content,
+      };
       setMessages(prev => [...prev, userMessage]);
 
-      let response;
-      if (isAudio && audioState.audioUrl) {
-        const audioBlob = await fetch(audioState.audioUrl).then(r => r.blob());
-        response = await ieltsGeminiService.processAudioResponse(audioBlob);
-        
-        // Clear audio state after sending
-        setAudioState({
-          isRecording: false,
-          isPaused: false,
-          duration: 0,
-          audioUrl: null
-        });
-      } else {
-        response = await ieltsGeminiService.processMessage(content);
-      }
-
-      setMessages(prev => [...prev, { role: 'assistant', content: response.message }]);
-      
-      if (response.metrics) {
-        setMetrics(response.metrics);
+      const response = await ieltsGeminiService.sendMessage(content);
+      if (response) {
+        const assistantMessage: Message = {
+          role: 'assistant',
+          content: response.message,
+        };
+        setMessages(prev => [...prev, assistantMessage]);
+        if (response.metrics) {
+          setMetrics(response.metrics);
+        }
       }
     } catch (error) {
-      console.error('Error sending message:', error);
-      setError('Failed to send message. Please try again.');
+      console.error('Failed to send message:', error);
     } finally {
       setIsLoading(false);
     }
   };
 
-  const handleEndSession = async () => {
-    try {
-      setIsLoading(true);
-      
-      // Stop any ongoing recording
-      if (audioState.isRecording) {
-        stopRecording();
-      }
-
-      // Get final feedback
-      const response = await ieltsGeminiService.endSession();
-      
-      // Add final message
-      setMessages(prev => [...prev, { role: 'assistant', content: response.message }]);
-      
-      // Update final metrics
-      if (response.metrics) {
-        setMetrics(response.metrics);
-      }
-
-      // Clear session state
-      setIsSessionActive(false);
-      if (timerRef.current) {
-        clearInterval(timerRef.current);
-      }
-      setTimeRemaining(0);
-      
-    } catch (error) {
-      console.error('Error ending session:', error);
-      setError('Failed to end session properly. Your progress has been saved.');
-    } finally {
-      setIsLoading(false);
-    }
+  const handleEndSession = () => {
+    ieltsGeminiService.endSession();
+    setIsSessionActive(false);
+    setSelectedTemplate(null);
+    setMessages([]);
+    setMetrics({
+      fluency: 0,
+      lexical: 0,
+      grammar: 0,
+      pronunciation: 0,
+    });
   };
 
+  // Toggle input mode
   const toggleInputMode = () => {
-    if (audioState.isRecording) {
-      stopRecording();
-    }
     setInputMode(prev => prev === 'audio' ? 'text' : 'audio');
   };
 
-  // Show session dialog if not active
+  // Cleanup effect
   useEffect(() => {
-    if (!isSessionActive && !isSessionDialogOpen) {
-      setIsSessionDialogOpen(true);
-    }
-  }, [isSessionActive, isSessionDialogOpen]);
-
-  const [selectedLevel, setSelectedLevel] = useState('all');
-  const [selectedBand, setSelectedBand] = useState('all');
-  const [selectedDifficulty, setSelectedDifficulty] = useState('all');
+    return () => {
+      if (isSessionActive) {
+        handleEndSession();
+      }
+    };
+  }, []);
 
   return (
     <div className="flex flex-col h-full">
