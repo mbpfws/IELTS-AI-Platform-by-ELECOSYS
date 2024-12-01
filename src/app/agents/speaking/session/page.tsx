@@ -46,72 +46,88 @@ export default function SpeakingSessionPage() {
       pronunciation: 6.5
     }
   });
+  const [timeRemaining, setTimeRemaining] = useState(duration);
 
   // Initialize client-side values and start session
   useEffect(() => {
     const startNewSession = async () => {
-      if (!templateId) {
+      if (!templateId || !userName) {
         router.push('/agents/speaking');
         return;
       }
 
-      setIsProcessing(true);
-      try {
-        // Find the template across all template collections
-        let template = part1Templates.find(t => t.id === templateId) ||
-                      part1AdditionalTemplates.find(t => t.id === templateId) ||
-                      part2Templates.find(t => t.id === templateId) ||
-                      part3Templates.find(t => t.id === templateId) ||
-                      tutoringLessons.find(t => t.id === templateId);
-
-        if (!template) {
-          console.error('Template not found:', templateId);
-          router.push('/agents/speaking');
-          return;
-        }
-
-        const sid = searchParams.get('sessionId') || Date.now().toString();
-        setSessionId(sid);
-        setMetrics(prev => ({
-          ...prev,
-          sessionId: sid,
-          timestamp: new Date()
-        }));
-
-        // Initialize the session with Gemini
-        const response = await ieltsGeminiService.startSession(templateId, userName);
-        if (response && response.message) {
-          setMessages([{ role: 'assistant', content: response.message }]);
-          setSessionState('active');
-        } else {
-          throw new Error('Failed to get initial response from AI');
-        }
-      } catch (error) {
-        console.error('Error starting session:', error);
-        router.push('/agents/speaking');
-      } finally {
-        setIsProcessing(false);
-      }
+      setSessionId(crypto.randomUUID());
+      
+      // Initialize session state in storage
+      const initialState = {
+        messages: [],
+        metrics: {
+          performance: {
+            taskResponse: 0,
+            lexicalResource: 0,
+            grammaticalRange: 0,
+            pronunciation: 0
+          }
+        },
+        timeRemaining: duration
+      };
+      
+      sessionStorage.setItem(`session_${sessionId}`, JSON.stringify(initialState));
+      ieltsGeminiService.setSessionId(sessionId);
     };
 
     startNewSession();
   }, [templateId, userName, router, searchParams]);
 
+  // Session timer
+  useEffect(() => {
+    if (!timeRemaining) return;
+
+    const timer = setInterval(() => {
+      setTimeRemaining((prev) => {
+        if (prev <= 0) {
+          clearInterval(timer);
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
+
+    return () => clearInterval(timer);
+  }, [timeRemaining]);
+
+  // Format time for display
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
+
   // Handle page unload/navigation
   useEffect(() => {
-    const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
-      if (sessionState === 'active') {
-        e.preventDefault();
-        e.returnValue = '';
-        await handleEndSession(true);
+    const handleBeforeUnload = (e: BeforeUnloadEvent) => {
+      const sessionData = sessionStorage.getItem(`session_${sessionId}`);
+      if (sessionData) {
+        // Save final state to database if needed
+        fetch('/api/sessions/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            sessionId,
+            data: JSON.parse(sessionData)
+          }),
+          keepalive: true
+        }).catch(console.error);
       }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
     return () => {
-      window.removeEventListener('beforeunload', handleBeforeUnload);
+      window.removeEventListener('beforeUnload', handleBeforeUnload);
     };
-  }, [sessionState]);
+  }, [sessionId]);
 
   const handleNavigateToSpeaking = async () => {
     if (sessionState === 'active') {
@@ -124,38 +140,10 @@ export default function SpeakingSessionPage() {
     if (isEndingSession) return;
     
     setIsEndingSession(true);
-    setSessionState('completed');
-    
     try {
-      // Get session summary from AI
-      const summary = await ieltsGeminiService.endSession(sessionId);
-      
-      const summaryMessage = {
-        role: 'assistant' as const,
-        content: summary,
-        timestamp: Date.now()
-      };
-
-      setMessages(prev => [...prev, summaryMessage]);
-
-      // Update session in database
-      await fetch(`/api/sessions?sessionId=${sessionId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: summaryMessage,
-          state: 'completed'
-        })
-      });
-
-      // Generate session report
-      await fetch(`/api/sessions?sessionId=${sessionId}`, {
-        method: 'PUT',
-        headers: { 'Content-Type': 'application/json' }
-      });
+      setSessionState('ended');
 
       if (!autoSave) {
-        // Show end dialog with summary
         setShowEndDialog(true);
       }
     } catch (error) {
@@ -173,8 +161,25 @@ export default function SpeakingSessionPage() {
     router.push('/agents/speaking');
   };
 
-  const handleManualClose = () => {
-    handleEndSession(false);
+  const handleManualClose = async () => {
+    try {
+      const sessionData = sessionStorage.getItem(`session_${sessionId}`);
+      if (sessionData) {
+        await fetch('/api/sessions/complete', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json'
+          },
+          body: JSON.stringify({
+            sessionId,
+            data: JSON.parse(sessionData)
+          })
+        });
+      }
+      router.push('/agents/speaking');
+    } catch (error) {
+      console.error('Error closing session:', error);
+    }
   };
 
   const handleSendMessage = async (content: string) => {
@@ -190,9 +195,12 @@ export default function SpeakingSessionPage() {
     setIsProcessing(true);
 
     try {
-      // Send message to AI
       const response = await ieltsGeminiService.sendMessage(content);
       
+      if (!response || !response.message) {
+        throw new Error('Invalid response from AI service');
+      }
+
       const aiMessage = {
         role: 'assistant' as const,
         content: response.message,
@@ -201,30 +209,26 @@ export default function SpeakingSessionPage() {
 
       setMessages(prev => [...prev, aiMessage]);
 
-      // Update session in database
-      await fetch(`/api/sessions?sessionId=${sessionId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: userMessage
-        })
-      });
-
-      await fetch(`/api/sessions?sessionId=${sessionId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: aiMessage,
-          metrics: response.metrics
-        })
-      });
-
+      // Update metrics if available
       if (response.metrics) {
         setMetrics(prev => ({
           ...prev,
-          ...response.metrics
+          performance: {
+            ...prev.performance,
+            taskResponse: response.metrics.fluency || prev.performance.taskResponse,
+            lexicalResource: response.metrics.lexical || prev.performance.lexicalResource,
+            grammaticalRange: response.metrics.grammar || prev.performance.grammaticalRange,
+            pronunciation: response.metrics.pronunciation || prev.performance.pronunciation
+          }
         }));
       }
+
+      // Store updated state in session storage instead of API call
+      sessionStorage.setItem(`session_${sessionId}`, JSON.stringify({
+        messages: [...messages, userMessage, aiMessage],
+        metrics: metrics
+      }));
+
     } catch (error) {
       console.error('Failed to send message:', error);
       setMessages(prev => [...prev, {
@@ -232,8 +236,9 @@ export default function SpeakingSessionPage() {
         content: 'Sorry, there was an error processing your message. Please try again.',
         timestamp: Date.now()
       }]);
+    } finally {
+      setIsProcessing(false);
     }
-    setIsProcessing(false);
   };
 
   const handleSendAudio = async (audioBlob: Blob) => {
@@ -242,18 +247,39 @@ export default function SpeakingSessionPage() {
     setIsProcessing(true);
     try {
       const response = await ieltsGeminiService.sendAudio(audioBlob);
-      setMessages(prev => [...prev, {
+      
+      if (!response || !response.message) {
+        throw new Error('Invalid response from AI service');
+      }
+
+      const aiMessage = {
         role: 'assistant',
         content: response.message,
         timestamp: Date.now()
-      }]);
+      };
 
+      setMessages(prev => [...prev, aiMessage]);
+
+      // Update metrics if available
       if (response.metrics) {
         setMetrics(prev => ({
           ...prev,
-          ...response.metrics
+          performance: {
+            ...prev.performance,
+            taskResponse: response.metrics.fluency || prev.performance.taskResponse,
+            lexicalResource: response.metrics.lexical || prev.performance.lexicalResource,
+            grammaticalRange: response.metrics.grammar || prev.performance.grammaticalRange,
+            pronunciation: response.metrics.pronunciation || prev.performance.pronunciation
+          }
         }));
       }
+
+      // Store updated state in session storage instead of API call
+      sessionStorage.setItem(`session_${sessionId}`, JSON.stringify({
+        messages: [...messages, aiMessage],
+        metrics: metrics
+      }));
+
     } catch (error) {
       console.error('Failed to process audio:', error);
       setMessages(prev => [...prev, {
@@ -261,8 +287,9 @@ export default function SpeakingSessionPage() {
         content: 'Sorry, there was an error processing your audio. Please try again.',
         timestamp: Date.now()
       }]);
+    } finally {
+      setIsProcessing(false);
     }
-    setIsProcessing(false);
   };
 
   return (
@@ -276,7 +303,7 @@ export default function SpeakingSessionPage() {
           isProcessing={isProcessing}
           sessionState={sessionState}
           metrics={metrics}
-          duration={duration}
+          duration={formatTime(timeRemaining)}
           onEndSession={handleManualClose}
         />
       </div>

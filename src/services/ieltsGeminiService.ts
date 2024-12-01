@@ -145,25 +145,34 @@ By incorporating bilingual support and understanding the specific needs of Vietn
         content: transcribedText
       });
 
-      const prompt = `Current Topic: ${this.getCurrentTopicFromTemplate()}
-      Last Question: "${this.sessionState.lastQuestion}"
-      Student's Response: "${transcribedText}"
-      
-      Previous exchanges: ${this.getLastFewExchanges(2)}
+      const prompt = `You are an IELTS examiner conducting a Part ${this.sessionState.currentPart} speaking test.
+Current topic: ${this.sessionState.templateContent}
+Recent conversation:
+${this.getLastFewExchanges(2)}
 
-      Respond naturally as a tutor, trainer. Flexible and adaptive. Reference to these:
-      1. Briefly acknowledge their response
-      2. If needed, give suggestion for improvement
-      3. Ask ONE natural follow-up question
-      4. Stay on topic but keep it conversational
-      5. Adaptive Teaching Techniques:** Employ various teaching methodologies based on the learner's needs and learning style. This includes:
-      6.Direct Instruction:** Explain specific grammar rules, vocabulary, or pronunciation concepts relevant to IELTS speaking. **For low-level learners, provide explanations and examples in both English and Vietnamese when necessary to ensure understanding.**  Use Vietnamese to clarify complex concepts or illustrate subtle differences between English and Vietnamese.
-      7.Guided Practice:** Provide structured exercises and activities like topic brainstorming, idea generation, and answer structuring.  Encourage learners to verbalize their thoughts in Vietnamese if it helps them formulate their ideas before expressing them in English.
-      8.Communicative Activities:** Engage learners in role-plays, discussions, and debates to practice spontaneous speaking. Allow learners to initially use Vietnamese if they struggle to express themselves fluently in English, gradually transitioning to full English use.
-      9.Feedback and Error Correction:** Offer constructive feedback focusing on areas for improvement, using clear examples and explanations. **For low-level learners, use Vietnamese to explain the nature of errors and suggest corrections, if needed.**  Point out common mistakes Vietnamese speakers make and provide targeted strategies for overcoming them.
-      10.Targeted Criteria Practice:** Design activities that specifically focus on improving each of the four assessment criteria.  Adapt these activities to suit the needs of Vietnamese learners, incorporating bilingual support where appropriate.
-      
-      Keep your response natural.`;
+Act as a real IELTS examiner would:
+1. For Part 1: Ask simple questions about familiar topics
+2. For Part 2: Give the candidate time to speak at length about the topic card
+3. For Part 3: Ask more complex questions about abstract topics
+
+Rules:
+- Stay in character as an IELTS examiner
+- Never mention being an AI or explain scoring
+- Keep questions natural and flowing
+- Follow up on candidate's responses
+- Move to new aspects of the topic when appropriate
+- Maintain professional but encouraging tone
+
+Evaluate their response and provide output in this JSON format:
+{
+  "response": "your next question or comment as an examiner",
+  "metrics": {
+    "fluency": [score 1-9],
+    "lexical": [score 1-9],
+    "grammar": [score 1-9],
+    "pronunciation": [score 1-9]
+  }
+}`;
 
       const response = await this.chatSession.sendMessage(prompt);
       const responseText = response.response.text();
@@ -241,14 +250,34 @@ By incorporating bilingual support and understanding the specific needs of Vietn
       this.sessionState.templateContent = template.content;
 
       // Start session with template content
-      const startSessionPrompt = `Template Content for Reference:
-${template.content}
+      const startSessionPrompt = `You are an IELTS examiner conducting a Part ${this.sessionState.currentPart} speaking test.
+Current topic: ${this.sessionState.templateContent}
+Recent conversation:
+${this.getLastFewExchanges(2)}
 
-You are a friendly IELTS speaking tutor. Keep responses natural:
-1. Start with a simple welcome and the first topic
-2. Ask only ONE question at a time
-3. Stay focused on the current topic
-4. Be conversational, not too formal`;
+Act as a real IELTS examiner would:
+1. For Part 1: Ask simple questions about familiar topics
+2. For Part 2: Give the candidate time to speak at length about the topic card
+3. For Part 3: Ask more complex questions about abstract topics
+
+Rules:
+- Stay in character as an IELTS examiner
+- Never mention being an AI or explain scoring
+- Keep questions natural and flowing
+- Follow up on candidate's responses
+- Move to new aspects of the topic when appropriate
+- Maintain professional but encouraging tone
+
+Evaluate their response and provide output in this JSON format:
+{
+  "response": "your next question or comment as an examiner",
+  "metrics": {
+    "fluency": [score 1-9],
+    "lexical": [score 1-9],
+    "grammar": [score 1-9],
+    "pronunciation": [score 1-9]
+  }
+}`;
 
       const response = await this.chatSession.sendMessage(startSessionPrompt);
       const responseText = response.response.text();
@@ -260,9 +289,6 @@ You are a friendly IELTS speaking tutor. Keep responses natural:
       });
       
       this.sessionState.lastQuestion = responseText;
-
-      // Start session timer
-      this.startSessionTimer();
 
       return {
         message: responseText,
@@ -283,24 +309,34 @@ You are a friendly IELTS speaking tutor. Keep responses natural:
       await chat.sendMessage(this.systemInstruction);
       
       // Start with template content but keep it natural
-      const startSessionPrompt = `Template Content for Reference:
-      ${config.templatePrompt}
+      const startSessionPrompt = `You are an IELTS examiner conducting a Part ${this.sessionState?.currentPart} speaking test.
+Current topic: ${config.templatePrompt}
+Recent conversation:
+${this.getLastFewExchanges(2)}
 
-      You are a friendly IELTS speaking tutor. Keep responses natural:
-      1. Start with a simple welcome and the first topic
-      2. Ask only ONE question at a time
-      3. Stay focused on the current topic
-      4. Be conversational, not too formal5. Adaptive Teaching Techniques:** Employ various teaching methodologies based on the learner's needs and learning style. This includes:
-      6.Direct Instruction:** Explain specific grammar rules, vocabulary, or pronunciation concepts relevant to IELTS speaking. **For low-level learners, provide explanations and examples in both English and Vietnamese when necessary to ensure understanding.**  Use Vietnamese to clarify complex concepts or illustrate subtle differences between English and Vietnamese.
-      7.Guided Practice:** Provide structured exercises and activities like topic brainstorming, idea generation, and answer structuring.  Encourage learners to verbalize their thoughts in Vietnamese if it helps them formulate their ideas before expressing them in English.
-      8.Communicative Activities:** Engage learners in role-plays, discussions, and debates to practice spontaneous speaking. Allow learners to initially use Vietnamese if they struggle to express themselves fluently in English, gradually transitioning to full English use.
-      9.Feedback and Error Correction:** Offer constructive feedback focusing on areas for improvement, using clear examples and explanations. **For low-level learners, use Vietnamese to explain the nature of errors and suggest corrections, if needed.**  Point out common mistakes Vietnamese speakers make and provide targeted strategies for overcoming them.
-      10.Targeted Criteria Practice:** Design activities that specifically focus on improving each of the four assessment criteria.  Adapt these activities to suit the needs of Vietnamese learners, incorporating bilingual support where appropriate.
-      
-      Keep your response natural.
-      
+Act as a real IELTS examiner would:
+1. For Part 1: Ask simple questions about familiar topics
+2. For Part 2: Give the candidate time to speak at length about the topic card
+3. For Part 3: Ask more complex questions about abstract topics
 
-      Begin the session naturally, focusing on the first topic from the template.`;
+Rules:
+- Stay in character as an IELTS examiner
+- Never mention being an AI or explain scoring
+- Keep questions natural and flowing
+- Follow up on candidate's responses
+- Move to new aspects of the topic when appropriate
+- Maintain professional but encouraging tone
+
+Evaluate their response and provide output in this JSON format:
+{
+  "response": "your next question or comment as an examiner",
+  "metrics": {
+    "fluency": [score 1-9],
+    "lexical": [score 1-9],
+    "grammar": [score 1-9],
+    "pronunciation": [score 1-9]
+  }
+}`;
 
       const response = await chat.sendMessage(startSessionPrompt);
       const responseText = response.response.text();
@@ -324,7 +360,6 @@ You are a friendly IELTS speaking tutor. Keep responses natural:
         conversationHistory: []
       };
 
-      this.startSessionTimer();
       return {
         message: responseText,
         session_id: this.currentSessionId,
@@ -342,8 +377,6 @@ You are a friendly IELTS speaking tutor. Keep responses natural:
         throw new Error('Session not initialized');
       }
 
-      this.sessionTimer = null;
-
       const response = await this.chatSession.sendMessage(`
         The speaking practice session is now ending.
         Please provide:
@@ -357,25 +390,6 @@ You are a friendly IELTS speaking tutor. Keep responses natural:
 
       const responseText = response.response.text();
 
-      const finalMetrics = { ...this.sessionState.metrics };
-      const sessionNotes = [...this.sessionState.notes];
-
-      // Update session via API
-      await fetch('/api/sessions', {
-        method: 'PATCH',
-        headers: {
-          'Content-Type': 'application/json'
-        },
-        body: JSON.stringify({
-          sessionId: this.currentSessionId,
-          updates: {
-            metrics: finalMetrics,
-            notes: sessionNotes,
-            status: 'completed'
-          }
-        })
-      });
-
       const sessionId = this.currentSessionId;
       this.currentSessionId = null;
       this.sessionState = null;
@@ -384,7 +398,12 @@ You are a friendly IELTS speaking tutor. Keep responses natural:
       return {
         message: responseText,
         session_id: sessionId,
-        metrics: finalMetrics
+        metrics: {
+          fluency: 0,
+          lexical: 0,
+          grammar: 0,
+          pronunciation: 0
+        }
       };
     } catch (error) {
       console.error('Error ending session:', error);
@@ -392,38 +411,137 @@ You are a friendly IELTS speaking tutor. Keep responses natural:
     }
   }
 
-  private startSessionTimer() {
-    if (this.sessionTimer) {
-      clearInterval(this.sessionTimer);
-    }
+  async sendMessage(content: string): Promise<{
+    message: string;
+    metrics?: {
+      fluency?: number;
+      lexical?: number;
+      grammar?: number;
+      pronunciation?: number;
+    };
+  }> {
+    try {
+      const model = this.model;
+      
+      const prompt = `You are an IELTS examiner conducting a Part ${this.sessionState?.currentPart} speaking test.
+Current topic: ${this.sessionState?.templateContent}
+Recent conversation:
+${this.getLastFewExchanges(3)}
 
-    this.sessionTimer = setInterval(async () => {
-      if (this.sessionState && this.sessionState.timeRemaining > 0) {
-        this.sessionState.timeRemaining--;
-        
-        // Update session time remaining via API
-        try {
-          await fetch('/api/sessions', {
-            method: 'PATCH',
-            headers: {
-              'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-              sessionId: this.currentSessionId,
-              updates: {
-                timeRemaining: this.sessionState.timeRemaining
-              }
-            })
-          });
-        } catch (error) {
-          console.error('Error updating session time:', error);
-        }
-        
-        if (this.sessionState.timeRemaining === 0) {
-          this.endSession();
-        }
+Act as a real IELTS examiner would:
+1. For Part 1: Ask simple questions about familiar topics
+2. For Part 2: Give the candidate time to speak at length about the topic card
+3. For Part 3: Ask more complex questions about abstract topics
+
+Rules:
+- Stay in character as an IELTS examiner
+- Never mention being an AI or explain scoring
+- Keep questions natural and flowing
+- Follow up on candidate's responses
+- Move to new aspects of the topic when appropriate
+- Maintain professional but encouraging tone
+
+Evaluate their response and provide output in this JSON format:
+{
+  "response": "your next question or comment as an examiner",
+  "metrics": {
+    "fluency": [score 1-9],
+    "lexical": [score 1-9],
+    "grammar": [score 1-9],
+    "pronunciation": [score 1-9]
+  }
+}`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      try {
+        const parsed = JSON.parse(text);
+        return {
+          message: parsed.response,
+          metrics: parsed.metrics
+        };
+      } catch (e) {
+        // If JSON parsing fails, just return the text as message
+        return {
+          message: text
+        };
       }
-    }, 1000);
+    } catch (error) {
+      console.error('Error in sendMessage:', error);
+      throw error;
+    }
+  }
+
+  async sendAudio(audioBlob: Blob): Promise<{
+    message: string;
+    metrics?: {
+      fluency?: number;
+      lexical?: number;
+      grammar?: number;
+      pronunciation?: number;
+    };
+  }> {
+    try {
+      // Convert audio blob to base64
+      const buffer = await audioBlob.arrayBuffer();
+      const base64 = btoa(
+        new Uint8Array(buffer)
+          .reduce((data, byte) => data + String.fromCharCode(byte), '')
+      );
+
+      const model = this.model;
+      
+      const prompt = `You are an IELTS examiner conducting a Part ${this.sessionState?.currentPart} speaking test.
+Current topic: ${this.sessionState?.templateContent}
+Recent conversation:
+${this.getLastFewExchanges(3)}
+
+Respond as a real IELTS examiner would:
+1. For Part 1: Keep questions simple and direct
+2. For Part 2: Allow candidate to speak at length
+3. For Part 3: Explore more complex aspects of the topic
+
+Rules:
+- Stay in character as an IELTS examiner
+- Never mention being an AI or explain scoring
+- Keep questions natural and flowing
+- Follow up on candidate's responses naturally
+- Move to new aspects when appropriate
+- Maintain professional but encouraging tone
+
+Provide output in this JSON format:
+{
+  "response": "your next question or comment as an examiner",
+  "metrics": {
+    "fluency": [score 1-9],
+    "lexical": [score 1-9],
+    "grammar": [score 1-9],
+    "pronunciation": [score 1-9]
+  }
+}`;
+
+      const result = await model.generateContent(prompt);
+      const response = await result.response;
+      const text = response.text();
+      
+      try {
+        const parsed = JSON.parse(text);
+        return {
+          message: parsed.response,
+          metrics: parsed.metrics
+        };
+      } catch (e) {
+        // If JSON parsing fails, just return the text as message
+        return {
+          message: text
+        };
+      }
+    } catch (error) {
+      console.error('Error in sendAudio:', error);
+      throw error;
+    }
   }
 
   private updateMetrics(aiResponse: string) {

@@ -1,23 +1,20 @@
 'use client';
 
-import React, { useState, useCallback, useEffect, useRef } from 'react';
-import { Card, CardContent } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { Button } from "@/components/ui/button";
-import { Progress } from "@/components/ui/progress";
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
-import { ScrollArea } from "@/components/ui/scroll-area";
-import { Textarea } from "@/components/ui/textarea";
-import { Badge } from "@/components/ui/badge";
+import React, { useState, useRef, useEffect } from 'react';
+import { Input } from '@/components/ui/input';
+import { Button } from '@/components/ui/button';
+import { Card, CardContent } from '@/components/ui/card';
+import { Badge } from '@/components/ui/badge';
+import { Timer } from 'lucide-react';
+import { cn } from '@/lib/utils';
+import AudioRecorder from '@/app/agents/speaking/components/AudioRecorder';
 import { 
-  Settings, Mic, MessageSquare, Timer, 
+  Settings, Mic, MessageSquare, 
   PauseCircle, PlayCircle, StopCircle, Save, X 
 } from 'lucide-react';
 import { Message, SessionState } from '@/types/speakingSession';
 import RichTextMessage from './RichTextMessage';
-import { AudioRecorder } from '@/app/agents/speaking/components/AudioRecorder';
 import { LearningMetrics } from "@/types/learningMetrics";
-import { cn } from "@/lib/utils";
 
 interface IELTSChatInterfaceProps {
   sessionId: string;
@@ -31,7 +28,7 @@ interface IELTSChatInterfaceProps {
   onEndSession: () => void;
 }
 
-export default function IELTSChatInterface({
+const IELTSChatInterface: React.FC<IELTSChatInterfaceProps> = ({
   sessionId,
   messages,
   onSendMessage,
@@ -41,8 +38,8 @@ export default function IELTSChatInterface({
   metrics,
   duration,
   onEndSession
-}: IELTSChatInterfaceProps) {
-  const [input, setInput] = useState('');
+}) => {
+  const [inputMessage, setInputMessage] = useState('');
   const [isRecording, setIsRecording] = useState(false);
   const [showNotes, setShowNotes] = useState(false);
   const [notes, setNotes] = useState('');
@@ -50,13 +47,13 @@ export default function IELTSChatInterface({
   const [timeRemaining, setTimeRemaining] = useState(duration);
 
   // Auto-scroll to bottom when new messages arrive
-  const scrollToBottom = useCallback(() => {
+  const scrollToBottom = useEffect(() => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, []);
+  }, [messages]);
 
   useEffect(() => {
-    scrollToBottom();
-  }, [messages, scrollToBottom]);
+    scrollToBottom;
+  }, [messages]);
 
   // Session timer
   useEffect(() => {
@@ -68,23 +65,17 @@ export default function IELTSChatInterface({
     }
   }, [sessionState, timeRemaining]);
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (input.trim() && !isProcessing) {
-      onSendMessage(input.trim());
-      setInput('');
-    }
+    if (!inputMessage.trim() || isProcessing) return;
+
+    onSendMessage(inputMessage.trim());
+    setInputMessage('');
   };
 
   const handleAudioComplete = async (audioBlob: Blob) => {
-    setIsRecording(false);
-    await onSendAudio(audioBlob);
-  };
-
-  const formatTime = (seconds: number) => {
-    const minutes = Math.floor(seconds / 60);
-    const remainingSeconds = seconds % 60;
-    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+    if (isProcessing) return;
+    onSendAudio(audioBlob);
   };
 
   return (
@@ -95,7 +86,7 @@ export default function IELTSChatInterface({
           <Badge variant="outline">Session ID: {sessionId}</Badge>
           <Badge variant="outline">
             <Timer className="w-4 h-4 mr-1" />
-            {formatTime(timeRemaining)}
+            {timeRemaining}
           </Badge>
           {isRecording && (
             <Badge variant="destructive" className="animate-pulse">
@@ -127,7 +118,7 @@ export default function IELTSChatInterface({
       {/* Main Chat Area */}
       <Card className="flex-1 flex flex-col">
         <CardContent className="flex-1 p-4 flex flex-col">
-          <ScrollArea className="flex-1 pr-4">
+          <div className="flex-1 pr-4">
             <div className="space-y-4">
               {messages.map((msg, idx) => (
                 <RichTextMessage 
@@ -138,83 +129,61 @@ export default function IELTSChatInterface({
               ))}
               <div ref={messagesEndRef} />
             </div>
-          </ScrollArea>
+          </div>
 
           {/* Input Area */}
           <div className="p-4 border-t">
-            <form onSubmit={handleSubmit} className="flex flex-col gap-2">
-              <div className="flex items-center gap-2">
+            <div className="flex items-center space-x-2">
+              <AudioRecorder
+                onRecordingComplete={handleAudioComplete}
+                isRecording={isRecording}
+                setIsRecording={setIsRecording}
+                disabled={isProcessing}
+              />
+              <form onSubmit={handleSubmit} className="flex-1 flex space-x-2">
                 <Input
-                  value={input}
-                  onChange={(e) => setInput(e.target.value)}
-                  placeholder="Type your message..."
+                  value={inputMessage}
+                  onChange={(e) => setInputMessage(e.target.value)}
                   disabled={isProcessing || isRecording}
-                  className="flex-1"
-                />
-                <AudioRecorder
-                  onRecordingComplete={handleAudioComplete}
-                  onRecordingStart={() => setIsRecording(true)}
-                  onRecordingStop={() => setIsRecording(false)}
-                  disabled={isProcessing}
+                  placeholder={
+                    isProcessing
+                      ? 'Processing...'
+                      : isRecording
+                      ? 'Recording in progress...'
+                      : 'Type your message...'
+                  }
+                  className="flex-1 rounded-lg border border-gray-300 px-4 py-2 focus:outline-none focus:border-blue-500 disabled:bg-gray-100"
                 />
                 <Button 
                   type="submit" 
-                  disabled={!input.trim() || isProcessing || isRecording}
-                  className={cn(
-                    "min-w-[100px]",
-                    isProcessing && "animate-pulse"
-                  )}
+                  disabled={isProcessing || !inputMessage.trim() || isRecording}
+                  className="bg-blue-500 text-white px-4 py-2 rounded-lg hover:bg-blue-600 disabled:opacity-50 disabled:cursor-not-allowed"
                 >
-                  {isProcessing ? "Processing..." : "Send"}
+                  Send
                 </Button>
-              </div>
-            </form>
+              </form>
+            </div>
           </div>
         </CardContent>
       </Card>
 
       {/* Notes Sidebar */}
-      <Sheet open={showNotes} onOpenChange={setShowNotes}>
-        <SheetContent>
-          <SheetHeader>
-            <SheetTitle>Session Notes</SheetTitle>
-          </SheetHeader>
-          <div className="mt-4 space-y-4">
-            <Textarea
-              value={notes}
-              onChange={(e) => setNotes(e.target.value)}
-              placeholder="Take notes during your session..."
-              className="min-h-[200px]"
-            />
-            <Button 
-              className="w-full" 
-              onClick={() => {
-                // Save notes logic here
-                setShowNotes(false);
-              }}
-            >
-              <Save className="w-4 h-4 mr-1" />
-              Save Notes
-            </Button>
-          </div>
-        </SheetContent>
-      </Sheet>
-
-      {/* Performance Metrics */}
       <div className="bg-secondary p-4 space-y-2">
         <div className="flex justify-between items-center">
           <span>Engagement</span>
-          <Progress value={metrics.energyScore.engagement} className="w-32" />
+          <div className="w-32" />
         </div>
         <div className="flex justify-between items-center">
           <span>Comprehension</span>
-          <Progress value={metrics.energyScore.comprehension} className="w-32" />
+          <div className="w-32" />
         </div>
         <div className="flex justify-between items-center">
           <span>Progress</span>
-          <Progress value={metrics.energyScore.progress} className="w-32" />
+          <div className="w-32" />
         </div>
       </div>
     </div>
   );
-}
+};
+
+export default IELTSChatInterface;
