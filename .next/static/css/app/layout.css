@@ -1113,6 +1113,9 @@ select {
 .min-h-screen {
   min-height: 100vh;
 }
+.min-h-\[44px\] {
+  min-height: 44px;
+}
 .w-1\.5 {
   width: 0.375rem;
 }
@@ -1692,6 +1695,9 @@ select {
 }
 .bg-background\/50 {
   background-color: hsl(var(--background) / 0.5);
+}
+.bg-muted\/50 {
+  background-color: hsl(var(--muted) / 0.5);
 }
 .bg-gradient-to-br {
   background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
@@ -2497,6 +2503,14 @@ select {
   background-color: hsl(var(--primary) / 0.9);
 }
 
+.hover\:bg-destructive:hover {
+  background-color: hsl(var(--destructive));
+}
+
+.hover\:bg-primary:hover {
+  background-color: hsl(var(--primary));
+}
+
 .hover\:bg-gradient-to-br:hover {
   background-image: linear-gradient(to bottom right, var(--tw-gradient-stops));
 }
@@ -2538,6 +2552,14 @@ select {
 .hover\:text-slate-900:hover {
   --tw-text-opacity: 1;
   color: rgb(15 23 42 / var(--tw-text-opacity, 1));
+}
+
+.hover\:text-destructive-foreground:hover {
+  color: hsl(var(--destructive-foreground));
+}
+
+.hover\:text-primary-foreground:hover {
+  color: hsl(var(--primary-foreground));
 }
 
 .hover\:underline:hover {

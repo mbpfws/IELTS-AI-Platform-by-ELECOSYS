@@ -3,36 +3,33 @@
 import React, { useState, useCallback, useEffect, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { Tabs, TabsList, TabsTrigger, TabsContent } from '@/components/ui/tabs';
-import { Card, CardContent, CardHeader, CardTitle, CardFooter } from '@/components/ui/card';
-import { Button } from '@/components/ui/button';
-import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
-import { Progress } from '@/components/ui/progress';
-import { Badge } from '@/components/ui/badge';
-import { Dialog, DialogContent, DialogHeader, DialogTitle } from '@/components/ui/dialog';
-import { Slider } from '@/components/ui/slider';
-import { ScrollArea } from '@/components/ui/scroll-area';
-import { Textarea } from '@/components/ui/textarea';
-import { Input } from '@/components/ui/input';
-import { 
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from "@/components/ui/select";
-import { 
-  Settings, User, Clock, Send, Mic, MessageSquare, Timer, 
-  PauseCircle, PlayCircle, StopCircle, Save, X, Search 
-} from 'lucide-react';
-import { useTheme } from 'next-themes';
+import { Button } from "@/components/ui/button";
+import { Card, CardHeader, CardTitle, CardDescription, CardContent, CardFooter } from "@/components/ui/card";
+import { Badge } from "@/components/ui/badge";
+import { Input } from "@/components/ui/input";
+import { Search } from 'lucide-react';
+import { Select, SelectTrigger, SelectValue, SelectContent, SelectItem } from "@/components/ui/select";
+import { Dialog, DialogContent, DialogDescription, DialogFooter, DialogHeader, DialogTitle } from "@/components/ui/dialog";
+import { Label } from "@/components/ui/label";
 import { ieltsGeminiService } from '@/services/ieltsGeminiService';
-import { marked } from 'marked';
-import DOMPurify from 'isomorphic-dompurify';
-import { debounce } from 'lodash';
 import { part1Templates } from '@/data/speakingTemplates/part1';
 import { part2Templates } from '@/data/speakingTemplates/part2';
 import { part3Templates } from '@/data/speakingTemplates/part3';
-import { tutoringLessons } from '@/data/speakingTemplates/tutoring';
+import { tutoringTemplates } from '@/data/speakingTemplates/tutoring';
+import ChatInterface from '@/components/ChatInterface';
+import { 
+  Settings, User, Clock, Send, Mic, MessageSquare, Timer, 
+  PauseCircle, PlayCircle, StopCircle, Save, X 
+} from 'lucide-react';
+import { useTheme } from 'next-themes';
+import { marked } from 'marked';
+import DOMPurify from 'isomorphic-dompurify';
+import { debounce } from 'lodash';
+import { Sheet, SheetContent, SheetHeader, SheetTitle } from '@/components/ui/sheet';
+import { Progress } from '@/components/ui/progress';
+import { Slider } from '@/components/ui/slider';
+import { ScrollArea } from '@/components/ui/scroll-area';
+import { Textarea } from '@/components/ui/textarea';
 
 interface Note {
   id: string;
@@ -80,6 +77,12 @@ interface SortConfig {
 
 type SortOption = 'targetBand' | 'level' | 'difficulty';
 
+interface Message {
+  role: 'assistant' | 'user';
+  content: string;
+  id?: string;
+}
+
 const SpeakingPage: React.FC = () => {
   const { theme } = useTheme();
   
@@ -92,7 +95,7 @@ const SpeakingPage: React.FC = () => {
     part1: Array.isArray(part1Templates) ? part1Templates : defaultTemplates,
     part2: Array.isArray(part2Templates) ? part2Templates : defaultTemplates,
     part3: Array.isArray(part3Templates) ? part3Templates : defaultTemplates,
-    tutoring: Array.isArray(tutoringLessons) ? tutoringLessons : defaultTemplates,
+    tutoring: Array.isArray(tutoringTemplates) ? tutoringTemplates : defaultTemplates,
   };
 
   console.log('Templates:', safeTemplates);
@@ -102,7 +105,14 @@ const SpeakingPage: React.FC = () => {
   const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(false);
   const [sessionDuration, setSessionDuration] = useState(15);
   const [isSessionActive, setIsSessionActive] = useState(false);
-  const [messages, setMessages] = useState<any[]>([]);
+  const initialMessages: Message[] = [
+    {
+      role: 'assistant',
+      content: "Hi! I'm your IELTS Speaking teacher today. Let's practice Part 1 together in a relaxed way, focusing on home and accommodation.\n\nBefore we start, remember:\n- Take your time to answer\n- It's okay to make mistakes\n- I'll help you with vocabulary and grammar\n\nFirst question: Could you tell me about where you live? (Bạn có thể cho tôi biết về nơi bạn đang sống không?)\n\nTip: You can start with 'I live in...' and don't worry if you need to mix Vietnamese and English - I'm here to help!",
+      id: 'initial-message'
+    }
+  ];
+  const [messages, setMessages] = useState<Message[]>(initialMessages);
   const [metrics, setMetrics] = useState<SessionMetrics>({
     fluency: 0,
     lexical: 0,
@@ -488,7 +498,7 @@ const SpeakingPage: React.FC = () => {
   const handleSendMessage = async (content: string, isAudio: boolean = false) => {
     try {
       setIsLoading(true);
-      const userMessage = { role: 'user', content };
+      const userMessage: Message = { role: 'user', content };
       setMessages(prev => [...prev, userMessage]);
 
       let response;

@@ -6,19 +6,24 @@ import { Button } from "@/components/ui/button";
 import { Textarea } from "@/components/ui/textarea";
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
-import type { ChatMessage } from '@/types/chat';
-import { Card } from "@/components/ui/card";
-import { Input } from "@/components/ui/input";
-import { cn } from "@/lib/utils";
-import { geminiService } from '@/services/geminiService';
 import type { AgentType } from '@/types';
 import SessionSidebar from './SessionSidebar';
 import AudioRecorder from './AudioRecorder';
 import { LearningMetrics } from "@/types/learningMetrics";
 import { Progress } from "@/components/ui/progress";
+import { Card } from "@/components/ui/card";
+import { Input } from "@/components/ui/input";
+import { cn } from "@/lib/utils";
+import { geminiService } from '@/services/geminiService';
+
+interface Message {
+  role: 'assistant' | 'user';
+  content: string;
+  id?: string;
+}
 
 interface ChatInterfaceProps {
-  messages: ChatMessage[];
+  messages: Message[];
   metrics: {
     fluency: number;
     lexical: number;
@@ -30,7 +35,7 @@ interface ChatInterfaceProps {
   audioState: {
     isRecording: boolean;
     isPaused: boolean;
-    audioUrl?: string;
+    audioUrl?: string | null;
   };
   textMessage: string;
   isLoading: boolean;
@@ -130,23 +135,25 @@ export default function ChatInterface({
       </header>
 
       {/* Chat Messages */}
-      <div className="flex-1 overflow-y-auto p-4">
+      <div className="flex-1 overflow-y-auto p-4 bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
         <div className="max-w-[800px] mx-auto space-y-4">
-          {messages.map((message) => (
+          {messages.map((message, index) => (
             <div
-              key={message.id}
-              className={`flex ${
+              key={message.id || index}
+              className={cn(
+                'flex',
                 message.role === 'assistant' ? 'justify-start' : 'justify-end'
-              }`}
+              )}
             >
               <div
-                className={`max-w-[80%] rounded-lg p-4 ${
+                className={cn(
+                  'max-w-[80%] rounded-lg p-4',
                   message.role === 'assistant'
-                    ? 'bg-muted'
+                    ? 'bg-muted/50 text-foreground'
                     : 'bg-primary text-primary-foreground'
-                }`}
+                )}
               >
-                <div className="prose dark:prose-invert">
+                <div className="prose dark:prose-invert max-w-none">
                   <ReactMarkdown remarkPlugins={[remarkGfm]}>
                     {message.content}
                   </ReactMarkdown>
@@ -165,7 +172,11 @@ export default function ChatInterface({
             variant="outline"
             size="icon"
             onClick={onToggleInputMode}
-            className={inputMode === 'audio' ? 'bg-primary text-primary-foreground' : ''}
+            className={cn(
+              'transition-colors',
+              inputMode === 'audio' && 'bg-primary text-primary-foreground'
+            )}
+            disabled={isLoading}
           >
             {inputMode === 'audio' ? <FiMic className="h-4 w-4" /> : <FiMessageSquare className="h-4 w-4" />}
           </Button>
@@ -178,6 +189,7 @@ export default function ChatInterface({
                     variant="outline"
                     size="icon"
                     onClick={audioState.isPaused ? onResumeRecording : onPauseRecording}
+                    className="transition-colors hover:bg-muted"
                   >
                     {audioState.isPaused ? (
                       <FiPlayCircle className="h-4 w-4" />
@@ -189,6 +201,7 @@ export default function ChatInterface({
                     variant="outline"
                     size="icon"
                     onClick={onStopRecording}
+                    className="transition-colors hover:bg-destructive hover:text-destructive-foreground"
                   >
                     <FiStopCircle className="h-4 w-4" />
                   </Button>
@@ -198,17 +211,20 @@ export default function ChatInterface({
                   onClick={onStartRecording}
                   variant="outline"
                   size="icon"
+                  className="transition-colors hover:bg-primary hover:text-primary-foreground"
+                  disabled={isLoading}
                 >
                   <FiMic className="h-4 w-4" />
                 </Button>
               )}
               {audioState.audioUrl && (
-                <audio src={audioState.audioUrl} controls className="flex-1" />
+                <audio src={audioState.audioUrl} controls className="flex-1 h-10" />
               )}
               {audioState.audioUrl && (
                 <Button
                   onClick={() => onSendMessage(audioState.audioUrl!, true)}
                   disabled={isLoading}
+                  className="transition-colors"
                 >
                   <FiSend className="h-4 w-4" />
                 </Button>
@@ -220,7 +236,9 @@ export default function ChatInterface({
                 value={textMessage}
                 onChange={(e) => onTextMessageChange(e.target.value)}
                 placeholder="Type your message..."
-                className="flex-1"
+                className="flex-1 min-h-[44px] resize-none"
+                rows={1}
+                disabled={isLoading}
               />
               <Button
                 onClick={() => {
@@ -228,6 +246,7 @@ export default function ChatInterface({
                   onTextMessageChange('');
                 }}
                 disabled={!textMessage.trim() || isLoading}
+                className="transition-colors"
               >
                 <FiSend className="h-4 w-4" />
               </Button>
