@@ -260,36 +260,13 @@ const SpeakingPage: React.FC = () => {
 
   // Filter and sort templates
   const filteredTemplates = useMemo(() => {
-    return templates.filter(template => {
-      const matchesSearch = searchQuery 
-        ? template.title_en.toLowerCase().includes(searchQuery.toLowerCase()) ||
-          template.description_en.toLowerCase().includes(searchQuery.toLowerCase())
-        : true;
-
-      const matchesCategory = filters.category 
-        ? template.category === filters.category 
-        : true;
-
-      const matchesLevel = filters.level 
-        ? template.level === filters.level 
-        : true;
-
-      const matchesTargetBand = filters.targetBand 
-        ? template.target_band === filters.targetBand 
-        : true;
-
-      const matchesDifficulty = filters.difficulty 
-        ? template.difficulty === filters.difficulty 
-        : true;
-
-      const matchesTags = filters.tags && filters.tags.length > 0
-        ? filters.tags.every(tag => template.tags?.includes(tag))
-        : true;
-
-      return matchesSearch && matchesCategory && matchesLevel && 
-             matchesTargetBand && matchesDifficulty && matchesTags;
+    return safeTemplates.part1.filter((template) => {
+      const levelMatch = selectedLevel === 'all' || template.level === selectedLevel;
+      const bandMatch = selectedBand === 'all' || template.targetBand.toString() === selectedBand;
+      const difficultyMatch = selectedDifficulty === 'all' || template.difficulty === selectedDifficulty;
+      return levelMatch && bandMatch && difficultyMatch;
     });
-  }, [templates, searchQuery, filters]);
+  }, [selectedLevel, selectedBand, selectedDifficulty]);
 
   // Handle search input change
   const handleSearchChange = (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -581,32 +558,131 @@ const SpeakingPage: React.FC = () => {
     }
   }, [isSessionActive, isSessionDialogOpen]);
 
+  const [selectedLevel, setSelectedLevel] = useState('all');
+  const [selectedBand, setSelectedBand] = useState('all');
+  const [selectedDifficulty, setSelectedDifficulty] = useState('all');
+
   return (
     <div className="flex flex-col h-full">
-      {isSessionActive ? (
-        <div className="flex-1 relative">
-          <ChatInterface
-            messages={messages}
-            onSendMessage={handleSendMessage}
-            isLoading={isLoading}
-            metrics={metrics}
-            sessionDuration={sessionDuration}
-            isSessionActive={isSessionActive}
-            onEndSession={handleEndSession}
-            inputMode={inputMode}
-            audioState={audioState}
-            textMessage={textMessage}
-            onTextMessageChange={setTextMessage}
-            onToggleInputMode={toggleInputMode}
-            onStartRecording={startRecording}
-            onStopRecording={stopRecording}
-            onPauseRecording={pauseRecording}
-            onResumeRecording={resumeRecording}
-            processingAudio={processingAudio}
-            timeRemaining={timeRemaining}
-          />
+      <div className="flex flex-1">
+        <div className="w-64 p-4 border-r">
+          <div className="space-y-4">
+            <div>
+              <Label className="text-sm font-medium">Cấp độ</Label>
+              <Select value={selectedLevel} onValueChange={setSelectedLevel}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn cấp độ" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="Beginner">Cơ bản</SelectItem>
+                  <SelectItem value="Intermediate">Trung cấp</SelectItem>
+                  <SelectItem value="Advanced">Nâng cao</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium">Band mục tiêu</Label>
+              <Select value={selectedBand} onValueChange={setSelectedBand}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn band mục tiêu" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="5.0">Band 5.0</SelectItem>
+                  <SelectItem value="5.5">Band 5.5</SelectItem>
+                  <SelectItem value="6.0">Band 6.0</SelectItem>
+                  <SelectItem value="6.5">Band 6.5</SelectItem>
+                  <SelectItem value="7.0">Band 7.0</SelectItem>
+                  <SelectItem value="7.5">Band 7.5</SelectItem>
+                  <SelectItem value="8.0">Band 8.0</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+
+            <div>
+              <Label className="text-sm font-medium">Độ khó</Label>
+              <Select value={selectedDifficulty} onValueChange={setSelectedDifficulty}>
+                <SelectTrigger>
+                  <SelectValue placeholder="Chọn độ khó" />
+                </SelectTrigger>
+                <SelectContent>
+                  <SelectItem value="all">Tất cả</SelectItem>
+                  <SelectItem value="easy">Dễ</SelectItem>
+                  <SelectItem value="medium">Trung bình</SelectItem>
+                  <SelectItem value="hard">Khó</SelectItem>
+                </SelectContent>
+              </Select>
+            </div>
+          </div>
         </div>
-      ) : (
+
+        <div className="flex-1">
+          <div className="max-w-[1200px] mx-auto p-6">
+            <div className="mb-8">
+              <h1 className="text-3xl font-bold tracking-tight mb-2">Luyện nói IELTS</h1>
+              <p className="text-muted-foreground">Chọn một mẫu để bắt đầu luyện tập kỹ năng nói của bạn</p>
+            </div>
+
+            <Tabs defaultValue="part1" className="w-full">
+              <TabsList className="grid grid-cols-4 w-full">
+                <TabsTrigger value="part1">Phần 1</TabsTrigger>
+                <TabsTrigger value="part2">Phần 2</TabsTrigger>
+                <TabsTrigger value="part3">Phần 3</TabsTrigger>
+                <TabsTrigger value="tutoring">Gia sư</TabsTrigger>
+              </TabsList>
+
+              <TabsContent value="part1" className="mt-4">
+                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                  {filteredTemplates.map((template) => (
+                    <Card 
+                      key={template.id}
+                      className="flex flex-col transition-all hover:shadow-lg hover:border-primary group"
+                    >
+                      <CardHeader className="flex flex-col gap-2">
+                        <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                          {template.titleVi || template.title}
+                        </CardTitle>
+                        <div className="flex flex-wrap gap-2">
+                          <Badge variant="secondary">
+                            {template.level === 'Beginner' ? 'Cơ bản' :
+                             template.level === 'Intermediate' ? 'Trung cấp' :
+                             template.level === 'Advanced' ? 'Nâng cao' : template.level}
+                          </Badge>
+                          <Badge variant="secondary">Band {template.targetBand}</Badge>
+                          {template.difficulty && (
+                            <Badge variant="outline" className="capitalize">
+                              {template.difficulty === 'easy' ? 'Dễ' :
+                               template.difficulty === 'medium' ? 'Trung bình' :
+                               template.difficulty === 'hard' ? 'Khó' : template.difficulty}
+                            </Badge>
+                          )}
+                        </div>
+                      </CardHeader>
+                      <CardContent>
+                        <p className="text-sm text-muted-foreground">
+                          {template.descriptionVi || template.description}
+                        </p>
+                      </CardContent>
+                      <CardFooter className="mt-auto pt-4">
+                        <Button 
+                          onClick={() => handleTemplateSelect(template)} 
+                          className="w-full bg-gradient-to-br from-teal-600 to-teal-800 hover:from-teal-500 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                        >
+                          Bắt đầu luyện tập
+                        </Button>
+                      </CardFooter>
+                    </Card>
+                  ))}
+                </div>
+              </TabsContent>
+            </Tabs>
+          </div>
+        </div>
+      </div>
+
+      {selectedTemplate && (
         <Dialog open={isSessionDialogOpen} onOpenChange={setIsSessionDialogOpen}>
           <DialogContent>
             <DialogHeader>
@@ -643,20 +719,38 @@ const SpeakingPage: React.FC = () => {
             <DialogFooter>
               <Button
                 onClick={startSession}
-                disabled={isLoading || !userName.trim()}
+                disabled={!userName.trim()}
               >
-                {isLoading ? (
-                  <div className="flex items-center gap-2">
-                    <Loader2 className="h-4 w-4 animate-spin" />
-                    <span>Đang khởi tạo...</span>
-                  </div>
-                ) : (
-                  'Bắt đầu phiên'
-                )}
+                Bắt đầu phiên
               </Button>
             </DialogFooter>
           </DialogContent>
         </Dialog>
+      )}
+
+      {isSessionActive && (
+        <div className="flex-1 relative">
+          <ChatInterface
+            messages={messages}
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
+            metrics={metrics}
+            sessionDuration={sessionDuration}
+            isSessionActive={isSessionActive}
+            onEndSession={handleEndSession}
+            inputMode={inputMode}
+            audioState={audioState}
+            textMessage={textMessage}
+            onTextMessageChange={setTextMessage}
+            onToggleInputMode={toggleInputMode}
+            onStartRecording={startRecording}
+            onStopRecording={stopRecording}
+            onPauseRecording={pauseRecording}
+            onResumeRecording={resumeRecording}
+            processingAudio={processingAudio}
+            timeRemaining={timeRemaining}
+          />
+        </div>
       )}
     </div>
   );
