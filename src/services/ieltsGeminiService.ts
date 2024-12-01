@@ -1,5 +1,10 @@
 import { GoogleGenerativeAI } from '@google/generative-ai';
 import { v4 as uuidv4 } from 'uuid';
+import { part1Templates } from '@/data/speakingTemplates/part1';
+import { part1AdditionalTemplates } from '@/data/speakingTemplates/part1Additional';
+import { part2Templates } from '@/data/speakingTemplates/part2';
+import { part3Templates } from '@/data/speakingTemplates/part3';
+import { tutoringLessons } from '@/data/speakingTemplates/tutoring';
 
 interface SessionConfig {
   userName: string;
@@ -191,6 +196,85 @@ By incorporating bilingual support and understanding the specific needs of Vietn
     };
   }
 
+  async startSession(templateId: string, userName: string): Promise<SessionResponse> {
+    try {
+      // Initialize chat session if not already initialized
+      if (!this.chatSession) {
+        this.chatSession = this.model.startChat();
+        await this.chatSession.sendMessage(this.systemInstruction);
+      }
+
+      // Initialize session state
+      this.currentSessionId = uuidv4();
+      this.sessionState = {
+        timeRemaining: 900, // 15 minutes default
+        isRecording: false,
+        currentMode: 'audio',
+        metrics: {
+          fluency: 0,
+          lexical: 0,
+          grammar: 0,
+          pronunciation: 0
+        },
+        notes: [],
+        currentPart: 1,
+        templateContent: '',
+        lastQuestion: '',
+        conversationHistory: []
+      };
+
+      // Find template content
+      const allTemplates = [
+        ...part1Templates,
+        ...part1AdditionalTemplates,
+        ...part2Templates,
+        ...part3Templates,
+        ...tutoringLessons
+      ];
+      const template = allTemplates.find(t => t.id === templateId);
+      
+      if (!template) {
+        throw new Error(`Template not found: ${templateId}`);
+      }
+
+      // Store template content in session state
+      this.sessionState.templateContent = template.content;
+
+      // Start session with template content
+      const startSessionPrompt = `Template Content for Reference:
+${template.content}
+
+You are a friendly IELTS speaking tutor. Keep responses natural:
+1. Start with a simple welcome and the first topic
+2. Ask only ONE question at a time
+3. Stay focused on the current topic
+4. Be conversational, not too formal`;
+
+      const response = await this.chatSession.sendMessage(startSessionPrompt);
+      const responseText = response.response.text();
+
+      // Update conversation history
+      this.sessionState.conversationHistory.push({
+        role: 'assistant',
+        content: responseText
+      });
+      
+      this.sessionState.lastQuestion = responseText;
+
+      // Start session timer
+      this.startSessionTimer();
+
+      return {
+        message: responseText,
+        session_id: this.currentSessionId,
+        metrics: this.sessionState.metrics
+      };
+    } catch (error) {
+      console.error('Error starting session:', error);
+      throw new Error('Failed to start IELTS speaking session. Please try again.');
+    }
+  }
+
   async initializeSession(config: SessionConfig): Promise<SessionResponse> {
     try {
       const chat = this.model.startChat();
@@ -249,34 +333,6 @@ By incorporating bilingual support and understanding the specific needs of Vietn
     } catch (error) {
       console.error('Error initializing session:', error);
       throw error;
-    }
-  }
-
-  async startSession(templateId: string, userName: string): Promise<SessionResponse> {
-    try {
-      // Initialize chat session with template content
-      this.chatSession = await this.model.startChat({
-        history: [
-          {
-            role: 'user',
-            parts: [`${this.systemInstruction}\n\nUser: ${userName}\nPlease start the IELTS speaking practice session.`]
-          }
-        ]
-      });
-
-      const result = await this.chatSession.sendMessage(
-        `Let's begin the IELTS speaking practice session. Please introduce yourself and explain how this session will work.`
-      );
-      const responseText = await result.response;
-      const text = responseText.text();
-
-      return {
-        message: text,
-        session_id: templateId
-      };
-    } catch (error) {
-      console.error('Error starting session:', error);
-      throw new Error('Failed to start session. Please try again.');
     }
   }
 

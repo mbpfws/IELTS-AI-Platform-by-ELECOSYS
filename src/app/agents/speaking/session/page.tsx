@@ -18,6 +18,10 @@ export default function SpeakingSessionPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
+  const templateId = searchParams.get('templateId');
+  const duration = parseInt(searchParams.get('duration') || '1200', 10);
+  const userName = searchParams.get('userName') || 'User';
+  
   const [sessionId, setSessionId] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
@@ -43,20 +47,55 @@ export default function SpeakingSessionPage() {
     }
   });
 
-  // Initialize client-side values
+  // Initialize client-side values and start session
   useEffect(() => {
-    const sid = searchParams.get('sessionId') || Date.now().toString();
-    setSessionId(sid);
-    setMetrics(prev => ({
-      ...prev,
-      sessionId: sid,
-      timestamp: new Date()
-    }));
-  }, [searchParams]);
+    const startNewSession = async () => {
+      if (!templateId) {
+        router.push('/agents/speaking');
+        return;
+      }
 
-  const templateId = searchParams.get('templateId');
-  const duration = parseInt(searchParams.get('duration') || '1200', 10);
-  const userName = searchParams.get('userName') || 'User';
+      setIsProcessing(true);
+      try {
+        // Find the template across all template collections
+        let template = part1Templates.find(t => t.id === templateId) ||
+                      part1AdditionalTemplates.find(t => t.id === templateId) ||
+                      part2Templates.find(t => t.id === templateId) ||
+                      part3Templates.find(t => t.id === templateId) ||
+                      tutoringLessons.find(t => t.id === templateId);
+
+        if (!template) {
+          console.error('Template not found:', templateId);
+          router.push('/agents/speaking');
+          return;
+        }
+
+        const sid = searchParams.get('sessionId') || Date.now().toString();
+        setSessionId(sid);
+        setMetrics(prev => ({
+          ...prev,
+          sessionId: sid,
+          timestamp: new Date()
+        }));
+
+        // Initialize the session with Gemini
+        const response = await ieltsGeminiService.startSession(templateId, userName);
+        if (response && response.message) {
+          setMessages([{ role: 'assistant', content: response.message }]);
+          setSessionState('active');
+        } else {
+          throw new Error('Failed to get initial response from AI');
+        }
+      } catch (error) {
+        console.error('Error starting session:', error);
+        router.push('/agents/speaking');
+      } finally {
+        setIsProcessing(false);
+      }
+    };
+
+    startNewSession();
+  }, [templateId, userName, router, searchParams]);
 
   // Handle page unload/navigation
   useEffect(() => {
@@ -80,88 +119,6 @@ export default function SpeakingSessionPage() {
     }
     router.push('/agents/speaking');
   };
-
-  const initSession = async () => {
-    if (!templateId) {
-      router.push('/agents/speaking');
-      return;
-    }
-
-    setIsProcessing(true);
-    try {
-      // Find the template across all template collections
-      let template = part1Templates.find(t => t.id === templateId);
-      if (!template) {
-        template = part1AdditionalTemplates.find(t => t.id === templateId);
-      }
-      if (!template) {
-        template = part2Templates.find(t => t.id === templateId);
-      }
-      if (!template) {
-        template = part3Templates.find(t => t.id === templateId);
-      }
-      if (!template) {
-        template = tutoringLessons.find(t => t.id === templateId);
-      }
-      if (!template) {
-        throw new Error('Template not found');
-      }
-
-      // Create session in database
-      const response = await fetch('/api/sessions', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          templateId,
-          userId: userName,
-          duration,
-          template // Include template data
-        })
-      });
-
-      if (!response.ok) {
-        throw new Error('Failed to create session');
-      }
-
-      const { sessionId: newSessionId } = await response.json();
-      
-      // Start IELTS session
-      const aiResponse = await ieltsGeminiService.startSession(templateId, userName);
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: aiResponse.message,
-        timestamp: Date.now()
-      }]);
-
-      // Update session with initial message
-      await fetch(`/api/sessions?sessionId=${newSessionId}`, {
-        method: 'PATCH',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          message: {
-            role: 'assistant',
-            content: aiResponse.message,
-            timestamp: Date.now()
-          }
-        })
-      });
-    } catch (error) {
-      console.error('Failed to start session:', error);
-      setMessages(prev => [...prev, {
-        role: 'assistant',
-        content: 'Sorry, there was an error starting the session. Please try again.',
-        timestamp: Date.now()
-      }]);
-    }
-    setIsProcessing(false);
-  };
-
-  // Initialize session
-  useEffect(() => {
-    if (sessionState === 'active') {
-      initSession();
-    }
-  }, [templateId, userName, sessionState]);
 
   const handleEndSession = async (autoSave = false) => {
     if (isEndingSession) return;

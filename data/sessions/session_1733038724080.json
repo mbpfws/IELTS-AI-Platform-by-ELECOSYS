@@ -1,0 +1,29 @@
+{
+  "id": "1733038724080",
+  "userId": "linh",
+  "templateId": "home-accommodation-part1",
+  "startTime": "2024-12-01T07:38:44.081Z",
+  "duration": 1200,
+  "state": "active",
+  "messages": [],
+  "metrics": {
+    "sessionId": "1733038724080",
+    "timestamp": "2024-12-01T07:38:44.081Z",
+    "duration": 0,
+    "energyScore": {
+      "engagement": 85,
+      "comprehension": 80,
+      "progress": 70,
+      "confidence": 75
+    },
+    "performance": {
+      "taskResponse": 6.5,
+      "coherenceCohesion": 6,
+      "lexicalResource": 6.5,
+      "grammaticalRange": 6,
+      "pronunciation": 6.5
+    }
+  },
+  "notes": "",
+  "transcript": ""
+}

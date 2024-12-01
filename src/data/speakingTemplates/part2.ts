@@ -4,7 +4,7 @@ export const part2Templates: SpeakingTemplate[] = [
   {
     id: 'describe-person-part2',
     title: 'Describe a Person',
-    titleVi: 'Describe a Person',
+    titleVi: 'Mô tả một người',
     description: 'Learn how to describe someone important in your life',
     descriptionVi: 'Học cách mô tả một người quan trọng trong cuộc sống của bạn',
     descriptionEn: 'Learn how to describe someone important in your life',
@@ -95,7 +95,7 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
   {
     id: 'describe-event-part2',
     title: 'Describe an Event',
-    titleVi: 'Describe an Event',
+    titleVi: 'Mô tả một sự kiện',
     description: 'Learn how to describe a memorable event',
     descriptionVi: 'Học cách mô tả một sự kiện đáng nhớ',
     descriptionEn: 'Learn how to describe a memorable event',
@@ -186,7 +186,7 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
   {
     id: 'describe-place-part2',
     title: 'Describe a Place',
-    titleVi: 'Describe a Place',
+    titleVi: 'Mô tả một địa điểm',
     description: 'Learn how to describe a significant place',
     descriptionVi: 'Học cách mô tả một địa điểm quan trọng',
     descriptionEn: 'Learn how to describe a significant place',
