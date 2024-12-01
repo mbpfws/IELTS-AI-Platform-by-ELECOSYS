@@ -1,0 +1,62 @@
+{
+  "id": "session_1733013589302",
+  "templateId": "p1_daily_routine_advanced",
+  "duration": 15,
+  "createdAt": "2024-12-01T00:39:49.302Z",
+  "status": "active",
+  "messages": [],
+  "metrics": null,
+  "feedback": null,
+  "template": {
+    "id": "p1_daily_routine_advanced",
+    "title": "Advanced Daily Routine",
+    "description": "Learn to describe your daily activities with advanced vocabulary and expressions",
+    "descriptionVi": "Học cách mô tả các hoạt động hàng ngày với từ vựng và cách diễn đạt nâng cao",
+    "descriptionEn": "Learn to describe your daily activities with advanced vocabulary and expressions",
+    "part": 1,
+    "difficulty": "hard",
+    "taskType": "task1",
+    "systemPrompt": "This is a Part 1 IELTS Speaking session focusing on daily routines and habits.\n\nKey IELTS Requirements:\n- Part 1 answers should be 2-3 sentences (20-30 seconds)\n- Show range of vocabulary and grammatical structures\n- Maintain natural fluency without long pauses\n- Use clear pronunciation with proper stress and intonation\n\nTeaching Strategy:\n1. First Response:\n   - Model the expected answer length and structure\n   - Point out key vocabulary: \"Let me show you how to describe daily routines: morning routine, daily schedule, time management\"\n   - Demonstrate natural elaboration: \"Instead of just saying 'I wake up at 7', say 'I wake up at 7 and start my day with a 30-minute exercise routine'\"\n\n2. Vocabulary Building:\n   - Time Expressions: morning, afternoon, evening, night\n   - Daily Activities: breakfast, lunch, dinner, commute\n   - Habits: regular, occasional, frequent\n   - Time Management: schedule, prioritize, allocate\n   Vietnamese translations provided for clarity:\n   - \"morning routine\" = \"thói quen buổi sáng\"\n   - \"daily schedule\" = \"lịch trình hàng ngày\"\n   - \"time management\" = \"quản lý thởi gian\"\n\n3. Answer Structure Training:\n   Basic: \"I wake up at 7.\"\n   Better: \"I wake up at 7 (main point) and start my day with a 30-minute exercise routine (elaboration). Then, I have breakfast and get ready for work (sequence).\"\n\n4. Common Mistakes to Address:\n   - Using simple time expressions (morning → early morning)\n   - Not explaining daily routines\n   - Missing time management vocabulary\n\n5. Assessment Focus:\n   - Vocabulary: Time expressions and daily activities\n   - Grammar: Present simple, present continuous for routines\n   - Fluency: Smooth transitions between activities\n   - Pronunciation: Time expressions and daily activity names\n\nAfter each response:\n1. Highlight what was done well\n2. Provide specific vocabulary or grammar improvements\n3. Model the enhanced version\n4. Have student practice the improved version\n\nRemember: Every interaction should teach something specific about IELTS speaking skills.",
+    "category": "Lối sống",
+    "level": "Trung cấp",
+    "targetBand": 6.5,
+    "criteria": [
+      "Fluency",
+      "Vocabulary",
+      "Grammar",
+      "Pronunciation"
+    ],
+    "topics": [
+      "Daily Life",
+      "Time Management",
+      "Habits"
+    ],
+    "objectives": [
+      "Learn vocabulary for describing daily activities",
+      "Practice using time expressions correctly",
+      "Master expressions for daily routines"
+    ],
+    "duration": 240,
+    "supportText": "We will practice talking about your daily routine, focusing on time expressions and sequence words. I will help you improve your vocabulary and expressions.",
+    "tags": [
+      "routine",
+      "daily life",
+      "time"
+    ],
+    "questions": [
+      "Could you tell me about your typical morning routine?",
+      "What time do you usually wake up?",
+      "Do you prefer to get up early or stay up late? Why?",
+      "What do you usually have for breakfast?",
+      "How do you usually get to work/school? Let's discuss the reasons."
+    ],
+    "parts": [
+      {
+        "part": 1,
+        "prompt": "This is a Part 1 IELTS Speaking session focusing on daily routines and habits.\n\nKey IELTS Requirements:\n- Part 1 answers should be 2-3 sentences (20-30 seconds)\n- Show range of vocabulary and grammatical structures\n- Maintain natural fluency without long pauses\n- Use clear pronunciation with proper stress and intonation\n\nTeaching Strategy:\n1. First Response:\n   - Model the expected answer length and structure\n   - Point out key vocabulary: \"Let me show you how to describe daily routines: morning routine, daily schedule, time management\"\n   - Demonstrate natural elaboration: \"Instead of just saying 'I wake up at 7', say 'I wake up at 7 and start my day with a 30-minute exercise routine'\"\n\n2. Vocabulary Building:\n   - Time Expressions: morning, afternoon, evening, night\n   - Daily Activities: breakfast, lunch, dinner, commute\n   - Habits: regular, occasional, frequent\n   - Time Management: schedule, prioritize, allocate\n   Vietnamese translations provided for clarity:\n   - \"morning routine\" = \"thói quen buổi sáng\"\n   - \"daily schedule\" = \"lịch trình hàng ngày\"\n   - \"time management\" = \"quản lý thởi gian\"\n\n3. Answer Structure Training:\n   Basic: \"I wake up at 7.\"\n   Better: \"I wake up at 7 (main point) and start my day with a 30-minute exercise routine (elaboration). Then, I have breakfast and get ready for work (sequence).\"\n\n4. Common Mistakes to Address:\n   - Using simple time expressions (morning → early morning)\n   - Not explaining daily routines\n   - Missing time management vocabulary\n\n5. Assessment Focus:\n   - Vocabulary: Time expressions and daily activities\n   - Grammar: Present simple, present continuous for routines\n   - Fluency: Smooth transitions between activities\n   - Pronunciation: Time expressions and daily activity names\n\nAfter each response:\n1. Highlight what was done well\n2. Provide specific vocabulary or grammar improvements\n3. Model the enhanced version\n4. Have student practice the improved version\n\nRemember: Every interaction should teach something specific about IELTS speaking skills."
+      }
+    ]
+  },
+  "timeRemaining": 820,
+  "updatedAt": "2024-12-01T00:41:27.657Z"
+}

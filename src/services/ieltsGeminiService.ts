@@ -199,37 +199,20 @@ By incorporating bilingual support and understanding the specific needs of Vietn
       const chat = this.model.startChat();
       
       // Set initial system context
-      await chat.sendMessage(this.systemInstruction);
+      const systemPrompt = `${this.systemInstruction}\n\n${config.templatePrompt}`;
       
-      // Start with template content but keep it natural
-      const startSessionPrompt = `Template Content for Reference:
-      ${config.templatePrompt}
+      // Initialize chat with system instruction
+      const result = await chat.sendMessage(systemPrompt);
+      const response = await result.response;
+      const responseText = response.text();
 
-      You are a friendly IELTS speaking tutor. Keep responses natural:
-      1. Start with a simple welcome and the first topic
-      2. Ask only ONE question at a time
-      3. Stay focused on the current topic
-      4. Be conversational, not too formal5. Adaptive Teaching Techniques:** Employ various teaching methodologies based on the learner's needs and learning style. This includes:
-      6.Direct Instruction:** Explain specific grammar rules, vocabulary, or pronunciation concepts relevant to IELTS speaking. **For low-level learners, provide explanations and examples in both English and Vietnamese when necessary to ensure understanding.**  Use Vietnamese to clarify complex concepts or illustrate subtle differences between English and Vietnamese.
-      7.Guided Practice:** Provide structured exercises and activities like topic brainstorming, idea generation, and answer structuring.  Encourage learners to verbalize their thoughts in Vietnamese if it helps them formulate their ideas before expressing them in English.
-      8.Communicative Activities:** Engage learners in role-plays, discussions, and debates to practice spontaneous speaking. Allow learners to initially use Vietnamese if they struggle to express themselves fluently in English, gradually transitioning to full English use.
-      9.Feedback and Error Correction:** Offer constructive feedback focusing on areas for improvement, using clear examples and explanations. **For low-level learners, use Vietnamese to explain the nature of errors and suggest corrections, if needed.**  Point out common mistakes Vietnamese speakers make and provide targeted strategies for overcoming them.
-      10.Targeted Criteria Practice:** Design activities that specifically focus on improving each of the four assessment criteria.  Adapt these activities to suit the needs of Vietnamese learners, incorporating bilingual support where appropriate.
-      
-      Keep your response natural.
-      
-
-      Begin the session naturally, focusing on the first topic from the template.`;
-
-      const response = await chat.sendMessage(startSessionPrompt);
-      const responseText = response.response.text();
-
+      // Set session state
       this.chatSession = chat;
       this.currentSessionId = config.sessionId;
       this.sessionState = {
-        timeRemaining: (config.duration || 15) * 60,
+        timeRemaining: config.duration || 900, // 15 minutes default
         isRecording: false,
-        currentMode: 'audio',
+        currentMode: 'text',
         metrics: {
           fluency: 0,
           lexical: 0,
@@ -240,10 +223,14 @@ By incorporating bilingual support and understanding the specific needs of Vietn
         currentPart: 1,
         templateContent: config.templatePrompt,
         lastQuestion: responseText,
-        conversationHistory: []
+        conversationHistory: [
+          { role: 'assistant', content: responseText }
+        ]
       };
 
+      // Start session timer
       this.startSessionTimer();
+
       return {
         message: responseText,
         session_id: this.currentSessionId,
@@ -251,7 +238,7 @@ By incorporating bilingual support and understanding the specific needs of Vietn
       };
     } catch (error) {
       console.error('Error initializing session:', error);
-      throw error;
+      throw new Error('Failed to initialize session. Please try again.');
     }
   }
 

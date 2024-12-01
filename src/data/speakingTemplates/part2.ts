@@ -4,8 +4,6 @@ export const part2Templates: SpeakingTemplate[] = [
   {
     id: 'p2_describe_person',
     title: 'Describe a Person',
-    titleVi: 'Mô tả một người',
-    titleEn: 'Describe a Person',
     description: 'Learn how to describe someone important in your life',
     descriptionVi: 'Học cách mô tả một người quan trọng trong cuộc sống của bạn',
     descriptionEn: 'Learn how to describe someone important in your life',
@@ -64,8 +62,8 @@ During the talk:
 4. Prepare constructive feedback
 
 Remember: Help students develop a structured 2-minute response that naturally covers all points.`,
-    category: 'People & Relationships',
-    level: 'Intermediate',
+    category: 'Mô tả người',
+    level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['People', 'Relationships', 'Personal experiences'],
@@ -96,8 +94,6 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
   {
     id: 'p2_memorable_event',
     title: 'Memorable Event',
-    titleVi: 'Sự kiện đáng nhớ',
-    titleEn: 'Memorable Event',
     description: 'Learn how to describe a memorable event in your life',
     descriptionVi: 'Học cách mô tả một sự kiện đáng nhớ trong cuộc sống của bạn',
     descriptionEn: 'Learn how to describe a memorable event in your life',
@@ -156,8 +152,8 @@ During the talk:
 4. Prepare constructive feedback
 
 Remember: Help students create a vivid, well-structured description that engages the listener.`,
-    category: 'Experiences',
-    level: 'Advanced',
+    category: 'Sự kiện',
+    level: 'Trung cấp',
     targetBand: 7.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Events', 'Memories', 'Personal experiences'],
@@ -188,8 +184,6 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
   {
     id: 'p2_favorite_place',
     title: 'Favorite Place',
-    titleVi: 'Địa điểm yêu thích',
-    titleEn: 'Favorite Place',
     description: 'Learn how to describe a place that is special to you',
     descriptionVi: 'Học cách mô tả một địa điểm đặc biệt với bạn',
     descriptionEn: 'Learn how to describe a place that is special to you',
@@ -280,8 +274,6 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
   {
     id: 'p2_achievement',
     title: 'Personal Achievement',
-    titleVi: 'Thành tích cá nhân',
-    titleEn: 'Personal Achievement',
     description: 'Learn how to describe a personal achievement you are proud of',
     descriptionVi: 'Học cách mô tả một thành tích cá nhân mà bạn tự hào',
     descriptionEn: 'Learn how to describe a personal achievement you are proud of',
@@ -340,8 +332,8 @@ During the talk:
 4. Prepare constructive feedback
 
 Remember: Help students create a vivid, well-structured description that engages the listener.`,
-    category: 'Achievements',
-    level: 'Advanced',
+    category: 'Thành tựu',
+    level: 'Trung cấp',
     targetBand: 7.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Achievement', 'Success', 'Personal growth'],
@@ -372,8 +364,6 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
   {
     id: 'p2_special_object',
     title: 'Special Object',
-    titleVi: 'Vật đặc biệt',
-    titleEn: 'Special Object',
     description: 'Learn how to describe an object that is special to you',
     descriptionVi: 'Học cách mô tả một vật đặc biệt đối với bạn',
     descriptionEn: 'Learn how to describe an object that is special to you',
@@ -463,16 +453,14 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
   },
   {
     id: 'p2_future_plans',
-    title: 'Future Plans',
-    titleVi: 'Kế hoạch tương lai',
-    titleEn: 'Future Plans',
-    description: 'Learn how to describe your plans for the future',
-    descriptionVi: 'Học cách mô tả kế hoạch tương lai của bạn',
-    descriptionEn: 'Learn how to describe your plans for the future',
+    title: 'Future Plans & Goals',
+    description: 'Learn how to describe your plans and goals for the future',
+    descriptionVi: 'Học cách mô tả kế hoạch và mục tiêu tương lai của bạn',
+    descriptionEn: 'Learn how to describe your plans and goals for the future',
     part: 2,
     difficulty: 'hard',
     taskType: 'task2',
-    systemPrompt: `This is a Part 2 IELTS Speaking session focusing on describing future plans.
+    systemPrompt: `This is a Part 2 IELTS Speaking session focusing on describing future plans and goals.
 
 Key IELTS Requirements:
 - 1 minute preparation time
@@ -524,8 +512,8 @@ During the talk:
 4. Prepare constructive feedback
 
 Remember: Help students create a vivid, well-structured description that engages the listener.`,
-    category: 'Personal Development',
-    level: 'Advanced',
+    category: 'Kế hoạch',
+    level: 'Nâng cao',
     targetBand: 7.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Future', 'Goals', 'Planning'],
@@ -537,7 +525,7 @@ Remember: Help students create a vivid, well-structured description that engages
     duration: 240,
     supportText: 'I will help you learn how to describe future plans effectively, including your goals, steps to achieve them, and why they are important to you. We will practice preparation strategies and time management.',
     tags: ['future', 'planning', 'goals'],
-    cueCard: `Describe your plans for the future.
+    cueCard: `Describe your plans and goals for the future.
 
 You should say:
 - what your main goals are
@@ -556,8 +544,6 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
   {
     id: 'p2_childhood_memory',
     title: 'Childhood Memory',
-    titleVi: 'Kỷ niệm tuổi thơ',
-    titleEn: 'Childhood Memory',
     description: 'Learn how to describe a memorable experience from your childhood',
     descriptionVi: 'Học cách mô tả một trải nghiệm đáng nhớ từ tuổi thơ của bạn',
     descriptionEn: 'Learn how to describe a memorable experience from your childhood',
@@ -616,8 +602,8 @@ During the talk:
 4. Prepare constructive feedback
 
 Remember: Help students create a vivid, well-structured description that engages the listener.`,
-    category: 'Personal Experience',
-    level: 'Intermediate',
+    category: 'Kỷ niệm',
+    level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Childhood', 'Memories', 'Past Experiences'],
@@ -648,8 +634,6 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
   {
     id: 'p2_challenging_experience',
     title: 'Challenging Experience',
-    titleVi: 'Trải nghiệm khó khăn',
-    titleEn: 'Challenging Experience',
     descriptionVi: 'Hãy mô tả một trải nghiệm khó khăn mà bạn đã trải qua',
     descriptionEn: 'Describe a challenging experience you had',
     systemPrompt: `Let me help you describe a challenging experience effectively for your IELTS Speaking Part 2 response.
@@ -681,8 +665,6 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
   {
     id: 'p2_future_goal',
     title: 'Future Goal',
-    titleVi: 'Mục tiêu tương lai',
-    titleEn: 'Future Goal',
     descriptionVi: 'Hãy mô tả một mục tiêu quan trọng bạn muốn đạt được trong tương lai',
     descriptionEn: 'Describe an important goal you want to achieve in the future',
     systemPrompt: `I'll help you describe your future goal effectively for IELTS Speaking Part 2.
@@ -714,8 +696,6 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
   {
     id: 'p2_favorite_season',
     title: 'Favorite Season',
-    titleVi: 'Mùa yêu thích',
-    titleEn: 'Favorite Season',
     descriptionVi: 'Hãy mô tả mùa bạn thích nhất trong năm',
     descriptionEn: 'Describe your favorite season of the year',
     systemPrompt: `I'll help you describe your favorite season effectively for IELTS Speaking Part 2.
@@ -747,8 +727,6 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
   {
     id: 'p2_hobby',
     title: 'Hobby',
-    titleVi: 'Sở thích',
-    titleEn: 'Hobby',
     descriptionVi: 'Hãy mô tả một sở thích mà bạn thích',
     descriptionEn: 'Describe a hobby that you enjoy',
     systemPrompt: `I'll help you describe your hobby effectively for IELTS Speaking Part 2.
@@ -780,8 +758,6 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
   {
     id: 'p2_family_event',
     title: 'Family Event',
-    titleVi: 'Sự kiện gia đình',
-    titleEn: 'Family Event',
     descriptionVi: 'Hãy mô tả một sự kiện gia đình đáng nhớ',
     descriptionEn: 'Describe a memorable family event',
     systemPrompt: `I'll help you describe a family event effectively for IELTS Speaking Part 2.
@@ -813,8 +789,6 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
   {
     id: 'p2_travel_experience',
     title: 'Travel Experience',
-    titleVi: 'Kinh nghiệm du lịch',
-    titleEn: 'Travel Experience',
     descriptionVi: 'Hãy mô tả một trải nghiệm du lịch đã ảnh hưởng đến bạn',
     descriptionEn: 'Describe a travel experience that impacted you',
     systemPrompt: `I'll help you describe a travel experience effectively for IELTS Speaking Part 2.

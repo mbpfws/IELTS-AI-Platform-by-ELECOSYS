@@ -32,6 +32,7 @@ import { debounce } from 'lodash';
 import { part1Templates } from '@/data/speakingTemplates/part1';
 import { part2Templates } from '@/data/speakingTemplates/part2';
 import { part3Templates } from '@/data/speakingTemplates/part3';
+import { tutoringLessons } from '@/data/speakingTemplates/tutoring';
 
 interface Note {
   id: string;
@@ -81,8 +82,22 @@ type SortOption = 'targetBand' | 'level' | 'difficulty';
 
 const SpeakingPage: React.FC = () => {
   const { theme } = useTheme();
+  
+  // Initialize templates with default empty arrays
+  const defaultTemplates: SpeakingTemplate[] = [];
+  const [templates, setTemplates] = useState<SpeakingTemplate[]>(defaultTemplates);
+
+  // Add error handling for template imports
+  const safeTemplates = {
+    part1: Array.isArray(part1Templates) ? part1Templates : defaultTemplates,
+    part2: Array.isArray(part2Templates) ? part2Templates : defaultTemplates,
+    part3: Array.isArray(part3Templates) ? part3Templates : defaultTemplates,
+    tutoring: Array.isArray(tutoringLessons) ? tutoringLessons : defaultTemplates,
+  };
+
+  console.log('Templates:', safeTemplates);
+
   const [selectedTab, setSelectedTab] = useState('part1');
-  const [templates, setTemplates] = useState<SpeakingTemplate[]>([]);
   const [selectedTemplate, setSelectedTemplate] = useState<SpeakingTemplate | null>(null);
   const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(false);
   const [sessionDuration, setSessionDuration] = useState(15);
@@ -204,20 +219,26 @@ const SpeakingPage: React.FC = () => {
     {
       id: 'part1',
       label: 'Part 1',
-      templates: part1Templates,
+      templates: safeTemplates.part1,
       description: 'Introduction and Interview'
     },
     {
       id: 'part2',
       label: 'Part 2',
-      templates: part2Templates,
+      templates: safeTemplates.part2,
       description: 'Individual Long Turn'
     },
     {
       id: 'part3',
       label: 'Part 3',
-      templates: part3Templates,
+      templates: safeTemplates.part3,
       description: 'Two-way Discussion'
+    },
+    {
+      id: 'tutoring',
+      label: 'Tutoring',
+      templates: safeTemplates.tutoring,
+      description: 'Tutoring Lessons'
     }
   ];
 
@@ -543,224 +564,371 @@ const SpeakingPage: React.FC = () => {
 
   return (
     <div className="flex min-h-screen bg-background">
-      {/* Neumorphic Sidebar */}
-      <aside className="w-80 p-6 bg-slate-50 dark:bg-slate-900 border-r border-border/40 shadow-[inset_-1px_0_0_rgba(0,0,0,0.1)] dark:shadow-[inset_-1px_0_0_rgba(255,255,255,0.1)]">
-        <div className="space-y-6">
-          {/* Search Section */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium text-muted-foreground">Search</h3>
-            <div className="relative">
-              <Input
-                placeholder="Search templates..."
-                value={searchQuery}
-                onChange={handleSearchChange}
-                className="w-full pl-10 bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800 shadow-sm"
-              />
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+      {!isSessionActive ? (
+        // Template Selection Screen
+        <>
+          <aside className="w-80 p-6 bg-slate-50 dark:bg-slate-900 border-r border-border/40 shadow-[inset_-1px_0_0_rgba(0,0,0,0.1)] dark:shadow-[inset_-1px_0_0_rgba(255,255,255,0.1)] sticky top-0 h-screen overflow-y-auto">
+            {/* Search Section */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-muted-foreground">Search</h3>
+              <div className="relative">
+                <Input
+                  placeholder="Search templates..."
+                  onChange={handleSearchChange}
+                  className="w-full pl-10 bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800 shadow-sm"
+                />
+                <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+              </div>
             </div>
-          </div>
 
-          {/* Filters Section */}
-          <div className="space-y-4">
-            <h3 className="text-sm font-medium text-muted-foreground">Filters</h3>
-            <div className="space-y-3">
-              <Select 
-                value={filters.category || "all"} 
-                onValueChange={(value) => handleFilterChange({ category: value === "all" ? undefined : value })}
-              >
-                <SelectTrigger className="w-full bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800">
-                  <SelectValue placeholder="All Categories" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Categories</SelectItem>
-                  {filterOptions.categories.map((category) => (
-                    <SelectItem key={category} value={category}>{category}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select 
-                value={filters.level || "all"} 
-                onValueChange={(value) => handleFilterChange({ level: value === "all" ? undefined : value })}
-              >
-                <SelectTrigger className="w-full bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800">
-                  <SelectValue placeholder="All Levels" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Levels</SelectItem>
-                  {filterOptions.levels.map((level) => (
-                    <SelectItem key={level} value={level}>{level}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select 
-                value={filters.targetBand?.toString() || "all"} 
-                onValueChange={(value) => handleFilterChange({ targetBand: value === "all" ? undefined : parseFloat(value) })}
-              >
-                <SelectTrigger className="w-full bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800">
-                  <SelectValue placeholder="All Bands" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Bands</SelectItem>
-                  {filterOptions.targetBands.map((band) => (
-                    <SelectItem key={band} value={band.toString()}>Band {band}</SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-
-              <Select 
-                value={filters.difficulty || "all"} 
-                onValueChange={(value) => handleFilterChange({ difficulty: value === "all" ? undefined : value })}
-              >
-                <SelectTrigger className="w-full bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800">
-                  <SelectValue placeholder="All Difficulties" />
-                </SelectTrigger>
-                <SelectContent>
-                  <SelectItem value="all">All Difficulties</SelectItem>
-                  {filterOptions.difficulties.map((difficulty) => (
-                    <SelectItem key={difficulty} value={difficulty}>
-                      {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
-                    </SelectItem>
-                  ))}
-                </SelectContent>
-              </Select>
-            </div>
-          </div>
-
-          {/* Sort Section */}
-          <div className="space-y-2">
-            <h3 className="text-sm font-medium text-muted-foreground">Sort by</h3>
-            <div className="flex flex-col gap-2">
-              <Button
-                variant={sortConfig.field === 'targetBand' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => handleSortChange('targetBand')}
-                className="justify-start"
-              >
-                <span className="flex-1 text-left">Target Band</span>
-                {sortConfig.field === 'targetBand' && (
-                  <span className="text-xs">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                )}
-              </Button>
-              <Button
-                variant={sortConfig.field === 'level' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => handleSortChange('level')}
-                className="justify-start"
-              >
-                <span className="flex-1 text-left">Level</span>
-                {sortConfig.field === 'level' && (
-                  <span className="text-xs">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                )}
-              </Button>
-              <Button
-                variant={sortConfig.field === 'difficulty' ? 'secondary' : 'ghost'}
-                size="sm"
-                onClick={() => handleSortChange('difficulty')}
-                className="justify-start"
-              >
-                <span className="flex-1 text-left">Difficulty</span>
-                {sortConfig.field === 'difficulty' && (
-                  <span className="text-xs">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
-                )}
-              </Button>
-            </div>
-          </div>
-
-          {/* Active Filters */}
-          <div className="space-y-2">
-            <ActiveFilters />
-          </div>
-        </div>
-      </aside>
-
-      {/* Main Content */}
-      <main className="flex-1 p-6">
-        <div className="max-w-[1200px] mx-auto">
-          {/* Header */}
-          <div className="mb-8">
-            <h1 className="text-3xl font-bold tracking-tight mb-2">IELTS Speaking Practice</h1>
-            <p className="text-muted-foreground">Choose a template to start practicing your speaking skills</p>
-          </div>
-
-          {/* Tabs and Content */}
-          <Tabs value={selectedTab} onValueChange={setSelectedTab} className="space-y-8">
-            <TabsList className="grid w-full grid-cols-3 gap-6">
-              {tabs.map((tab) => (
-                <TabsTrigger
-                  key={tab.id}
-                  value={tab.id}
-                  className="flex flex-col items-center p-6 rounded-xl transition-all data-[state=active]:bg-primary/10 hover:bg-muted"
+            {/* Filters Section */}
+            <div className="space-y-4">
+              <h3 className="text-sm font-medium text-muted-foreground">Filters</h3>
+              <div className="space-y-3">
+                <Select 
+                  onValueChange={(value) => handleFilterChange({ category: value === "all" ? undefined : value })}
                 >
-                  <span className="text-xl font-semibold mb-1">{tab.label}</span>
-                  <span className="text-sm text-muted-foreground">{tab.description}</span>
-                </TabsTrigger>
-              ))}
-            </TabsList>
+                  <SelectTrigger className="w-full bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800">
+                    <SelectValue placeholder="All Categories" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Categories</SelectItem>
+                    {filterOptions.categories.map((category) => (
+                      <SelectItem key={category} value={category}>{category}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
 
-            {/* Template Cards */}
-            {tabs.map((tab) => (
-              <TabsContent key={tab.id} value={tab.id} className="mt-6">
-                <ScrollArea className="h-[calc(100vh-16rem)]">
-                  <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-6 pb-6">
-                    {filteredTemplates.map((template) => (
+                <Select 
+                  onValueChange={(value) => handleFilterChange({ level: value === "all" ? undefined : value })}
+                >
+                  <SelectTrigger className="w-full bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800">
+                    <SelectValue placeholder="All Levels" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Levels</SelectItem>
+                    {filterOptions.levels.map((level) => (
+                      <SelectItem key={level} value={level}>{level}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select 
+                  onValueChange={(value) => handleFilterChange({ targetBand: value === "all" ? undefined : parseFloat(value) })}
+                >
+                  <SelectTrigger className="w-full bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800">
+                    <SelectValue placeholder="All Bands" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Bands</SelectItem>
+                    {filterOptions.targetBands.map((band) => (
+                      <SelectItem key={band} value={band.toString()}>Band {band}</SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+
+                <Select 
+                  onValueChange={(value) => handleFilterChange({ difficulty: value === "all" ? undefined : value })}
+                >
+                  <SelectTrigger className="w-full bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800">
+                    <SelectValue placeholder="All Difficulties" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="all">All Difficulties</SelectItem>
+                    {filterOptions.difficulties.map((difficulty) => (
+                      <SelectItem key={difficulty} value={difficulty}>
+                        {difficulty.charAt(0).toUpperCase() + difficulty.slice(1)}
+                      </SelectItem>
+                    ))}
+                  </SelectContent>
+                </Select>
+              </div>
+            </div>
+
+            {/* Sort Section */}
+            <div className="space-y-2">
+              <h3 className="text-sm font-medium text-muted-foreground">Sort by</h3>
+              <div className="flex flex-col gap-2">
+                <Button
+                  variant={sortConfig.field === 'targetBand' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => handleSortChange('targetBand')}
+                  className="justify-start hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
+                  <span className="flex-1 text-left">Target Band</span>
+                  {sortConfig.field === 'targetBand' && (
+                    <span className="text-xs">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                  )}
+                </Button>
+                <Button
+                  variant={sortConfig.field === 'level' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => handleSortChange('level')}
+                  className="justify-start hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
+                  <span className="flex-1 text-left">Level</span>
+                  {sortConfig.field === 'level' && (
+                    <span className="text-xs">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                  )}
+                </Button>
+                <Button
+                  variant={sortConfig.field === 'difficulty' ? 'secondary' : 'ghost'}
+                  size="sm"
+                  onClick={() => handleSortChange('difficulty')}
+                  className="justify-start hover:bg-slate-100 dark:hover:bg-slate-800"
+                >
+                  <span className="flex-1 text-left">Difficulty</span>
+                  {sortConfig.field === 'difficulty' && (
+                    <span className="text-xs">{sortConfig.direction === 'asc' ? '↑' : '↓'}</span>
+                  )}
+                </Button>
+              </div>
+            </div>
+
+            {/* Active Filters */}
+            <div className="space-y-2">
+              <ActiveFilters />
+            </div>
+          </aside>
+
+          <main className="flex-1 p-6">
+            <div className="max-w-[1200px] mx-auto">
+              {/* Header */}
+              <div className="mb-8">
+                <h1 className="text-3xl font-bold tracking-tight mb-2">Luyện nói IELTS</h1>
+                <p className="text-muted-foreground">Chọn một mẫu để bắt đầu luyện tập kỹ năng nói của bạn</p>
+              </div>
+
+              {/* Tabs and Content */}
+              <Tabs defaultValue="part1" className="w-full">
+                <TabsList className="grid grid-cols-4 w-full">
+                  <TabsTrigger value="part1">Phần 1</TabsTrigger>
+                  <TabsTrigger value="part2">Phần 2</TabsTrigger>
+                  <TabsTrigger value="part3">Phần 3</TabsTrigger>
+                  <TabsTrigger value="tutoring">Gia sư</TabsTrigger>
+                </TabsList>
+
+                <TabsContent value="part1" className="mt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {safeTemplates.part1.map((template) => (
                       <Card 
-                        key={`${tab.id}_${template.id}`}
+                        key={template.id}
                         className="flex flex-col transition-all hover:shadow-lg hover:border-primary group"
                       >
                         <CardHeader className="flex flex-col gap-2">
                           <CardTitle className="text-xl group-hover:text-primary transition-colors">
-                            {template.title_en}
+                            {template.titleVi || template.title}
                           </CardTitle>
                           <div className="flex flex-wrap gap-2">
-                            <Badge variant="secondary">{template.level}</Badge>
-                            <Badge variant="secondary">Band {template.target_band}</Badge>
+                            <Badge variant="secondary">
+                              {template.level === 'Beginner' ? 'Cơ bản' :
+                               template.level === 'Intermediate' ? 'Trung cấp' :
+                               template.level === 'Advanced' ? 'Nâng cao' : template.level}
+                            </Badge>
+                            <Badge variant="secondary">Band {template.targetBand}</Badge>
                             {template.difficulty && (
                               <Badge variant="outline" className="capitalize">
-                                {template.difficulty}
+                                {template.difficulty === 'easy' ? 'Dễ' :
+                                 template.difficulty === 'medium' ? 'Trung bình' :
+                                 template.difficulty === 'hard' ? 'Khó' : template.difficulty}
                               </Badge>
                             )}
                           </div>
                         </CardHeader>
                         <CardContent>
-                          <p className="text-sm text-muted-foreground">{template.description_en}</p>
+                          <p className="text-sm text-muted-foreground">
+                            {template.descriptionVi || template.description}
+                          </p>
                         </CardContent>
                         <CardFooter className="mt-auto pt-4">
                           <Button 
                             onClick={() => handleTemplateSelect(template)} 
-                            className="w-full group-hover:bg-primary/90 transition-colors"
+                            className="w-full bg-gradient-to-br from-teal-600 to-teal-800 hover:from-teal-500 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
                           >
-                            Start Practice
+                            Bắt đầu luyện tập
                           </Button>
                         </CardFooter>
                       </Card>
                     ))}
                   </div>
-                </ScrollArea>
-              </TabsContent>
-            ))}
-          </Tabs>
-        </div>
-      </main>
+                </TabsContent>
 
-      {/* Session Dialog */}
+                <TabsContent value="part2" className="mt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {safeTemplates.part2.map((template) => (
+                      <Card 
+                        key={template.id}
+                        className="flex flex-col transition-all hover:shadow-lg hover:border-primary group"
+                      >
+                        <CardHeader className="flex flex-col gap-2">
+                          <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                            {template.titleVi || template.title}
+                          </CardTitle>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="secondary">
+                              {template.level === 'Beginner' ? 'Cơ bản' :
+                               template.level === 'Intermediate' ? 'Trung cấp' :
+                               template.level === 'Advanced' ? 'Nâng cao' : template.level}
+                            </Badge>
+                            <Badge variant="secondary">Band {template.targetBand}</Badge>
+                            {template.difficulty && (
+                              <Badge variant="outline" className="capitalize">
+                                {template.difficulty === 'easy' ? 'Dễ' :
+                                 template.difficulty === 'medium' ? 'Trung bình' :
+                                 template.difficulty === 'hard' ? 'Khó' : template.difficulty}
+                              </Badge>
+                            )}
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground">
+                            {template.descriptionVi || template.description}
+                          </p>
+                        </CardContent>
+                        <CardFooter className="mt-auto pt-4">
+                          <Button 
+                            onClick={() => handleTemplateSelect(template)} 
+                            className="w-full bg-gradient-to-br from-teal-600 to-teal-800 hover:from-teal-500 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                          >
+                            Bắt đầu luyện tập
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="part3" className="mt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {safeTemplates.part3.map((template) => (
+                      <Card 
+                        key={template.id}
+                        className="flex flex-col transition-all hover:shadow-lg hover:border-primary group"
+                      >
+                        <CardHeader className="flex flex-col gap-2">
+                          <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                            {template.titleVi || template.title}
+                          </CardTitle>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="secondary">
+                              {template.level === 'Beginner' ? 'Cơ bản' :
+                               template.level === 'Intermediate' ? 'Trung cấp' :
+                               template.level === 'Advanced' ? 'Nâng cao' : template.level}
+                            </Badge>
+                            <Badge variant="secondary">Band {template.targetBand}</Badge>
+                            {template.difficulty && (
+                              <Badge variant="outline" className="capitalize">
+                                {template.difficulty === 'easy' ? 'Dễ' :
+                                 template.difficulty === 'medium' ? 'Trung bình' :
+                                 template.difficulty === 'hard' ? 'Khó' : template.difficulty}
+                              </Badge>
+                            )}
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground">
+                            {template.descriptionVi || template.description}
+                          </p>
+                        </CardContent>
+                        <CardFooter className="mt-auto pt-4">
+                          <Button 
+                            onClick={() => handleTemplateSelect(template)} 
+                            className="w-full bg-gradient-to-br from-teal-600 to-teal-800 hover:from-teal-500 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                          >
+                            Bắt đầu luyện tập
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
+                </TabsContent>
+
+                <TabsContent value="tutoring" className="mt-4">
+                  <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+                    {safeTemplates.tutoring.map((template) => (
+                      <Card 
+                        key={template.id}
+                        className="flex flex-col transition-all hover:shadow-lg hover:border-primary group"
+                      >
+                        <CardHeader className="flex flex-col gap-2">
+                          <CardTitle className="text-xl group-hover:text-primary transition-colors">
+                            {template.titleVi || template.title}
+                          </CardTitle>
+                          <div className="flex flex-wrap gap-2">
+                            <Badge variant="secondary">
+                              {template.level === 'Beginner' ? 'Cơ bản' :
+                               template.level === 'Intermediate' ? 'Trung cấp' :
+                               template.level === 'Advanced' ? 'Nâng cao' : template.level}
+                            </Badge>
+                            <Badge variant="secondary">Band {template.targetBand}</Badge>
+                            {template.difficulty && (
+                              <Badge variant="outline" className="capitalize">
+                                {template.difficulty === 'easy' ? 'Dễ' :
+                                 template.difficulty === 'medium' ? 'Trung bình' :
+                                 template.difficulty === 'hard' ? 'Khó' : template.difficulty}
+                              </Badge>
+                            )}
+                          </div>
+                        </CardHeader>
+                        <CardContent>
+                          <p className="text-sm text-muted-foreground">
+                            {template.descriptionVi || template.description}
+                          </p>
+                        </CardContent>
+                        <CardFooter className="mt-auto pt-4">
+                          <Button 
+                            onClick={() => handleTemplateSelect(template)} 
+                            className="w-full bg-gradient-to-br from-teal-600 to-teal-800 hover:from-teal-500 hover:to-teal-700 text-white shadow-lg hover:shadow-xl transform hover:-translate-y-0.5 transition-all duration-200"
+                          >
+                            Bắt đầu luyện tập
+                          </Button>
+                        </CardFooter>
+                      </Card>
+                    ))}
+                  </div>
+                </TabsContent>
+              </Tabs>
+            </div>
+          </main>
+        </>
+      ) : (
+        // Chat Screen
+        <ChatInterface 
+          messages={messages}
+          metrics={metrics}
+          timeRemaining={timeRemaining}
+          inputMode={inputMode}
+          audioState={audioState}
+          textMessage={textMessage}
+          isLoading={isLoading}
+          onEndSession={handleEndSession}
+          onToggleInputMode={toggleInputMode}
+          onStartRecording={startRecording}
+          onStopRecording={stopRecording}
+          onPauseRecording={pauseRecording}
+          onResumeRecording={resumeRecording}
+          onSendMessage={handleSendMessage}
+          onTextMessageChange={setTextMessage}
+        />
+      )}
+
+      {/* Session Setup Dialog */}
       <Dialog open={isSessionDialogOpen} onOpenChange={setIsSessionDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Start New Session</DialogTitle>
+            <DialogTitle>Bắt đầu phiên mới</DialogTitle>
           </DialogHeader>
           <div className="space-y-4 py-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Your Name</label>
+              <label className="text-sm font-medium">Tên của bạn</label>
               <Input
-                placeholder="Enter your name"
+                placeholder="Nhập tên của bạn"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Session Duration (minutes)</label>
+              <label className="text-sm font-medium">Thời lượng phiên (phút)</label>
               <Slider
                 value={[sessionDuration]}
                 onValueChange={(value) => setSessionDuration(value[0])}
@@ -769,8 +937,8 @@ const SpeakingPage: React.FC = () => {
                 step={5}
               />
               <div className="flex justify-between text-xs text-muted-foreground">
-                <span>5 min</span>
-                <span>30 min</span>
+                <span>5 phút</span>
+                <span>30 phút</span>
               </div>
             </div>
           </div>
@@ -779,13 +947,13 @@ const SpeakingPage: React.FC = () => {
               variant="outline"
               onClick={() => setIsSessionDialogOpen(false)}
             >
-              Cancel
+              Hủy bỏ
             </Button>
             <Button
               onClick={startSession}
               disabled={isLoading || !userName.trim()}
             >
-              Start Session
+              Bắt đầu phiên
             </Button>
           </div>
         </DialogContent>
@@ -866,7 +1034,7 @@ const SpeakingPage: React.FC = () => {
                   size="sm"
                   onClick={handleEndSession}
                 >
-                  End Session
+                  Kết thúc phiên
                 </Button>
               </div>
             </div>
@@ -922,7 +1090,7 @@ const SpeakingPage: React.FC = () => {
                       className="w-full flex items-center justify-center"
                     >
                       <Mic className="h-4 w-4 mr-2" />
-                      Start Recording
+                      Bắt đầu ghi âm
                     </Button>
                   ) : (
                     <div className="w-full flex items-center space-x-2">
@@ -933,7 +1101,7 @@ const SpeakingPage: React.FC = () => {
                           variant="outline"
                         >
                           <PlayCircle className="h-4 w-4 mr-2" />
-                          Resume
+                          Tiếp tục
                         </Button>
                       ) : (
                         <Button 
@@ -942,7 +1110,7 @@ const SpeakingPage: React.FC = () => {
                           variant="outline"
                         >
                           <PauseCircle className="h-4 w-4 mr-2" />
-                          Pause
+                          Tạm dừng
                         </Button>
                       )}
                       <Button
@@ -952,7 +1120,7 @@ const SpeakingPage: React.FC = () => {
                         className="flex-1"
                       >
                         <StopCircle className="h-4 w-4 mr-2" />
-                        Stop
+                        Dừng lại
                       </Button>
                       {audioState.duration > 0 && (
                         <span className="text-sm font-mono">
@@ -986,7 +1154,7 @@ const SpeakingPage: React.FC = () => {
               ) : (
                 <div className="flex space-x-2">
                   <Input
-                    placeholder="Type your message..."
+                    placeholder="Nhập tin nhắn..."
                     value={textMessage}
                     onChange={(e) => setTextMessage(e.target.value)}
                     onKeyDown={(e) => {
@@ -1024,12 +1192,12 @@ const SpeakingPage: React.FC = () => {
       <Sheet open={isNotesOpen} onOpenChange={setIsNotesOpen}>
         <SheetContent>
           <SheetHeader>
-            <SheetTitle>Session Notes</SheetTitle>
+            <SheetTitle>Ghi chú phiên</SheetTitle>
           </SheetHeader>
           <div className="mt-4 space-y-4">
             <div className="flex space-x-2">
               <Textarea
-                placeholder="Add a note..."
+                placeholder="Thêm ghi chú..."
                 value={newNote}
                 onChange={(e) => setNewNote(e.target.value)}
               />

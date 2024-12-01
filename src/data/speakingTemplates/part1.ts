@@ -4,8 +4,6 @@ export const part1Templates: SpeakingTemplate[] = [
   {
     id: 'p1_home_accommodation',
     title: 'Home & Accommodation',
-    titleVi: 'Nhà ở & Chỗ ở',
-    titleEn: 'Home & Accommodation',
     description: 'Learn to discuss your living situation and preferences',
     descriptionVi: 'Học cách thảo luận về tình hình và sở thích về nhà ở',
     descriptionEn: 'Learn to discuss your living situation and preferences',
@@ -58,8 +56,8 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Housing',
-    level: 'Intermediate',
+    category: 'Giải trí',
+    level: 'Cơ bản',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Housing', 'Lifestyle', 'Personal preferences'],
@@ -81,8 +79,6 @@ Remember: Every interaction should teach something specific about IELTS speaking
   {
     id: 'p1_work_studies',
     title: 'Work & Studies',
-    titleVi: 'Công việc & Học tập',
-    titleEn: 'Work & Studies',
     description: 'Learn to talk about your work or study experience',
     descriptionVi: 'Học cách nói về kinh nghiệm làm việc hoặc học tập',
     descriptionEn: 'Learn to talk about your work or study experience',
@@ -135,8 +131,8 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Career',
-    level: 'Intermediate',
+    category: 'Cuộc sống hiện đại',
+    level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Work', 'Education', 'Career goals'],
@@ -158,8 +154,6 @@ Remember: Every interaction should teach something specific about IELTS speaking
   {
     id: 'p1_hobbies_interests',
     title: 'Hobbies & Interests',
-    titleVi: 'Sở thích & Điều yêu thích',
-    titleEn: 'Hobbies & Interests',
     description: 'Learn to share your hobbies and interests',
     descriptionVi: 'Học cách chia sẻ về sở thích và điều bạn yêu thích',
     descriptionEn: 'Learn to share your hobbies and interests',
@@ -212,8 +206,8 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Leisure',
-    level: 'Beginner',
+    category: 'Sở thích cá nhân',
+    level: 'Trung cấp',
     targetBand: 6.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Hobbies', 'Free time', 'Entertainment'],
@@ -235,8 +229,6 @@ Remember: Every interaction should teach something specific about IELTS speaking
   {
     id: 'p1_hometown_area',
     title: 'Hometown & Local Area',
-    titleVi: 'Quê hương & Khu vực địa phương',
-    titleEn: 'Hometown & Local Area',
     description: 'Learn to describe your hometown and local area',
     descriptionVi: 'Học cách mô tả quê hương và khu vực địa phương của bạn',
     descriptionEn: 'Learn to describe your hometown and local area',
@@ -289,8 +281,8 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Places',
-    level: 'Intermediate',
+    category: 'Địa điểm',
+    level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Hometown', 'Local area', 'Geography'],
@@ -312,8 +304,6 @@ Remember: Every interaction should teach something specific about IELTS speaking
   {
     id: 'p1_daily_routine',
     title: 'Daily Routine',
-    titleVi: 'Thói quen hàng ngày',
-    titleEn: 'Daily Routine',
     description: 'Learn to discuss your daily activities and habits',
     descriptionVi: 'Học cách thảo luận về các hoạt động và thói quen hàng ngày của bạn',
     descriptionEn: 'Learn to discuss your daily activities and habits',
@@ -342,7 +332,7 @@ Teaching Strategy:
    Vietnamese translations provided for clarity:
    - "morning routine" = "thói quen buổi sáng"
    - "daily schedule" = "lịch trình hàng ngày"
-   - "time management" = "quản lý thời gian"
+   - "time management" = "quản lý thởi gian"
 
 3. Answer Structure Training:
    Basic: "I wake up at 7."
@@ -366,8 +356,8 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Lifestyle',
-    level: 'Beginner',
+    category: 'Lối sống',
+    level: 'Cơ bản',
     targetBand: 5.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Daily Life', 'Time Management', 'Habits'],
@@ -390,8 +380,6 @@ Remember: Every interaction should teach something specific about IELTS speaking
   {
     id: 'p1_family_friends',
     title: 'Family and Friends',
-    titleVi: 'Gia đình và bạn bè',
-    titleEn: 'Family and Friends',
     description: 'Learn to talk about your relationships with family and friends',
     descriptionVi: 'Học cách nói về mối quan hệ với gia đình và bạn bè',
     descriptionEn: 'Learn to talk about your relationships with family and friends',
@@ -444,8 +432,8 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Relationships',
-    level: 'Intermediate',
+    category: 'Sở thích cá nhân',
+    level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Family', 'Friendship', 'Social Life'],
@@ -467,16 +455,14 @@ Remember: Every interaction should teach something specific about IELTS speaking
   },
   {
     id: 'p1_technology',
-    title: 'Technology Usage',
-    titleVi: 'Sử dụng công nghệ',
-    titleEn: 'Technology Usage',
-    description: 'Learn to discuss how you use technology in daily life',
-    descriptionVi: 'Học cách thảo luận về việc sử dụng công nghệ trong cuộc sống hàng ngày',
-    descriptionEn: 'Learn to discuss how you use technology in daily life',
+    title: 'Technology & Digital Life',
+    description: 'Discuss your use of technology and digital tools',
+    descriptionVi: 'Thảo luận về việc sử dụng công nghệ và các công cụ kỹ thuật số',
+    descriptionEn: 'Discuss your use of technology and digital tools',
     part: 1,
     difficulty: 'medium',
     taskType: 'task1',
-    systemPrompt: `This is a Part 1 IELTS Speaking session focusing on technology and daily life.
+    systemPrompt: `This is a Part 1 IELTS Speaking session focusing on technology and digital life.
 
 Key IELTS Requirements:
 - Part 1 answers should be 2-3 sentences (20-30 seconds)
@@ -487,145 +473,59 @@ Key IELTS Requirements:
 Teaching Strategy:
 1. First Response:
    - Model the expected answer length and structure
-   - Point out key vocabulary: "Let me show you how to describe technology usage: frequently, occasionally, rarely"
-   - Demonstrate natural elaboration: "Instead of just saying 'I use my phone a lot', say 'I frequently use my phone to stay connected with friends and family'"
+   - Point out key vocabulary: "Let me show you how to discuss technology: digital devices, social media platforms, online activities"
+   - Demonstrate natural elaboration: "Instead of just saying 'I use my phone', say 'I mainly use my smartphone for staying connected with friends and managing my daily tasks'"
 
 2. Vocabulary Building:
-   - Technology Types: smartphone, computer, tablet
-   - Usage: frequently, occasionally, rarely
-   - Purposes: communication, entertainment, education
-   - Benefits: convenient, efficient, time-saving
+   - Digital Devices: smartphone, laptop, tablet, smartwatch
+   - Online Activities: browsing, streaming, networking, shopping
+   - Social Media: platforms, posts, sharing, engagement
+   - Technology Impact: convenience, efficiency, connectivity
    Vietnamese translations provided for clarity:
-   - "frequently" = "thường xuyên"
-   - "occasionally" = "thỉnh thoảng"
-   - "rarely" = "hiếm khi"
+   - "digital devices" = "thiết bị kỹ thuật số"
+   - "social media" = "mạng xã hội"
+   - "online activities" = "hoạt động trực tuyến"
 
 3. Answer Structure Training:
-   Basic: "I use my phone a lot."
-   Better: "I frequently use my phone (main point) to stay connected with friends and family (purpose). It's convenient and efficient (benefits)."
+   Basic: "I use social media every day."
+   Better: "I regularly use social media platforms like Instagram and Facebook (main point) to stay connected with friends and share interesting content (purpose). I find these platforms particularly useful for keeping up with news and trends (benefit)."
 
 4. Common Mistakes to Address:
-   - Using simple vocabulary (a lot → frequently/often)
-   - Not explaining technology usage
-   - Missing benefits and purposes
+   - Using simple technology terms (phone → smartphone/mobile device)
+   - Not explaining purposes or benefits
+   - Missing frequency expressions (regularly, occasionally, frequently)
 
 5. Assessment Focus:
-   - Vocabulary: Technology-specific terms
-   - Grammar: Present simple, present continuous for habits
-   - Fluency: Natural expression of technology usage
-   - Pronunciation: Technology names and usage terms
-
-After each response:
-1. Highlight what was done well
-2. Provide specific vocabulary or grammar improvements
-3. Model the enhanced version
-4. Have student practice the improved version
+   - Vocabulary: Digital terminology and technical expressions
+   - Grammar: Present simple/continuous for habits and current activities
+   - Fluency: Natural discussion of technology use
+   - Pronunciation: Technical terms and platform names
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Modern Life',
-    level: 'Intermediate',
+    category: 'Công nghệ',
+    level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
-    topics: ['Technology', 'Digital Life', 'Modern Habits'],
+    topics: ['Technology', 'Social Media', 'Digital Life'],
     objectives: [
-      'Learn vocabulary for describing technology usage patterns',
-      'Practice expressing opinions about digital tools',
-      'Master technology-related expressions'
+      'Learn vocabulary for describing technology use',
+      'Practice discussing digital habits and preferences',
+      'Master expressions for online activities'
     ],
     duration: 240,
-    supportText: 'We will practice talking about how and why you use different technologies in your daily life. I will help you improve your vocabulary and expressions.',
-    tags: ['technology', 'digital', 'modern life'],
+    supportText: 'We will practice discussing your use of technology and social media. I will help you improve your vocabulary and expressions.',
+    tags: ['technology', 'social media', 'digital', 'internet'],
     questions: [
-      'What kind of technology do you use most often?',
-      'How much time do you spend on your phone each day?',
-      'What do you mainly use the internet for?',
-      'Do you think technology has made your life easier? Why/why not?',
-      "What is your favorite app or website? Why do you like it? Let's discuss the reasons."
+      "How do you use technology in your daily life?",
+      "Which social media platforms do you use most often?",
+      "What do you mainly use your smartphone for?",
+      "How has technology changed your life?",
+      "Do you think social media is helpful? Why or why not?"
     ]
   },
   {
-    id: 'p1_technology_usage',
-    title: 'Technology in Daily Life',
-    titleVi: 'Công nghệ trong cuộc sống hàng ngày',
-    titleEn: 'Technology in Daily Life',
-    description: 'Discuss how you use technology in your everyday life',
-    descriptionVi: 'Thảo luận về cách bạn sử dụng công nghệ trong cuộc sống hàng ngày',
-    descriptionEn: 'Discuss how you use technology in your everyday life',
-    part: 1,
-    difficulty: 'medium',
-    taskType: 'task1',
-    systemPrompt: `This is a Part 1 IELTS Speaking session focusing on technology usage.
-
-Key IELTS Requirements:
-- Part 1 answers should be 2-3 sentences (20-30 seconds)
-- Show range of vocabulary and grammatical structures
-- Maintain natural fluency without long pauses
-- Use clear pronunciation with proper stress and intonation
-
-Teaching Strategy:
-1. First Response:
-   - Model the expected answer length and structure
-   - Point out key vocabulary: "Let me show you how to describe technology usage: rely on, integrate, enhance"
-   - Demonstrate natural elaboration: "Instead of just saying 'I use my phone a lot', say 'I rely heavily on my smartphone to manage my daily tasks and stay connected with friends and family'"
-
-2. Vocabulary Building:
-   - Tech Devices: smartphone, laptop, tablet, smartwatch
-   - Usage: browse, stream, download, upload
-   - Frequency: constantly, regularly, occasionally
-   - Benefits: convenience, efficiency, connectivity
-   Vietnamese translations provided for clarity:
-   - "rely on" = "phụ thuộc vào"
-   - "integrate" = "tích hợp"
-   - "enhance" = "nâng cao"
-
-3. Answer Structure Training:
-   Basic: "I use my phone every day."
-   Better: "I rely on my smartphone constantly (frequency) for various tasks like checking emails and social media (usage). It greatly enhances my productivity and keeps me connected (benefits)."
-
-4. Common Mistakes to Address:
-   - Using simple vocabulary (a lot → frequently/often)
-   - Not explaining technology usage
-   - Missing benefits and purposes
-
-5. Assessment Focus:
-   - Vocabulary: Technology-specific terms
-   - Grammar: Present simple, present continuous for habits
-   - Fluency: Natural expression of technology usage
-   - Pronunciation: Technology names and usage terms
-
-After each response:
-1. Highlight what was done well
-2. Provide specific vocabulary or grammar improvements
-3. Model the enhanced version
-4. Have student practice the improved version
-
-Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Modern Life',
-    level: 'Intermediate',
-    targetBand: 6.5,
-    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
-    topics: ['Technology', 'Digital Life', 'Modern Habits'],
-    objectives: [
-      'Learn vocabulary for describing technology usage patterns',
-      'Practice expressing opinions about digital tools',
-      'Master technology-related expressions'
-    ],
-    duration: 240,
-    supportText: 'We will practice talking about how and why you use different technologies in your daily life. I will help you improve your vocabulary and expressions.',
-    tags: ['technology', 'digital', 'modern life'],
-    questions: [
-      'What kind of technology do you use most often?',
-      'How much time do you spend on your phone each day?',
-      'What do you mainly use the internet for?',
-      'Do you think technology has made your life easier? Why/why not?',
-      "What is your favorite app or website? Why do you like it? Let's discuss the reasons."
-    ]
-  },
-  {
-    id: 'p1_hobbies_interests',
+    id: 'p1_hobbies_interests_2',
     title: 'Hobbies and Interests',
-    titleVi: 'Sở thích và Đam mê',
-    titleEn: 'Hobbies and Interests',
     description: 'Practice discussing your favorite activities and pastimes',
     descriptionVi: 'Luyện tập thảo luận về các hoạt động và sở thích yêu thích của bạn',
     descriptionEn: 'Practice discussing your favorite activities and pastimes',
@@ -678,8 +578,8 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Personal Interests',
-    level: 'Intermediate',
+    category: 'Sở thích cá nhân',
+    level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Hobbies', 'Leisure Activities', 'Personal Interests'],
@@ -702,8 +602,6 @@ Remember: Every interaction should teach something specific about IELTS speaking
   {
     id: 'p1_hometown',
     title: 'Hometown and Local Area',
-    titleVi: 'Quê hương và Khu vực địa phương',
-    titleEn: 'Hometown and Local Area',
     description: 'Learn to describe your hometown and local surroundings',
     descriptionVi: 'Học cách mô tả quê hương và môi trường xung quanh của bạn',
     descriptionEn: 'Learn to describe your hometown and local surroundings',
@@ -756,8 +654,8 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Places',
-    level: 'Intermediate',
+    category: 'Địa điểm',
+    level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Hometown', 'Local Area', 'Geography'],
@@ -780,8 +678,6 @@ Remember: Every interaction should teach something specific about IELTS speaking
   {
     id: 'p1_daily_routine_basic',
     title: 'Basic Daily Routine',
-    titleVi: 'Thói quen hàng ngày cơ bản',
-    titleEn: 'Basic Daily Routine',
     description: 'Learn to describe your daily activities using simple language',
     descriptionVi: 'Học cách mô tả các hoạt động hàng ngày bằng ngôn ngữ đơn giản',
     descriptionEn: 'Learn to describe your daily activities using simple language',
@@ -810,7 +706,7 @@ Teaching Strategy:
    Vietnamese translations provided for clarity:
    - "morning routine" = "thói quen buổi sáng"
    - "daily schedule" = "lịch trình hàng ngày"
-   - "time management" = "quản lý thời gian"
+   - "time management" = "quản lý thởi gian"
 
 3. Answer Structure Training:
    Basic: "I wake up at 7."
@@ -834,8 +730,8 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Lifestyle',
-    level: 'Beginner',
+    category: 'Lối sống',
+    level: 'Cơ bản',
     targetBand: 5.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Daily Life', 'Time Management', 'Habits'],
@@ -858,8 +754,6 @@ Remember: Every interaction should teach something specific about IELTS speaking
   {
     id: 'p1_daily_routine_advanced',
     title: 'Advanced Daily Routine',
-    titleVi: 'Thói quen hàng ngày nâng cao',
-    titleEn: 'Advanced Daily Routine',
     description: 'Learn to describe your daily activities with advanced vocabulary and expressions',
     descriptionVi: 'Học cách mô tả các hoạt động hàng ngày với từ vựng và cách diễn đạt nâng cao',
     descriptionEn: 'Learn to describe your daily activities with advanced vocabulary and expressions',
@@ -888,7 +782,7 @@ Teaching Strategy:
    Vietnamese translations provided for clarity:
    - "morning routine" = "thói quen buổi sáng"
    - "daily schedule" = "lịch trình hàng ngày"
-   - "time management" = "quản lý thời gian"
+   - "time management" = "quản lý thởi gian"
 
 3. Answer Structure Training:
    Basic: "I wake up at 7."
@@ -912,8 +806,8 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Lifestyle',
-    level: 'Intermediate',
+    category: 'Lối sống',
+    level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Daily Life', 'Time Management', 'Habits'],
@@ -936,8 +830,6 @@ Remember: Every interaction should teach something specific about IELTS speaking
   {
     id: 'p1_social_media',
     title: 'Social Media',
-    titleVi: 'Mạng xã hội',
-    titleEn: 'Social Media',
     descriptionVi: 'Thảo luận về việc sử dụng mạng xã hội',
     descriptionEn: 'Discuss your social media usage',
     systemPrompt: `I'll help you discuss social media effectively for IELTS Speaking Part 1.
@@ -961,8 +853,8 @@ Remember: Keep answers concise (2-3 sentences) and natural.`,
       "What do you mainly use social media for?",
       "Do you think social media is helpful in your life?"
     ],
-    category: 'Technology',
-    level: 'Intermediate',
+    category: 'Công nghệ',
+    level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
@@ -994,8 +886,8 @@ Remember: Keep answers concise (2-3 sentences) and natural.`,
       "How does weather affect your daily life?",
       "Has the weather changed much in recent years?"
     ],
-    category: 'Environment',
-    level: 'Beginner',
+    category: 'Môi trường',
+    level: 'Cơ bản',
     targetBand: 6.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
@@ -1031,8 +923,8 @@ A: "I like rice and chicken. Rice is very common in my country, and chicken is t
       "What's your favorite food?",
       "Do you often eat out?"
     ],
-    category: 'Food',
-    level: 'Beginner',
+    category: 'Ẩm thực',
+    level: 'Cơ bản',
     targetBand: 5.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
@@ -1068,8 +960,8 @@ A: "I have four people in my family. My father is a teacher. My mother cooks ver
       "What does your father/mother do?",
       "Do you have any brothers or sisters?"
     ],
-    category: 'Family',
-    level: 'Beginner',
+    category: 'Gia đình',
+    level: 'Cơ bản',
     targetBand: 5.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
@@ -1105,8 +997,8 @@ A: "I like playing football. I play every weekend with my friends. It's fun and 
       "Who do you do this activity with?",
       "Why do you like this hobby?"
     ],
-    category: 'Hobbies',
-    level: 'Beginner',
+    category: 'Sở thích',
+    level: 'Cơ bản',
     targetBand: 5.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
@@ -1142,8 +1034,8 @@ A: "It's very hot in my country. We have sun most of the time. I like sunny days
       "What do you do when it rains?",
       "What's your favorite season?"
     ],
-    category: 'Weather',
-    level: 'Beginner',
+    category: 'Thời tiết',
+    level: 'Cơ bản',
     targetBand: 5.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
@@ -1179,8 +1071,8 @@ A: "I like rice and chicken. Rice is very common in my country, and chicken is t
       "What's your favorite food?",
       "Do you often eat out?"
     ],
-    category: 'Food',
-    level: 'Beginner',
+    category: 'Ẩm thực',
+    level: 'Cơ bản',
     targetBand: 5.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
@@ -1216,8 +1108,8 @@ A: "I have four people in my family. My father is a teacher. My mother cooks ver
       "What does your father/mother do?",
       "Do you have any brothers or sisters?"
     ],
-    category: 'Family',
-    level: 'Beginner',
+    category: 'Gia đình',
+    level: 'Cơ bản',
     targetBand: 5.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
@@ -1253,8 +1145,8 @@ A: "I like playing football. I play every weekend with my friends. It's fun and 
       "Who do you do this activity with?",
       "Why do you like this hobby?"
     ],
-    category: 'Hobbies',
-    level: 'Beginner',
+    category: 'Sở thích',
+    level: 'Cơ bản',
     targetBand: 5.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
@@ -1290,16 +1182,14 @@ A: "It's very hot in my country. We have sun most of the time. I like sunny days
       "What do you do when it rains?",
       "What's your favorite season?"
     ],
-    category: 'Weather',
-    level: 'Beginner',
+    category: 'Thời tiết',
+    level: 'Cơ bản',
     targetBand: 5.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
   {
     id: 'p1_2024q3_accommodation_advanced',
     title: 'Home & Accommodation (2024 Q3)',
-    titleVi: 'Nhà ở & Chỗ ở (Quý 3/2024)',
-    titleEn: 'Home & Accommodation (2024 Q3)',
     description: 'Advanced strategies for discussing living spaces and accommodation preferences',
     descriptionVi: 'Chiến lược nâng cao để thảo luận về không gian sống và sở thích về chỗ ở',
     descriptionEn: 'Advanced strategies for discussing living spaces and accommodation preferences',
@@ -1353,8 +1243,8 @@ Assessment Focus for Band 7.0:
 - Coherence: Smooth flow between ideas with appropriate linking
 
 Remember: At Band 7.0, responses should demonstrate both accuracy and sophistication while maintaining naturalness.`,
-    category: 'Housing',
-    level: 'Advanced',
+    category: 'Nhà ở',
+    level: 'Nâng cao',
     targetBand: 7.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Housing', 'Lifestyle', 'Urban Development', 'Sustainability'],
@@ -1388,8 +1278,6 @@ Remember: At Band 7.0, responses should demonstrate both accuracy and sophistica
   {
     id: 'p1_2024q3_studying_advanced',
     title: 'Studying (2024 Q3)',
-    titleVi: 'Học tập (Quý 3/2024)',
-    titleEn: 'Studying (2024 Q3)',
     description: 'Advanced approaches to discussing academic experiences and study habits',
     descriptionVi: 'Phương pháp nâng cao để thảo luận về trải nghiệm học tập và thói quen học tập',
     descriptionEn: 'Advanced approaches to discussing academic experiences and study habits',
@@ -1422,7 +1310,7 @@ Teaching Strategy for Band 7.0:
 
 3. Complex Grammar Patterns:
    - Perfect continuous: "I have been focusing on research methodology"
-   - Passive constructions: "The course is structured around practical applications"
+   - Passive structures: "The course is structured around practical applications"
    - Conditionals: "If I were to choose another field, I would still incorporate these methods"
 
 4. Sample Band 7.0 Answers:
@@ -1436,8 +1324,8 @@ Teaching Strategy for Band 7.0:
    - Pronunciation: Clear articulation of academic terms
 
 Remember: Maintain sophistication while staying natural and engaging.`,
-    category: 'Education',
-    level: 'Advanced',
+    category: 'Giáo dục',
+    level: 'Nâng cao',
     targetBand: 7.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Education', 'Academic Life', 'Study Methods', 'Learning'],
@@ -1459,8 +1347,6 @@ Remember: Maintain sophistication while staying natural and engaging.`,
   {
     id: 'p1_2024q3_area_advanced',
     title: 'The Area You Live In (2024 Q3)',
-    titleVi: 'Khu vực bạn sống (Quý 3/2024)',
-    titleEn: 'The Area You Live In (2024 Q3)',
     description: 'Advanced strategies for discussing your neighborhood and local community',
     descriptionVi: 'Chiến lược nâng cao để thảo luận về khu phố và cộng đồng địa phương',
     descriptionEn: 'Advanced strategies for discussing your neighborhood and local community',
@@ -1507,8 +1393,8 @@ Teaching Strategy for Band 7.0:
    - Pronunciation: Clear articulation of location terms
 
 Remember: Aim for sophistication while maintaining natural delivery.`,
-    category: 'Places',
-    level: 'Advanced',
+    category: 'Địa điểm',
+    level: 'Nâng cao',
     targetBand: 7.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Community', 'Urban Life', 'Local Area', 'Development'],
@@ -1532,8 +1418,6 @@ Remember: Aim for sophistication while maintaining natural delivery.`,
   {
     id: 'p1_2024q3_transportation_advanced',
     title: 'Transportation & Roads (2024 Q3)',
-    titleVi: 'Giao thông & Đường xá (Quý 3/2024)',
-    titleEn: 'Transportation & Roads (2024 Q3)',
     description: 'Advanced discussion of transportation systems and urban infrastructure',
     descriptionVi: 'Thảo luận nâng cao về hệ thống giao thông và cơ sở hạ tầng đô thị',
     descriptionEn: 'Advanced discussion of transportation systems and urban infrastructure',
@@ -1580,8 +1464,8 @@ Teaching Strategy for Band 7.0:
    - Pronunciation: Clear articulation of technical terms
 
 Remember: Maintain sophistication while keeping responses natural and engaging.`,
-    category: 'Urban Development',
-    level: 'Advanced',
+    category: 'Phát triển đô thị',
+    level: 'Nâng cao',
     targetBand: 7.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
     topics: ['Transportation', 'Infrastructure', 'Urban Planning', 'Development'],
