@@ -93,14 +93,36 @@ export default function ChatInterface({
             </div>
           </div>
           <div className="flex items-center gap-4">
-            <div className="flex flex-col items-end">
-              <div className="flex gap-2 text-sm">
-                <span>Fluency: {metrics.fluency.toFixed(1)}</span>
-                <span>Lexical: {metrics.lexical.toFixed(1)}</span>
-              </div>
-              <div className="flex gap-2 text-sm">
-                <span>Grammar: {metrics.grammar.toFixed(1)}</span>
-                <span>Pronunciation: {metrics.pronunciation.toFixed(1)}</span>
+            <div className="flex flex-col gap-2">
+              <div className="grid grid-cols-2 gap-4">
+                <div className="flex flex-col">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Fluency</span>
+                    <span>{metrics.fluency.toFixed(1)}</span>
+                  </div>
+                  <Progress value={metrics.fluency * 11.11} className="h-2" />
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Lexical</span>
+                    <span>{metrics.lexical.toFixed(1)}</span>
+                  </div>
+                  <Progress value={metrics.lexical * 11.11} className="h-2" />
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Grammar</span>
+                    <span>{metrics.grammar.toFixed(1)}</span>
+                  </div>
+                  <Progress value={metrics.grammar * 11.11} className="h-2" />
+                </div>
+                <div className="flex flex-col">
+                  <div className="flex justify-between text-sm mb-1">
+                    <span>Pronunciation</span>
+                    <span>{metrics.pronunciation.toFixed(1)}</span>
+                  </div>
+                  <Progress value={metrics.pronunciation * 11.11} className="h-2" />
+                </div>
               </div>
             </div>
           </div>

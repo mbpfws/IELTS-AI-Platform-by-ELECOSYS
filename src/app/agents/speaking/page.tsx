@@ -583,13 +583,29 @@ const SpeakingPage: React.FC = () => {
 
             {/* Filters Section */}
             <div className="space-y-4">
-              <h3 className="text-sm font-medium text-muted-foreground">Filters</h3>
+              <div className="flex items-center justify-between">
+                <h3 className="text-sm font-medium text-muted-foreground">Filters</h3>
+                <Button
+                  variant="ghost"
+                  size="sm"
+                  onClick={() => {
+                    setFilters({});
+                    setSearchQuery('');
+                  }}
+                  className="text-xs"
+                >
+                  Reset All
+                </Button>
+              </div>
               <div className="space-y-3">
                 <Select 
                   onValueChange={(value) => handleFilterChange({ category: value === "all" ? undefined : value })}
                 >
-                  <SelectTrigger className="w-full bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800">
+                  <SelectTrigger className="w-full bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800 relative group">
                     <SelectValue placeholder="All Categories" />
+                    <span className="absolute right-8 top-1/2 -translate-y-1/2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                      {filters.category ? '1 selected' : 'None'}
+                    </span>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Categories</SelectItem>
@@ -602,8 +618,11 @@ const SpeakingPage: React.FC = () => {
                 <Select 
                   onValueChange={(value) => handleFilterChange({ level: value === "all" ? undefined : value })}
                 >
-                  <SelectTrigger className="w-full bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800">
+                  <SelectTrigger className="w-full bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800 relative group">
                     <SelectValue placeholder="All Levels" />
+                    <span className="absolute right-8 top-1/2 -translate-y-1/2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                      {filters.level ? '1 selected' : 'None'}
+                    </span>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Levels</SelectItem>
@@ -616,8 +635,11 @@ const SpeakingPage: React.FC = () => {
                 <Select 
                   onValueChange={(value) => handleFilterChange({ targetBand: value === "all" ? undefined : parseFloat(value) })}
                 >
-                  <SelectTrigger className="w-full bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800">
+                  <SelectTrigger className="w-full bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800 relative group">
                     <SelectValue placeholder="All Bands" />
+                    <span className="absolute right-8 top-1/2 -translate-y-1/2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                      {filters.targetBand ? '1 selected' : 'None'}
+                    </span>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Bands</SelectItem>
@@ -630,8 +652,11 @@ const SpeakingPage: React.FC = () => {
                 <Select 
                   onValueChange={(value) => handleFilterChange({ difficulty: value === "all" ? undefined : value })}
                 >
-                  <SelectTrigger className="w-full bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800">
+                  <SelectTrigger className="w-full bg-background/50 backdrop-blur-sm border-slate-200 dark:border-slate-800 relative group">
                     <SelectValue placeholder="All Difficulties" />
+                    <span className="absolute right-8 top-1/2 -translate-y-1/2 text-xs text-muted-foreground opacity-0 group-hover:opacity-100 transition-opacity">
+                      {filters.difficulty ? '1 selected' : 'None'}
+                    </span>
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">All Difficulties</SelectItem>
