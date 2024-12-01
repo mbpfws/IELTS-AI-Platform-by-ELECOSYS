@@ -196,23 +196,24 @@ By incorporating bilingual support and understanding the specific needs of Vietn
 
   async initializeSession(config: SessionConfig): Promise<SessionResponse> {
     try {
-      const chat = this.model.startChat();
-      
-      // Set initial system context
-      const systemPrompt = `${this.systemInstruction}\n\n${config.templatePrompt}`;
-      
-      // Initialize chat with system instruction
-      const result = await chat.sendMessage(systemPrompt);
-      const response = await result.response;
-      const responseText = response.text();
+      // Create new chat session
+      this.chatSession = this.model.startChat({
+        history: [
+          {
+            role: 'user',
+            parts: [{ text: this.systemInstruction }]
+          }
+        ]
+      });
 
-      // Set session state
-      this.chatSession = chat;
-      this.currentSessionId = config.sessionId;
+      // Generate session ID
+      this.currentSessionId = uuidv4();
+
+      // Initialize session state
       this.sessionState = {
-        timeRemaining: config.duration || 900, // 15 minutes default
+        timeRemaining: config.duration ? config.duration * 60 : 900, // Default 15 minutes
         isRecording: false,
-        currentMode: 'text',
+        currentMode: 'audio',
         metrics: {
           fluency: 0,
           lexical: 0,
@@ -222,20 +223,45 @@ By incorporating bilingual support and understanding the specific needs of Vietn
         notes: [],
         currentPart: 1,
         templateContent: config.templatePrompt,
-        lastQuestion: responseText,
-        conversationHistory: [
-          { role: 'assistant', content: responseText }
-        ]
+        lastQuestion: '',
+        conversationHistory: []
       };
 
       // Start session timer
       this.startSessionTimer();
+
+      // Generate initial response
+      const initialPrompt = `
+        Student Name: ${config.userName}
+        Template Content: ${config.templatePrompt}
+        Duration: ${config.duration || 15} minutes
+
+        Start the IELTS speaking practice session. 
+        1. Introduce yourself as an IELTS speaking tutor
+        2. Briefly explain how the session will work
+        3. Give the first question from the template
+        4. For low-level learners, provide Vietnamese translation of the question
+        
+        Keep your response natural and encouraging.
+      `;
+
+      const response = await this.chatSession.sendMessage(initialPrompt);
+      const responseText = response.response.text();
+
+      // Update conversation history
+      this.sessionState.conversationHistory.push({
+        role: 'assistant',
+        content: responseText
+      });
+      
+      this.sessionState.lastQuestion = responseText;
 
       return {
         message: responseText,
         session_id: this.currentSessionId,
         metrics: this.sessionState.metrics
       };
+
     } catch (error) {
       console.error('Error initializing session:', error);
       throw new Error('Failed to initialize session. Please try again.');

@@ -1,5 +1,5 @@
 {
-  "/api/templates/route": "app/api/templates/route.js",
+  "/api/sessions/route": "app/api/sessions/route.js",
   "/page": "app/page.js",
   "/agents/speaking/page": "app/agents/speaking/page.js",
   "/agents/writing/page": "app/agents/writing/page.js"

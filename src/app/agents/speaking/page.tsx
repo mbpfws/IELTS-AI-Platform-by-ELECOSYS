@@ -51,15 +51,29 @@ interface AudioRecorderState {
   audioUrl: string | null;
 }
 
-interface SpeakingTemplate {
+interface Template {
   id: string;
-  title_en: string;
-  title_vi: string;
-  description_en: string;
-  description_vi: string;
-  level: string;
-  target_band: number;
-  type: string;
+  title: string;
+  titleVi?: string;
+  description: string;
+  descriptionVi?: string;
+  level: 'Beginner' | 'Intermediate' | 'Advanced';
+  targetBand: number;
+  difficulty?: 'easy' | 'medium' | 'hard';
+  prompt: string;
+  category: string;
+}
+
+interface Message {
+  role: 'user' | 'assistant';
+  content: string;
+}
+
+interface Metrics {
+  fluency: number;
+  lexical: number;
+  grammar: number;
+  pronunciation: number;
 }
 
 interface TemplateFilters {
@@ -77,18 +91,12 @@ interface SortConfig {
 
 type SortOption = 'targetBand' | 'level' | 'difficulty';
 
-interface Message {
-  role: 'assistant' | 'user';
-  content: string;
-  id?: string;
-}
-
 const SpeakingPage: React.FC = () => {
   const { theme } = useTheme();
   
   // Initialize templates with default empty arrays
-  const defaultTemplates: SpeakingTemplate[] = [];
-  const [templates, setTemplates] = useState<SpeakingTemplate[]>(defaultTemplates);
+  const defaultTemplates: Template[] = [];
+  const [templates, setTemplates] = useState<Template[]>(defaultTemplates);
 
   // Add error handling for template imports
   const safeTemplates = {
@@ -108,7 +116,7 @@ const SpeakingPage: React.FC = () => {
   const [selectedDifficulty, setSelectedDifficulty] = useState('all');
 
   // Template selection and session states
-  const [selectedTemplate, setSelectedTemplate] = useState<SpeakingTemplate | null>(null);
+  const [selectedTemplate, setSelectedTemplate] = useState<Template | null>(null);
   const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(false); 
   const [sessionDuration, setSessionDuration] = useState(15);
   const [isSessionActive, setIsSessionActive] = useState(false);
@@ -116,7 +124,7 @@ const SpeakingPage: React.FC = () => {
 
   // Chat states
   const [messages, setMessages] = useState<Message[]>([]);
-  const [metrics, setMetrics] = useState<SessionMetrics>({
+  const [metrics, setMetrics] = useState<Metrics>({
     fluency: 0,
     lexical: 0,
     grammar: 0,
@@ -283,27 +291,76 @@ const SpeakingPage: React.FC = () => {
     }));
   };
 
+  // Template selection
+  const handleTemplateSelect = (template: Template) => {
+    setSelectedTemplate(template);
+    setIsSessionDialogOpen(true);
+  };
+
+  // Session management
+  const startSession = async () => {
+    if (!selectedTemplate || !userName.trim()) {
+      console.log('Missing required fields:', { selectedTemplate, userName });
+      return;
+    }
+
+    try {
+      setIsLoading(true);
+      console.log('Starting session with:', {
+        userName: userName.trim(),
+        template: selectedTemplate,
+        duration: sessionDuration
+      });
+
+      const sessionConfig = {
+        userName: userName.trim(),
+        templatePrompt: selectedTemplate.prompt,
+        duration: sessionDuration,
+      };
+
+      console.log('Initializing session with config:', sessionConfig);
+      const session = await ieltsGeminiService.initializeSession(sessionConfig);
+      
+      if (session) {
+        console.log('Session initialized:', session);
+        setTimeRemaining(sessionDuration * 60);
+        setIsSessionActive(true);
+        setIsSessionDialogOpen(false);
+        setMessages([{
+          role: 'assistant',
+          content: session.message,
+        }]);
+        if (session.metrics) {
+          setMetrics(session.metrics);
+        }
+      } else {
+        console.error('Session initialization failed - no session data returned');
+      }
+    } catch (error) {
+      console.error('Failed to start session:', error);
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   // Timer effect
   useEffect(() => {
     if (isSessionActive && timeRemaining > 0) {
-      timerRef.current = setInterval(() => {
-        setTimeRemaining(prev => {
-          if (prev <= 1) {
-            // End session when time is up
-            handleEndSession();
-            return 0;
-          }
-          return prev - 1;
-        });
+      const timer = setInterval(() => {
+        setTimeRemaining(prev => Math.max(0, prev - 1));
       }, 1000);
-
-      return () => {
-        if (timerRef.current) {
-          clearInterval(timerRef.current);
-        }
-      };
+      return () => clearInterval(timer);
     }
   }, [isSessionActive, timeRemaining]);
+
+  // Cleanup effect
+  useEffect(() => {
+    return () => {
+      if (isSessionActive) {
+        handleEndSession();
+      }
+    };
+  }, []);
 
   // Audio recording handlers
   const startRecording = async () => {
@@ -359,42 +416,7 @@ const SpeakingPage: React.FC = () => {
     setNotes(prev => prev.filter(note => note.id !== noteId));
   };
 
-  const handleTemplateSelect = (template: SpeakingTemplate) => {
-    setSelectedTemplate(template);
-    setIsSessionDialogOpen(true);
-  };
-
-  const startSession = async () => {
-    if (!selectedTemplate || !userName.trim()) return;
-
-    try {
-      setIsLoading(true);
-      const sessionConfig = {
-        userName: userName.trim(),
-        templatePrompt: selectedTemplate.prompt,
-        duration: sessionDuration,
-      };
-
-      const session = await ieltsGeminiService.initializeSession(sessionConfig);
-      if (session) {
-        setTimeRemaining(sessionDuration * 60);
-        setIsSessionActive(true);
-        setIsSessionDialogOpen(false);
-        setMessages([{
-          role: 'assistant',
-          content: session.message,
-        }]);
-        if (session.metrics) {
-          setMetrics(session.metrics);
-        }
-      }
-    } catch (error) {
-      console.error('Failed to start session:', error);
-    } finally {
-      setIsLoading(false);
-    }
-  };
-
+  // Handle send message
   const handleSendMessage = async (content: string) => {
     try {
       setIsLoading(true);
@@ -422,6 +444,7 @@ const SpeakingPage: React.FC = () => {
     }
   };
 
+  // Handle end session
   const handleEndSession = () => {
     ieltsGeminiService.endSession();
     setIsSessionActive(false);
@@ -439,15 +462,6 @@ const SpeakingPage: React.FC = () => {
   const toggleInputMode = () => {
     setInputMode(prev => prev === 'audio' ? 'text' : 'audio');
   };
-
-  // Cleanup effect
-  useEffect(() => {
-    return () => {
-      if (isSessionActive) {
-        handleEndSession();
-      }
-    };
-  }, []);
 
   return (
     <div className="flex flex-col h-full">
