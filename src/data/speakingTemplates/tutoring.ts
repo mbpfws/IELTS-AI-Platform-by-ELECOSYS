@@ -2,9 +2,9 @@ import { SpeakingTemplate } from '@/types/speakingSession';
 
 export const tutoringLessons: SpeakingTemplate[] = [
   {
-    id: 'pronunciation_1',
-    titleEn: 'Pronunciation Focus',
-    titleVi: 'Tập trung vào phát âm',
+    id: 'pronunciation-basics-lesson',
+    titleEn: 'Pronunciation Basics',
+    titleVi: 'Cơ bản về phát âm',
     descriptionEn: 'Practice specific pronunciation patterns and sounds',
     descriptionVi: 'Luyện tập các mẫu phát âm và âm thanh cụ thể',
     taskType: 'lesson',
@@ -26,7 +26,7 @@ export const tutoringLessons: SpeakingTemplate[] = [
     tags: ['Pronunciation', 'Speaking', 'Practice'],
   },
   {
-    id: 'fluency_1',
+    id: 'fluency-builder-lesson',
     titleEn: 'Fluency Builder',
     titleVi: 'Xây dựng độ trôi chảy',
     descriptionEn: 'Develop natural speaking flow and confidence',
@@ -50,7 +50,7 @@ export const tutoringLessons: SpeakingTemplate[] = [
     tags: ['Fluency', 'Speaking', 'Practice'],
   },
   {
-    id: 'vocabulary_mastery',
+    id: 'vocabulary-mastery-lesson',
     titleEn: 'Vocabulary Mastery',
     titleVi: 'Làm chủ từ vựng',
     descriptionEn: 'Master advanced vocabulary for IELTS topics',
@@ -74,9 +74,9 @@ export const tutoringLessons: SpeakingTemplate[] = [
     tags: ['Vocabulary', 'Speaking', 'Advanced'],
   },
   {
-    id: 'grammar_clinic',
-    titleEn: 'Grammar Clinic',
-    titleVi: 'Phòng khám ngữ pháp',
+    id: 'grammar-mastery-lesson',
+    titleEn: 'Grammar Mastery',
+    titleVi: 'Thành thạo ngữ pháp',
     descriptionEn: 'Perfect your grammar for higher band scores',
     descriptionVi: 'Hoàn thiện ngữ pháp để đạt điểm cao hơn',
     taskType: 'lesson',
@@ -98,7 +98,7 @@ export const tutoringLessons: SpeakingTemplate[] = [
     tags: ['Grammar', 'Speaking', 'Advanced'],
   },
   {
-    id: 'session_start',
+    id: 'session-start',
     titleEn: 'Session Start',
     titleVi: 'Bắt đầu buổi học',
     descriptionEn: 'Initial greeting and session setup',
@@ -129,7 +129,7 @@ Keep it brief and natural - save detailed explanations for when they're needed d
     tags: ['system', 'setup'],
   },
   {
-    id: 'initial_greeting',
+    id: 'initial-greeting',
     titleEn: 'Lesson Introduction',
     titleVi: 'Giới thiệu bài học',
     descriptionEn: 'Warm welcome and session introduction',
@@ -160,7 +160,7 @@ Start with a warm greeting and then explain that you'll help them practice speak
     tags: ['Introduction', 'Welcome', 'Support'],
   },
   {
-    id: 'advanced_vocabulary',
+    id: 'advanced-vocabulary-builder',
     titleEn: 'Advanced Vocabulary Builder',
     titleVi: 'Nâng cao từ vựng',
     descriptionEn: 'Expand your vocabulary with advanced expressions and collocations',
@@ -196,7 +196,7 @@ Teaching Approach:
     tags: ['Vocabulary', 'Advanced', 'Expressions']
   },
   {
-    id: 'complex_grammar',
+    id: 'complex-grammar-structures',
     titleEn: 'Complex Grammar Structures',
     titleVi: 'Cấu trúc ngữ pháp phức tạp',
     descriptionEn: 'Master advanced grammar patterns for higher band scores',
@@ -232,7 +232,7 @@ Teaching Approach:
     tags: ['Grammar', 'Advanced', 'Structure']
   },
   {
-    id: 'natural_fluency',
+    id: 'natural-fluency-development',
     titleEn: 'Natural Fluency Development',
     titleVi: 'Phát triển độ trôi chảy tự nhiên',
     descriptionEn: 'Improve your speaking fluency and natural expression',

@@ -2,8 +2,9 @@ import { SpeakingTemplate } from '@/types/speakingSession';
 
 export const part2Templates: SpeakingTemplate[] = [
   {
-    id: 'p2_describe_person',
+    id: 'describe-person-part2',
     title: 'Describe a Person',
+    titleVi: 'Describe a Person',
     description: 'Learn how to describe someone important in your life',
     descriptionVi: 'Học cách mô tả một người quan trọng trong cuộc sống của bạn',
     descriptionEn: 'Learn how to describe someone important in your life',
@@ -92,11 +93,12 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
     ]
   },
   {
-    id: 'p2_memorable_event',
-    title: 'Memorable Event',
-    description: 'Learn how to describe a memorable event in your life',
-    descriptionVi: 'Học cách mô tả một sự kiện đáng nhớ trong cuộc sống của bạn',
-    descriptionEn: 'Learn how to describe a memorable event in your life',
+    id: 'describe-event-part2',
+    title: 'Describe an Event',
+    titleVi: 'Describe an Event',
+    description: 'Learn how to describe a memorable event',
+    descriptionVi: 'Học cách mô tả một sự kiện đáng nhớ',
+    descriptionEn: 'Learn how to describe a memorable event',
     part: 2,
     difficulty: 'hard',
     taskType: 'task2',
@@ -182,11 +184,12 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
     ]
   },
   {
-    id: 'p2_favorite_place',
-    title: 'Favorite Place',
-    description: 'Learn how to describe a place that is special to you',
-    descriptionVi: 'Học cách mô tả một địa điểm đặc biệt với bạn',
-    descriptionEn: 'Learn how to describe a place that is special to you',
+    id: 'describe-place-part2',
+    title: 'Describe a Place',
+    titleVi: 'Describe a Place',
+    description: 'Learn how to describe a significant place',
+    descriptionVi: 'Học cách mô tả một địa điểm quan trọng',
+    descriptionEn: 'Learn how to describe a significant place',
     part: 2,
     difficulty: 'medium',
     taskType: 'task2',
@@ -272,7 +275,7 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
     ]
   },
   {
-    id: 'p2_achievement',
+    id: 'personal-achievement-part2',
     title: 'Personal Achievement',
     description: 'Learn how to describe a personal achievement you are proud of',
     descriptionVi: 'Học cách mô tả một thành tích cá nhân mà bạn tự hào',
@@ -362,7 +365,7 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
     ]
   },
   {
-    id: 'p2_special_object',
+    id: 'special-object-part2',
     title: 'Special Object',
     description: 'Learn how to describe an object that is special to you',
     descriptionVi: 'Học cách mô tả một vật đặc biệt đối với bạn',
@@ -452,7 +455,7 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
     ]
   },
   {
-    id: 'p2_future_plans',
+    id: 'future-plans-part2',
     title: 'Future Plans & Goals',
     description: 'Learn how to describe your plans and goals for the future',
     descriptionVi: 'Học cách mô tả kế hoạch và mục tiêu tương lai của bạn',
@@ -542,7 +545,7 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
     ]
   },
   {
-    id: 'p2_childhood_memory',
+    id: 'childhood-memory-part2',
     title: 'Childhood Memory',
     description: 'Learn how to describe a memorable experience from your childhood',
     descriptionVi: 'Học cách mô tả một trải nghiệm đáng nhớ từ tuổi thơ của bạn',
@@ -632,7 +635,7 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
     ]
   },
   {
-    id: 'p2_challenging_experience',
+    id: 'challenging-experience-part2',
     title: 'Challenging Experience',
     descriptionVi: 'Hãy mô tả một trải nghiệm khó khăn mà bạn đã trải qua',
     descriptionEn: 'Describe a challenging experience you had',
@@ -663,7 +666,7 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
   {
-    id: 'p2_future_goal',
+    id: 'future-goal-part2',
     title: 'Future Goal',
     descriptionVi: 'Hãy mô tả một mục tiêu quan trọng bạn muốn đạt được trong tương lai',
     descriptionEn: 'Describe an important goal you want to achieve in the future',
@@ -694,7 +697,7 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
   {
-    id: 'p2_favorite_season',
+    id: 'favorite-season-part2',
     title: 'Favorite Season',
     descriptionVi: 'Hãy mô tả mùa bạn thích nhất trong năm',
     descriptionEn: 'Describe your favorite season of the year',
@@ -725,7 +728,7 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
   {
-    id: 'p2_hobby',
+    id: 'hobby-part2',
     title: 'Hobby',
     descriptionVi: 'Hãy mô tả một sở thích mà bạn thích',
     descriptionEn: 'Describe a hobby that you enjoy',
@@ -756,7 +759,7 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
   {
-    id: 'p2_family_event',
+    id: 'family-event-part2',
     title: 'Family Event',
     descriptionVi: 'Hãy mô tả một sự kiện gia đình đáng nhớ',
     descriptionEn: 'Describe a memorable family event',
@@ -787,7 +790,7 @@ Remember: You will have 1 minute to prepare and 2 minutes to speak. I will guide
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
   {
-    id: 'p2_travel_experience',
+    id: 'travel-experience-part2',
     title: 'Travel Experience',
     descriptionVi: 'Hãy mô tả một trải nghiệm du lịch đã ảnh hưởng đến bạn',
     descriptionEn: 'Describe a travel experience that impacted you',

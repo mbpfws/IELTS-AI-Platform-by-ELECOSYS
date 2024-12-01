@@ -6,6 +6,26 @@
       "static/css/app/layout.css",
       "static/chunks/app/layout.js"
     ],
+    "/agents/speaking/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/agents/speaking/page.js"
+    ],
+    "/api/templates/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/templates/route.js"
+    ],
+    "/agents/speaking/session/page": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/agents/speaking/session/page.js"
+    ],
+    "/api/sessions/route": [
+      "static/chunks/webpack.js",
+      "static/chunks/main-app.js",
+      "static/chunks/app/api/sessions/route.js"
+    ],
     "/page": [
       "static/chunks/webpack.js",
       "static/chunks/main-app.js",

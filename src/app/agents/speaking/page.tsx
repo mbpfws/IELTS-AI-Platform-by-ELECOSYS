@@ -33,7 +33,7 @@ import { part1Templates } from '@/data/speakingTemplates/part1';
 import { part2Templates } from '@/data/speakingTemplates/part2';
 import { part3Templates } from '@/data/speakingTemplates/part3';
 import { tutoringLessons } from '@/data/speakingTemplates/tutoring';
-import { useRouter } from 'next/router';
+import { useRouter } from 'next/navigation';
 
 interface Note {
   id: string;
@@ -146,10 +146,11 @@ const SpeakingPage: React.FC = () => {
 
   // Filter options
   const filterOptions = {
-    categories: ['Housing', 'Lifestyle', 'Modern Life', 'Personal Interests', 'Places', 'Family', 'Travel'],
-    levels: ['Beginner', 'Intermediate', 'Advanced'],
+    categories: ['Housing', 'Lifestyle', 'Modern Life', 'Personal Interests', 'Places', 'Family', 'Travel', 'Transportation', 'Education'],
+    levels: ['Cơ bản', 'Trung cấp', 'Nâng cao'],
     targetBands: [5.0, 5.5, 6.0, 6.5, 7.0, 7.5, 8.0],
-    difficulties: ['easy', 'medium', 'hard']
+    difficulties: ['easy', 'medium', 'hard'],
+    tags: ['IELTS Speaking Forecast Q3-2024']
   };
 
   // Active filters display
@@ -418,7 +419,8 @@ const SpeakingPage: React.FC = () => {
       duration: sessionDuration.toString()
     });
 
-    router.push(`/agents/speaking/session?${params.toString()}`);
+    const url = `/agents/speaking/session?${params.toString()}`;
+    router.push(url);
   };
 
   const startSession = async () => {
@@ -576,6 +578,30 @@ const SpeakingPage: React.FC = () => {
     setInputMode(prev => prev === 'audio' ? 'text' : 'audio');
   };
 
+  const TagFilter = () => (
+    <div className="mb-4">
+      <h3 className="text-sm font-medium mb-2">Tags</h3>
+      <div className="flex flex-wrap gap-2">
+        {filterOptions.tags.map(tag => (
+          <Badge
+            key={tag}
+            variant={filters.tags?.includes(tag) ? "default" : "outline"}
+            className="cursor-pointer"
+            onClick={() => {
+              handleFilterChange({
+                tags: filters.tags?.includes(tag)
+                  ? filters.tags.filter(t => t !== tag)
+                  : [...(filters.tags || []), tag]
+              });
+            }}
+          >
+            {tag}
+          </Badge>
+        ))}
+      </div>
+    </div>
+  );
+
   return (
     <div className="flex min-h-screen bg-background">
       {/* Neumorphic Sidebar */}
@@ -660,6 +686,7 @@ const SpeakingPage: React.FC = () => {
                   ))}
                 </SelectContent>
               </Select>
+              <TagFilter />
             </div>
           </div>
 

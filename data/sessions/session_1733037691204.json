@@ -1,0 +1,29 @@
+{
+  "id": "1733037691204",
+  "userId": "linh",
+  "templateId": "p1_coins_advanced",
+  "startTime": "2024-12-01T07:21:31.204Z",
+  "duration": 2100,
+  "state": "active",
+  "messages": [],
+  "metrics": {
+    "sessionId": "1733037691204",
+    "timestamp": "2024-12-01T07:21:31.204Z",
+    "duration": 0,
+    "energyScore": {
+      "engagement": 85,
+      "comprehension": 80,
+      "progress": 70,
+      "confidence": 75
+    },
+    "performance": {
+      "taskResponse": 6.5,
+      "coherenceCohesion": 6,
+      "lexicalResource": 6.5,
+      "grammaticalRange": 6,
+      "pronunciation": 6.5
+    }
+  },
+  "notes": "",
+  "transcript": ""
+}

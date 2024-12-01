@@ -1,11 +1,13 @@
 import { SpeakingTemplate } from '@/types/speakingSession';
+import { part1AdditionalTemplates } from './part1Additional';
 
-export const part1Templates: SpeakingTemplate[] = [
+const baseTemplates: SpeakingTemplate[] = [
   {
-    id: 'p1_home_accommodation',
+    id: 'home-accommodation-part1',
     title: 'Home & Accommodation',
+    titleVi: 'Home & Accommodation',
     description: 'Learn to discuss your living situation and preferences',
-    descriptionVi: 'Học cách thảo luận về tình hình và sở thích về nhà ở',
+    descriptionVi: 'Learn to discuss your living situation and preferences',
     descriptionEn: 'Learn to discuss your living situation and preferences',
     part: 1,
     difficulty: 'medium',
@@ -30,9 +32,9 @@ Teaching Strategy:
    - Locations: residential area, suburb, downtown, outskirts
    - Facilities: amenities, public transportation, parking space
    Vietnamese translations provided for clarity:
-   - "residential area" = "khu dân cư"
-   - "well-furnished" = "được trang bị đầy đủ"
-   - "newly-renovated" = "mới được tu sửa"
+   - "residential area" = "residential area"
+   - "well-furnished" = "well-furnished"
+   - "newly-renovated" = "newly-renovated"
 
 3. Answer Structure Training:
    Basic: "I live in an apartment."
@@ -56,7 +58,7 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Giải trí',
+    category: 'Personal Interests',
     level: 'Cơ bản',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
@@ -77,10 +79,11 @@ Remember: Every interaction should teach something specific about IELTS speaking
     ]
   },
   {
-    id: 'p1_work_studies',
-    title: 'Work & Studies',
+    id: 'work-study-part1',
+    title: 'Work & Study',
+    titleVi: 'Work & Study',
     description: 'Learn to talk about your work or study experience',
-    descriptionVi: 'Học cách nói về kinh nghiệm làm việc hoặc học tập',
+    descriptionVi: 'Learn to talk about your work or study experience',
     descriptionEn: 'Learn to talk about your work or study experience',
     part: 1,
     difficulty: 'medium',
@@ -105,9 +108,9 @@ Teaching Strategy:
    - Study Terms: major, specialization, research, coursework
    - Career Development: promotion, advancement, experience
    Vietnamese translations provided for clarity:
-   - "occupation" = "nghề nghiệp"
-   - "responsibilities" = "trách nhiệm"
-   - "qualifications" = "bằng cấp"
+   - "occupation" = "occupation"
+   - "responsibilities" = "responsibilities"
+   - "qualifications" = "qualifications"
 
 3. Answer Structure Training:
    Basic: "I work as an engineer."
@@ -131,7 +134,7 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Cuộc sống hiện đại',
+    category: 'Modern Life',
     level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
@@ -152,10 +155,11 @@ Remember: Every interaction should teach something specific about IELTS speaking
     ]
   },
   {
-    id: 'p1_hobbies_interests',
+    id: 'hobbies-interests-part1',
     title: 'Hobbies & Interests',
+    titleVi: 'Hobbies & Interests',
     description: 'Learn to share your hobbies and interests',
-    descriptionVi: 'Học cách chia sẻ về sở thích và điều bạn yêu thích',
+    descriptionVi: 'Learn to share your hobbies and interests',
     descriptionEn: 'Learn to share your hobbies and interests',
     part: 1,
     difficulty: 'easy',
@@ -180,9 +184,9 @@ Teaching Strategy:
    - Preferences: prefer, enjoy, passionate about
    - Emotions: exciting, relaxing, challenging
    Vietnamese translations provided for clarity:
-   - "passionate about" = "đam mê"
-   - "recreational" = "giải trí"
-   - "leisure activities" = "hoạt động giải trí"
+   - "passionate about" = "passionate about"
+   - "recreational" = "recreational"
+   - "leisure activities" = "leisure activities"
 
 3. Answer Structure Training:
    Basic: "I like playing sports."
@@ -206,7 +210,7 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Sở thích cá nhân',
+    category: 'Personal Interests',
     level: 'Trung cấp',
     targetBand: 6.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
@@ -227,10 +231,11 @@ Remember: Every interaction should teach something specific about IELTS speaking
     ]
   },
   {
-    id: 'p1_hometown_area',
+    id: 'hometown-area-part1',
     title: 'Hometown & Local Area',
+    titleVi: 'Hometown & Local Area',
     description: 'Learn to describe your hometown and local area',
-    descriptionVi: 'Học cách mô tả quê hương và khu vực địa phương của bạn',
+    descriptionVi: 'Learn to describe your hometown and local area',
     descriptionEn: 'Learn to describe your hometown and local area',
     part: 1,
     difficulty: 'medium',
@@ -255,9 +260,9 @@ Teaching Strategy:
    - Descriptions: bustling, peaceful, historic, modern
    - Development: infrastructure, urbanization, preservation
    Vietnamese translations provided for clarity:
-   - "metropolis" = "thành phố lớn"
-   - "cultural heritage" = "di sản văn hóa"
-   - "infrastructure" = "cơ sở hạ tầng"
+   - "metropolis" = "metropolis"
+   - "cultural heritage" = "cultural heritage"
+   - "infrastructure" = "infrastructure"
 
 3. Answer Structure Training:
    Basic: "My hometown is Hanoi."
@@ -281,7 +286,7 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Địa điểm',
+    category: 'Places',
     level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
@@ -302,10 +307,11 @@ Remember: Every interaction should teach something specific about IELTS speaking
     ]
   },
   {
-    id: 'p1_daily_routine',
+    id: 'daily-routine-part1',
     title: 'Daily Routine',
+    titleVi: 'Daily Routine',
     description: 'Learn to discuss your daily activities and habits',
-    descriptionVi: 'Học cách thảo luận về các hoạt động và thói quen hàng ngày của bạn',
+    descriptionVi: 'Learn to discuss your daily activities and habits',
     descriptionEn: 'Learn to discuss your daily activities and habits',
     part: 1,
     difficulty: 'easy',
@@ -330,9 +336,9 @@ Teaching Strategy:
    - Habits: regular, occasional, frequent
    - Time Management: schedule, prioritize, allocate
    Vietnamese translations provided for clarity:
-   - "morning routine" = "thói quen buổi sáng"
-   - "daily schedule" = "lịch trình hàng ngày"
-   - "time management" = "quản lý thởi gian"
+   - "morning routine" = "morning routine"
+   - "daily schedule" = "daily schedule"
+   - "time management" = "time management"
 
 3. Answer Structure Training:
    Basic: "I wake up at 7."
@@ -356,7 +362,7 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Lối sống',
+    category: 'Lifestyle',
     level: 'Cơ bản',
     targetBand: 5.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
@@ -378,10 +384,11 @@ Remember: Every interaction should teach something specific about IELTS speaking
     ]
   },
   {
-    id: 'p1_family_friends',
+    id: 'family-friends-part1',
     title: 'Family and Friends',
+    titleVi: 'Family and Friends',
     description: 'Learn to talk about your relationships with family and friends',
-    descriptionVi: 'Học cách nói về mối quan hệ với gia đình và bạn bè',
+    descriptionVi: 'Learn to talk about your relationships with family and friends',
     descriptionEn: 'Learn to talk about your relationships with family and friends',
     part: 1,
     difficulty: 'medium',
@@ -406,9 +413,9 @@ Teaching Strategy:
    - Interactions: often, occasionally, rarely
    - Feelings: happy, sad, proud
    Vietnamese translations provided for clarity:
-   - "close-knit" = "gần gũi"
-   - "supportive" = "hỗ trợ"
-   - "loving" = "yêu thương"
+   - "close-knit" = "close-knit"
+   - "supportive" = "supportive"
+   - "loving" = "loving"
 
 3. Answer Structure Training:
    Basic: "I have a big family."
@@ -432,7 +439,7 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Sở thích cá nhân',
+    category: 'Personal Interests',
     level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
@@ -454,10 +461,11 @@ Remember: Every interaction should teach something specific about IELTS speaking
     ]
   },
   {
-    id: 'p1_technology',
+    id: 'technology-part1',
     title: 'Technology & Digital Life',
+    titleVi: 'Technology & Digital Life',
     description: 'Discuss your use of technology and digital tools',
-    descriptionVi: 'Thảo luận về việc sử dụng công nghệ và các công cụ kỹ thuật số',
+    descriptionVi: 'Discuss your use of technology and digital tools',
     descriptionEn: 'Discuss your use of technology and digital tools',
     part: 1,
     difficulty: 'medium',
@@ -482,9 +490,9 @@ Teaching Strategy:
    - Social Media: platforms, posts, sharing, engagement
    - Technology Impact: convenience, efficiency, connectivity
    Vietnamese translations provided for clarity:
-   - "digital devices" = "thiết bị kỹ thuật số"
-   - "social media" = "mạng xã hội"
-   - "online activities" = "hoạt động trực tuyến"
+   - "digital devices" = "digital devices"
+   - "social media" = "social media"
+   - "online activities" = "online activities"
 
 3. Answer Structure Training:
    Basic: "I use social media every day."
@@ -502,7 +510,7 @@ Teaching Strategy:
    - Pronunciation: Technical terms and platform names
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Công nghệ',
+    category: 'Technology',
     level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
@@ -524,10 +532,11 @@ Remember: Every interaction should teach something specific about IELTS speaking
     ]
   },
   {
-    id: 'p1_hobbies_interests_2',
+    id: 'hobbies-interests-part2',
     title: 'Hobbies and Interests',
+    titleVi: 'Hobbies and Interests',
     description: 'Practice discussing your favorite activities and pastimes',
-    descriptionVi: 'Luyện tập thảo luận về các hoạt động và sở thích yêu thích của bạn',
+    descriptionVi: 'Practice discussing your favorite activities and pastimes',
     descriptionEn: 'Practice discussing your favorite activities and pastimes',
     part: 1,
     difficulty: 'medium',
@@ -552,9 +561,9 @@ Teaching Strategy:
    - Feelings: passionate, enthusiastic, fascinated by
    - Benefits: relaxing, challenging, rewarding
    Vietnamese translations provided for clarity:
-   - "passionate" = "đam mê"
-   - "enthusiastic" = "nhiệt tình"
-   - "fascinated" = "say mê"
+   - "passionate" = "passionate"
+   - "enthusiastic" = "enthusiastic"
+   - "fascinated" = "fascinated"
 
 3. Answer Structure Training:
    Basic: "I like playing soccer."
@@ -578,7 +587,7 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Sở thích cá nhân',
+    category: 'Personal Interests',
     level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
@@ -600,10 +609,11 @@ Remember: Every interaction should teach something specific about IELTS speaking
     ]
   },
   {
-    id: 'p1_hometown',
+    id: 'hometown-part2',
     title: 'Hometown and Local Area',
+    titleVi: 'Hometown and Local Area',
     description: 'Learn to describe your hometown and local surroundings',
-    descriptionVi: 'Học cách mô tả quê hương và môi trường xung quanh của bạn',
+    descriptionVi: 'Learn to describe your hometown and local surroundings',
     descriptionEn: 'Learn to describe your hometown and local surroundings',
     part: 1,
     difficulty: 'medium',
@@ -628,9 +638,9 @@ Teaching Strategy:
    - Characteristics: diverse, traditional, modern, cultural
    - Attractions: landmarks, cuisine, festivals, natural beauty
    Vietnamese translations provided for clarity:
-   - "bustling" = "nhộn nhịp"
-   - "scenic" = "phong cảnh đẹp"
-   - "historic" = "lịch sử"
+   - "bustling" = "bustling"
+   - "scenic" = "scenic"
+   - "historic" = "historic"
 
 3. Answer Structure Training:
    Basic: "My hometown is nice."
@@ -654,7 +664,7 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Địa điểm',
+    category: 'Places',
     level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
@@ -676,10 +686,11 @@ Remember: Every interaction should teach something specific about IELTS speaking
     ]
   },
   {
-    id: 'p1_daily_routine_basic',
+    id: 'daily-routine-basic-part2',
     title: 'Basic Daily Routine',
+    titleVi: 'Basic Daily Routine',
     description: 'Learn to describe your daily activities using simple language',
-    descriptionVi: 'Học cách mô tả các hoạt động hàng ngày bằng ngôn ngữ đơn giản',
+    descriptionVi: 'Learn to describe your daily activities using simple language',
     descriptionEn: 'Learn to describe your daily activities using simple language',
     part: 1,
     difficulty: 'easy',
@@ -704,9 +715,9 @@ Teaching Strategy:
    - Habits: regular, occasional, frequent
    - Time Management: schedule, prioritize, allocate
    Vietnamese translations provided for clarity:
-   - "morning routine" = "thói quen buổi sáng"
-   - "daily schedule" = "lịch trình hàng ngày"
-   - "time management" = "quản lý thởi gian"
+   - "morning routine" = "morning routine"
+   - "daily schedule" = "daily schedule"
+   - "time management" = "time management"
 
 3. Answer Structure Training:
    Basic: "I wake up at 7."
@@ -730,7 +741,7 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Lối sống',
+    category: 'Lifestyle',
     level: 'Cơ bản',
     targetBand: 5.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
@@ -752,10 +763,11 @@ Remember: Every interaction should teach something specific about IELTS speaking
     ]
   },
   {
-    id: 'p1_daily_routine_advanced',
+    id: 'daily-routine-advanced-part2',
     title: 'Advanced Daily Routine',
+    titleVi: 'Advanced Daily Routine',
     description: 'Learn to describe your daily activities with advanced vocabulary and expressions',
-    descriptionVi: 'Học cách mô tả các hoạt động hàng ngày với từ vựng và cách diễn đạt nâng cao',
+    descriptionVi: 'Learn to describe your daily activities with advanced vocabulary and expressions',
     descriptionEn: 'Learn to describe your daily activities with advanced vocabulary and expressions',
     part: 1,
     difficulty: 'hard',
@@ -780,9 +792,9 @@ Teaching Strategy:
    - Habits: regular, occasional, frequent
    - Time Management: schedule, prioritize, allocate
    Vietnamese translations provided for clarity:
-   - "morning routine" = "thói quen buổi sáng"
-   - "daily schedule" = "lịch trình hàng ngày"
-   - "time management" = "quản lý thởi gian"
+   - "morning routine" = "morning routine"
+   - "daily schedule" = "daily schedule"
+   - "time management" = "time management"
 
 3. Answer Structure Training:
    Basic: "I wake up at 7."
@@ -806,7 +818,7 @@ After each response:
 4. Have student practice the improved version
 
 Remember: Every interaction should teach something specific about IELTS speaking skills.`,
-    category: 'Lối sống',
+    category: 'Lifestyle',
     level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
@@ -828,9 +840,10 @@ Remember: Every interaction should teach something specific about IELTS speaking
     ]
   },
   {
-    id: 'p1_social_media',
+    id: 'social-media-part2',
     title: 'Social Media',
-    descriptionVi: 'Thảo luận về việc sử dụng mạng xã hội',
+    titleVi: 'Social Media',
+    descriptionVi: 'Discuss your social media usage',
     descriptionEn: 'Discuss your social media usage',
     systemPrompt: `I'll help you discuss social media effectively for IELTS Speaking Part 1.
 
@@ -853,17 +866,17 @@ Remember: Keep answers concise (2-3 sentences) and natural.`,
       "What do you mainly use social media for?",
       "Do you think social media is helpful in your life?"
     ],
-    category: 'Công nghệ',
+    category: 'Technology',
     level: 'Trung cấp',
     targetBand: 6.5,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
   {
-    id: 'p1_weather_seasons',
+    id: 'weather-seasons-part2',
     title: 'Weather & Seasons',
-    titleVi: 'Thời tiết & Mùa',
+    titleVi: 'Weather & Seasons',
     titleEn: 'Weather & Seasons',
-    descriptionVi: 'Thảo luận về thởi tiết và các mùa',
+    descriptionVi: 'Discuss weather and seasons',
     descriptionEn: 'Discuss weather and seasons',
     systemPrompt: `I'll help you discuss weather and seasons effectively for IELTS Speaking Part 1.
 
@@ -886,17 +899,17 @@ Remember: Keep answers concise (2-3 sentences) and natural.`,
       "How does weather affect your daily life?",
       "Has the weather changed much in recent years?"
     ],
-    category: 'Môi trường',
+    category: 'Environment',
     level: 'Cơ bản',
     targetBand: 6.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
   {
-    id: 'p1_basic_food',
+    id: 'basic-food-part2',
     title: 'Food & Eating',
-    titleVi: 'Thức ăn & Ăn uống',
+    titleVi: 'Food & Eating',
     titleEn: 'Food & Eating',
-    descriptionVi: 'Nói về thói quen ăn uống cơ bản',
+    descriptionVi: 'Talk about basic eating habits',
     descriptionEn: 'Talk about basic eating habits',
     systemPrompt: `I'll help you talk about food in a simple way.
 
@@ -923,17 +936,17 @@ A: "I like rice and chicken. Rice is very common in my country, and chicken is t
       "What's your favorite food?",
       "Do you often eat out?"
     ],
-    category: 'Ẩm thực',
+    category: 'Food',
     level: 'Cơ bản',
     targetBand: 5.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
   {
-    id: 'p1_basic_family',
+    id: 'basic-family-part2',
     title: 'Family Members',
-    titleVi: 'Thành viên gia đình',
+    titleVi: 'Family Members',
     titleEn: 'Family Members',
-    descriptionVi: 'Nói về gia đình của bạn một cách đơn giản',
+    descriptionVi: 'Talk about your family in a simple way',
     descriptionEn: 'Talk about your family in a simple way',
     systemPrompt: `I'll help you talk about your family using simple English.
 
@@ -960,17 +973,17 @@ A: "I have four people in my family. My father is a teacher. My mother cooks ver
       "What does your father/mother do?",
       "Do you have any brothers or sisters?"
     ],
-    category: 'Gia đình',
+    category: 'Family',
     level: 'Cơ bản',
     targetBand: 5.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
   {
-    id: 'p1_basic_hobby',
+    id: 'basic-hobby-part2',
     title: 'Simple Hobbies',
-    titleVi: 'Sở thích đơn giản',
+    titleVi: 'Simple Hobbies',
     titleEn: 'Simple Hobbies',
-    descriptionVi: 'Nói về sở thích của bạn một cách đơn giản',
+    descriptionVi: 'Talk about your hobbies in a simple way',
     descriptionEn: 'Talk about your hobbies in a simple way',
     systemPrompt: `I'll help you talk about hobbies using basic English.
 
@@ -997,17 +1010,17 @@ A: "I like playing football. I play every weekend with my friends. It's fun and 
       "Who do you do this activity with?",
       "Why do you like this hobby?"
     ],
-    category: 'Sở thích',
+    category: 'Hobbies',
     level: 'Cơ bản',
     targetBand: 5.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
   {
-    id: 'p1_basic_weather',
+    id: 'basic-weather-part2',
     title: 'Simple Weather Talk',
-    titleVi: 'Nói về thởi tiết đơn giản',
+    titleVi: 'Simple Weather Talk',
     titleEn: 'Simple Weather Talk',
-    descriptionVi: 'Mô tả thởi tiết bằng từ ngữ đơn giản',
+    descriptionVi: 'Describe weather using simple words',
     descriptionEn: 'Describe weather using simple words',
     systemPrompt: `I'll help you talk about weather using easy English.
 
@@ -1034,164 +1047,16 @@ A: "It's very hot in my country. We have sun most of the time. I like sunny days
       "What do you do when it rains?",
       "What's your favorite season?"
     ],
-    category: 'Thời tiết',
+    category: 'Weather',
     level: 'Cơ bản',
     targetBand: 5.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
   },
   {
-    id: 'p1_basic_meals',
-    title: 'Food & Eating',
-    titleVi: 'Thức ăn & Ăn uống',
-    titleEn: 'Food & Eating',
-    descriptionVi: 'Nói về thói quen ăn uống cơ bản',
-    descriptionEn: 'Talk about basic eating habits',
-    systemPrompt: `I'll help you talk about food in a simple way.
-
-Key Points (Đơn giản):
-1. Basic food types (rice, noodles, meat, vegetables)
-2. Meal times (breakfast, lunch, dinner)
-3. Simple likes and dislikes
-4. Easy cooking words
-
-Teaching Focus (Trọng tâm):
-1. Simple food words
-2. Basic time expressions
-3. Like/dislike phrases
-4. Common adjectives (good, bad, tasty)
-
-Remember: Keep answers short and simple. Use basic words you know well.
-
-Example Answer:
-Q: "What food do you like?"
-A: "I like rice and chicken. Rice is very common in my country, and chicken is tasty."`,
-    questions: [
-      "What do you usually eat for breakfast?",
-      "Do you like cooking?",
-      "What's your favorite food?",
-      "Do you often eat out?"
-    ],
-    category: 'Ẩm thực',
-    level: 'Cơ bản',
-    targetBand: 5.0,
-    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
-  },
-  {
-    id: 'p1_basic_relatives',
-    title: 'Family Members',
-    titleVi: 'Thành viên gia đình',
-    titleEn: 'Family Members',
-    descriptionVi: 'Nói về gia đình của bạn một cách đơn giản',
-    descriptionEn: 'Talk about your family in a simple way',
-    systemPrompt: `I'll help you talk about your family using simple English.
-
-Key Points (Đơn giản):
-1. Family members (mother, father, sister, brother)
-2. Basic descriptions (tall, short, young, old)
-3. Simple activities together
-4. Easy feelings (happy, nice)
-
-Teaching Focus (Trọng tâm):
-1. Family vocabulary
-2. Simple present tense
-3. Basic adjectives
-4. Numbers (ages)
-
-Remember: Use short, clear sentences. It's okay to keep it simple.
-
-Example Answer:
-Q: "Tell me about your family"
-A: "I have four people in my family. My father is a teacher. My mother cooks very well. I have one younger sister."`,
-    questions: [
-      "How many people are in your family?",
-      "Do you live with your family?",
-      "What does your father/mother do?",
-      "Do you have any brothers or sisters?"
-    ],
-    category: 'Gia đình',
-    level: 'Cơ bản',
-    targetBand: 5.0,
-    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
-  },
-  {
-    id: 'p1_basic_interests',
-    title: 'Simple Hobbies',
-    titleVi: 'Sở thích đơn giản',
-    titleEn: 'Simple Hobbies',
-    descriptionVi: 'Nói về sở thích của bạn một cách đơn giản',
-    descriptionEn: 'Talk about your hobbies in a simple way',
-    systemPrompt: `I'll help you talk about hobbies using basic English.
-
-Key Points (Đơn giản):
-1. Common hobbies (music, sports, reading)
-2. Simple reasons why you like them
-3. When you do these activities
-4. Basic feelings about them
-
-Teaching Focus (Trọng tâm):
-1. Hobby words
-2. Time words (always, sometimes, every day)
-3. Simple present tense
-4. Basic feeling words (fun, good, nice)
-
-Remember: Short answers are fine. Use words you know well.
-
-Example Answer:
-Q: "What do you like to do in your free time?"
-A: "I like playing football. I play every weekend with my friends. It's fun and good for health."`,
-    questions: [
-      "What do you do in your free time?",
-      "How often do you do this hobby?",
-      "Who do you do this activity with?",
-      "Why do you like this hobby?"
-    ],
-    category: 'Sở thích',
-    level: 'Cơ bản',
-    targetBand: 5.0,
-    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
-  },
-  {
-    id: 'p1_basic_climate',
-    title: 'Simple Weather Talk',
-    titleVi: 'Nói về thởi tiết đơn giản',
-    titleEn: 'Simple Weather Talk',
-    descriptionVi: 'Mô tả thởi tiết bằng từ ngữ đơn giản',
-    descriptionEn: 'Describe weather using simple words',
-    systemPrompt: `I'll help you talk about weather using easy English.
-
-Key Points (Đơn giản):
-1. Basic weather types (sunny, rainy, hot, cold)
-2. Simple seasons
-3. Easy activities in different weather
-4. Simple preferences
-
-Teaching Focus (Trọng tâm):
-1. Weather words
-2. Basic adjectives
-3. Simple present tense
-4. Like/don't like
-
-Remember: Use simple words to describe weather. Short answers are good.
-
-Example Answer:
-Q: "What's the weather like in your country?"
-A: "It's very hot in my country. We have sun most of the time. I like sunny days because I can go outside."`,
-    questions: [
-      "What's the weather like today?",
-      "Do you like hot or cold weather?",
-      "What do you do when it rains?",
-      "What's your favorite season?"
-    ],
-    category: 'Thời tiết',
-    level: 'Cơ bản',
-    targetBand: 5.0,
-    criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation']
-  },
-  {
-    id: 'p1_2024q3_accommodation_advanced',
+    id: '2024q3-accommodation-advanced-part2',
     title: 'Home & Accommodation (2024 Q3)',
     description: 'Advanced strategies for discussing living spaces and accommodation preferences',
-    descriptionVi: 'Chiến lược nâng cao để thảo luận về không gian sống và sở thích về chỗ ở',
+    descriptionVi: 'Advanced strategies for discussing living spaces and accommodation preferences',
     descriptionEn: 'Advanced strategies for discussing living spaces and accommodation preferences',
     part: 1,
     difficulty: 'hard',
@@ -1217,9 +1082,9 @@ Teaching Strategy for Band 7.0:
    - Amenities: state-of-the-art facilities, integrated services, sustainable features
    - Environmental Aspects: energy-efficient, environmentally conscious, sustainable design
    Vietnamese translations for clarity:
-   - "metropolitan area" = "khu vực đô thị"
-   - "contemporary living space" = "không gian sống hiện đại"
-   - "sustainable features" = "tính năng bền vững"
+   - "metropolitan area" = "metropolitan area"
+   - "contemporary living space" = "contemporary living space"
+   - "sustainable features" = "sustainable features"
 
 3. Complex Grammar Structures:
    - Mixed conditionals: "If I had chosen a different area, I would be living closer to the city center now"
@@ -1243,7 +1108,7 @@ Assessment Focus for Band 7.0:
 - Coherence: Smooth flow between ideas with appropriate linking
 
 Remember: At Band 7.0, responses should demonstrate both accuracy and sophistication while maintaining naturalness.`,
-    category: 'Nhà ở',
+    category: 'Housing',
     level: 'Nâng cao',
     targetBand: 7.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
@@ -1276,10 +1141,10 @@ Remember: At Band 7.0, responses should demonstrate both accuracy and sophistica
     ]
   },
   {
-    id: 'p1_2024q3_studying_advanced',
+    id: '2024q3-studying-advanced-part2',
     title: 'Studying (2024 Q3)',
     description: 'Advanced approaches to discussing academic experiences and study habits',
-    descriptionVi: 'Phương pháp nâng cao để thảo luận về trải nghiệm học tập và thói quen học tập',
+    descriptionVi: 'Advanced approaches to discussing academic experiences and study habits',
     descriptionEn: 'Advanced approaches to discussing academic experiences and study habits',
     part: 1,
     difficulty: 'hard',
@@ -1304,9 +1169,9 @@ Teaching Strategy for Band 7.0:
    - Academic Terms: curriculum design, pedagogical techniques, academic discourse
    - Learning Styles: kinesthetic learning, auditory processing, visual comprehension
    Vietnamese translations:
-   - "analytical approach" = "phương pháp phân tích"
-   - "research methodology" = "phương pháp nghiên cứu"
-   - "cognitive development" = "phát triển nhận thức"
+   - "analytical approach" = "analytical approach"
+   - "research methodology" = "research methodology"
+   - "cognitive development" = "cognitive development"
 
 3. Complex Grammar Patterns:
    - Perfect continuous: "I have been focusing on research methodology"
@@ -1324,7 +1189,7 @@ Teaching Strategy for Band 7.0:
    - Pronunciation: Clear articulation of academic terms
 
 Remember: Maintain sophistication while staying natural and engaging.`,
-    category: 'Giáo dục',
+    category: 'Education',
     level: 'Nâng cao',
     targetBand: 7.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
@@ -1345,10 +1210,10 @@ Remember: Maintain sophistication while staying natural and engaging.`,
     ]
   },
   {
-    id: 'p1_2024q3_area_advanced',
+    id: '2024q3-area-advanced-part2',
     title: 'The Area You Live In (2024 Q3)',
     description: 'Advanced strategies for discussing your neighborhood and local community',
-    descriptionVi: 'Chiến lược nâng cao để thảo luận về khu phố và cộng đồng địa phương',
+    descriptionVi: 'Advanced strategies for discussing your neighborhood and local community',
     descriptionEn: 'Advanced strategies for discussing your neighborhood and local community',
     part: 1,
     difficulty: 'hard',
@@ -1373,9 +1238,9 @@ Teaching Strategy for Band 7.0:
    - Community Aspects: social infrastructure, community initiatives, local demographics
    - Development Terms: urban renewal, gentrification, sustainable development
    Vietnamese translations:
-   - "metropolitan district" = "khu vực đô thị"
-   - "cultural hub" = "trung tâm văn hóa"
-   - "urban renewal" = "đổi mới đô thị"
+   - "metropolitan district" = "metropolitan district"
+   - "cultural hub" = "cultural hub"
+   - "urban renewal" = "urban renewal"
 
 3. Complex Grammar Patterns:
    - Present perfect continuous: "The area has been undergoing significant development"
@@ -1393,7 +1258,7 @@ Teaching Strategy for Band 7.0:
    - Pronunciation: Clear articulation of location terms
 
 Remember: Aim for sophistication while maintaining natural delivery.`,
-    category: 'Địa điểm',
+    category: 'Places',
     level: 'Nâng cao',
     targetBand: 7.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
@@ -1416,10 +1281,10 @@ Remember: Aim for sophistication while maintaining natural delivery.`,
     ]
   },
   {
-    id: 'p1_2024q3_transportation_advanced',
+    id: '2024q3-transportation-advanced-part2',
     title: 'Transportation & Roads (2024 Q3)',
     description: 'Advanced discussion of transportation systems and urban infrastructure',
-    descriptionVi: 'Thảo luận nâng cao về hệ thống giao thông và cơ sở hạ tầng đô thị',
+    descriptionVi: 'Advanced discussion of transportation systems and urban infrastructure',
     descriptionEn: 'Advanced discussion of transportation systems and urban infrastructure',
     part: 1,
     difficulty: 'hard',
@@ -1444,9 +1309,9 @@ Teaching Strategy for Band 7.0:
    - Development: sustainable transportation, infrastructure development, urban planning
    - Features: dedicated cycling lanes, pedestrian-friendly design, traffic calming measures
    Vietnamese translations:
-   - "transportation network" = "mạng lưới giao thông"
-   - "urban mobility" = "di chuyển đô thị"
-   - "traffic management" = "quản lý giao thông"
+   - "transportation network" = "transportation network"
+   - "urban mobility" = "urban mobility"
+   - "traffic management" = "traffic management"
 
 3. Complex Grammar Patterns:
    - Present perfect continuous: "The city has been implementing new traffic measures"
@@ -1464,7 +1329,7 @@ Teaching Strategy for Band 7.0:
    - Pronunciation: Clear articulation of technical terms
 
 Remember: Maintain sophistication while keeping responses natural and engaging.`,
-    category: 'Phát triển đô thị',
+    category: 'Urban Development',
     level: 'Nâng cao',
     targetBand: 7.0,
     criteria: ['Fluency', 'Vocabulary', 'Grammar', 'Pronunciation'],
@@ -1493,3 +1358,5 @@ Remember: Maintain sophistication while keeping responses natural and engaging.`
     ]
   }
 ];
+
+export const part1Templates = [...baseTemplates, ...part1AdditionalTemplates];

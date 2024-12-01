@@ -252,6 +252,34 @@ By incorporating bilingual support and understanding the specific needs of Vietn
     }
   }
 
+  async startSession(templateId: string, userName: string): Promise<SessionResponse> {
+    try {
+      // Initialize chat session with template content
+      this.chatSession = await this.model.startChat({
+        history: [
+          {
+            role: 'user',
+            parts: [`${this.systemInstruction}\n\nUser: ${userName}\nPlease start the IELTS speaking practice session.`]
+          }
+        ]
+      });
+
+      const result = await this.chatSession.sendMessage(
+        `Let's begin the IELTS speaking practice session. Please introduce yourself and explain how this session will work.`
+      );
+      const responseText = await result.response;
+      const text = responseText.text();
+
+      return {
+        message: text,
+        session_id: templateId
+      };
+    } catch (error) {
+      console.error('Error starting session:', error);
+      throw new Error('Failed to start session. Please try again.');
+    }
+  }
+
   async endSession(): Promise<SessionResponse> {
     try {
       if (!this.chatSession || !this.sessionState || !this.currentSessionId) {

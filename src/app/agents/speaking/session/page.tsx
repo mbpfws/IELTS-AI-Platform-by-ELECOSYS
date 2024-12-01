@@ -8,19 +8,24 @@ import { Message, SessionState } from '@/types/speakingSession';
 import { LearningMetrics } from '@/types/learningMetrics';
 import { Dialog, DialogContent, DialogHeader, DialogTitle } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
+import { part1Templates } from '@/data/speakingTemplates/part1';
+import { part1AdditionalTemplates } from '@/data/speakingTemplates/part1Additional';
+import { part2Templates } from '@/data/speakingTemplates/part2';
+import { part3Templates } from '@/data/speakingTemplates/part3';
+import { tutoringLessons } from '@/data/speakingTemplates/tutoring';
 
 export default function SpeakingSessionPage() {
   const searchParams = useSearchParams();
   const router = useRouter();
   
-  const [sessionId] = useState(() => searchParams.get('sessionId') || Date.now().toString());
+  const [sessionId, setSessionId] = useState<string>('');
   const [messages, setMessages] = useState<Message[]>([]);
   const [isProcessing, setIsProcessing] = useState(false);
   const [sessionState, setSessionState] = useState<SessionState>('active');
   const [showEndDialog, setShowEndDialog] = useState(false);
   const [isEndingSession, setIsEndingSession] = useState(false);
   const [metrics, setMetrics] = useState<LearningMetrics>({
-    sessionId,
+    sessionId: '',
     timestamp: new Date(),
     duration: 0,
     energyScore: {
@@ -38,35 +43,43 @@ export default function SpeakingSessionPage() {
     }
   });
 
+  // Initialize client-side values
+  useEffect(() => {
+    const sid = searchParams.get('sessionId') || Date.now().toString();
+    setSessionId(sid);
+    setMetrics(prev => ({
+      ...prev,
+      sessionId: sid,
+      timestamp: new Date()
+    }));
+  }, [searchParams]);
+
   const templateId = searchParams.get('templateId');
   const duration = parseInt(searchParams.get('duration') || '1200', 10);
   const userName = searchParams.get('userName') || 'User';
 
   // Handle page unload/navigation
-  const handleBeforeUnload = useCallback(async (e: BeforeUnloadEvent) => {
-    if (sessionState === 'active') {
-      e.preventDefault();
-      e.returnValue = '';
-      await handleEndSession(true);
-    }
-  }, [sessionState]);
-
-  // Handle route change
   useEffect(() => {
-    const handleRouteChange = async () => {
+    const handleBeforeUnload = async (e: BeforeUnloadEvent) => {
       if (sessionState === 'active') {
+        e.preventDefault();
+        e.returnValue = '';
         await handleEndSession(true);
       }
     };
 
     window.addEventListener('beforeunload', handleBeforeUnload);
-    router.events?.on('routeChangeStart', handleRouteChange);
-
     return () => {
       window.removeEventListener('beforeunload', handleBeforeUnload);
-      router.events?.off('routeChangeStart', handleRouteChange);
     };
-  }, [handleBeforeUnload, router.events, sessionState]);
+  }, [sessionState]);
+
+  const handleNavigateToSpeaking = async () => {
+    if (sessionState === 'active') {
+      await handleEndSession(true);
+    }
+    router.push('/agents/speaking');
+  };
 
   const initSession = async () => {
     if (!templateId) {
@@ -76,6 +89,24 @@ export default function SpeakingSessionPage() {
 
     setIsProcessing(true);
     try {
+      // Find the template across all template collections
+      let template = part1Templates.find(t => t.id === templateId);
+      if (!template) {
+        template = part1AdditionalTemplates.find(t => t.id === templateId);
+      }
+      if (!template) {
+        template = part2Templates.find(t => t.id === templateId);
+      }
+      if (!template) {
+        template = part3Templates.find(t => t.id === templateId);
+      }
+      if (!template) {
+        template = tutoringLessons.find(t => t.id === templateId);
+      }
+      if (!template) {
+        throw new Error('Template not found');
+      }
+
       // Create session in database
       const response = await fetch('/api/sessions', {
         method: 'POST',
@@ -83,7 +114,8 @@ export default function SpeakingSessionPage() {
         body: JSON.stringify({
           templateId,
           userId: userName,
-          duration
+          duration,
+          template // Include template data
         })
       });
 
@@ -308,7 +340,7 @@ export default function SpeakingSessionPage() {
             </div>
             <Button 
               className="w-full" 
-              onClick={handleConfirmEndSession}
+              onClick={handleNavigateToSpeaking}
             >
               Return to Templates
             </Button>
