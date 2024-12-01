@@ -102,7 +102,7 @@ const SpeakingPage: React.FC = () => {
 
   const [selectedTab, setSelectedTab] = useState('part1');
   const [selectedTemplate, setSelectedTemplate] = useState<SpeakingTemplate | null>(null);
-  const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(false);
+  const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(true); // Show dialog by default
   const [sessionDuration, setSessionDuration] = useState(15);
   const [isSessionActive, setIsSessionActive] = useState(false);
   const initialMessages: Message[] = [
@@ -417,7 +417,9 @@ const SpeakingPage: React.FC = () => {
     setIsSessionDialogOpen(true);
   };
 
-  const startSession = async () => {
+  const startSession = useCallback(async () => {
+    if (!userName.trim()) return;
+    
     try {
       setIsLoading(true);
       
@@ -493,7 +495,7 @@ const SpeakingPage: React.FC = () => {
     } finally {
       setIsLoading(false);
     }
-  };
+  }, [userName, sessionDuration, selectedTemplate]);
 
   const handleSendMessage = async (content: string, isAudio: boolean = false) => {
     try {
@@ -572,30 +574,90 @@ const SpeakingPage: React.FC = () => {
     setInputMode(prev => prev === 'audio' ? 'text' : 'audio');
   };
 
+  // Show session dialog if not active
+  useEffect(() => {
+    if (!isSessionActive && !isSessionDialogOpen) {
+      setIsSessionDialogOpen(true);
+    }
+  }, [isSessionActive, isSessionDialogOpen]);
+
   return (
     <div className="flex flex-col h-full">
-      <div className="flex-1 relative">
-        <ChatInterface
-          messages={messages}
-          onSendMessage={handleSendMessage}
-          isLoading={isLoading}
-          metrics={metrics}
-          sessionDuration={sessionDuration}
-          isSessionActive={isSessionActive}
-          onEndSession={handleEndSession}
-          inputMode={inputMode}
-          audioState={audioState}
-          textMessage={textMessage}
-          onTextMessageChange={setTextMessage}
-          onToggleInputMode={toggleInputMode}
-          onStartRecording={startRecording}
-          onStopRecording={stopRecording}
-          onPauseRecording={pauseRecording}
-          onResumeRecording={resumeRecording}
-          processingAudio={processingAudio}
-          timeRemaining={timeRemaining}
-        />
-      </div>
+      {isSessionActive ? (
+        <div className="flex-1 relative">
+          <ChatInterface
+            messages={messages}
+            onSendMessage={handleSendMessage}
+            isLoading={isLoading}
+            metrics={metrics}
+            sessionDuration={sessionDuration}
+            isSessionActive={isSessionActive}
+            onEndSession={handleEndSession}
+            inputMode={inputMode}
+            audioState={audioState}
+            textMessage={textMessage}
+            onTextMessageChange={setTextMessage}
+            onToggleInputMode={toggleInputMode}
+            onStartRecording={startRecording}
+            onStopRecording={stopRecording}
+            onPauseRecording={pauseRecording}
+            onResumeRecording={resumeRecording}
+            processingAudio={processingAudio}
+            timeRemaining={timeRemaining}
+          />
+        </div>
+      ) : (
+        <Dialog open={isSessionDialogOpen} onOpenChange={setIsSessionDialogOpen}>
+          <DialogContent>
+            <DialogHeader>
+              <DialogTitle>Bắt đầu phiên mới</DialogTitle>
+              <DialogDescription>
+                Vui lòng nhập tên của bạn và chọn thời lượng cho phiên luyện tập
+              </DialogDescription>
+            </DialogHeader>
+            <div className="space-y-4 py-4">
+              <div className="space-y-2">
+                <Label>Tên của bạn</Label>
+                <Input
+                  placeholder="Nhập tên của bạn"
+                  value={userName}
+                  onChange={(e) => setUserName(e.target.value)}
+                />
+              </div>
+              <div className="space-y-2">
+                <Label>Thời lượng phiên (phút)</Label>
+                <Slider
+                  value={[sessionDuration]}
+                  onValueChange={(value) => setSessionDuration(value[0])}
+                  min={5}
+                  max={30}
+                  step={5}
+                  className="w-full"
+                />
+                <div className="flex justify-between text-xs text-muted-foreground">
+                  <span>5 phút</span>
+                  <span>30 phút</span>
+                </div>
+              </div>
+            </div>
+            <DialogFooter>
+              <Button
+                onClick={startSession}
+                disabled={isLoading || !userName.trim()}
+              >
+                {isLoading ? (
+                  <div className="flex items-center gap-2">
+                    <Loader2 className="h-4 w-4 animate-spin" />
+                    <span>Đang khởi tạo...</span>
+                  </div>
+                ) : (
+                  'Bắt đầu phiên'
+                )}
+              </Button>
+            </DialogFooter>
+          </DialogContent>
+        </Dialog>
+      )}
     </div>
   );
 };
