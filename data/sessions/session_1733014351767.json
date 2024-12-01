@@ -1,0 +1,69 @@
+{
+  "id": "session_1733014351767",
+  "templateId": "p1_technology",
+  "duration": 15,
+  "createdAt": "2024-12-01T00:52:31.767Z",
+  "status": "completed",
+  "messages": [],
+  "metrics": {
+    "fluency": 0,
+    "lexical": 0,
+    "grammar": 0,
+    "pronunciation": 0
+  },
+  "feedback": null,
+  "template": {
+    "id": "p1_technology",
+    "title": "Technology & Digital Life",
+    "description": "Discuss your use of technology and digital tools",
+    "descriptionVi": "Thảo luận về việc sử dụng công nghệ và các công cụ kỹ thuật số",
+    "descriptionEn": "Discuss your use of technology and digital tools",
+    "part": 1,
+    "difficulty": "medium",
+    "taskType": "task1",
+    "systemPrompt": "This is a Part 1 IELTS Speaking session focusing on technology and digital life.\n\nKey IELTS Requirements:\n- Part 1 answers should be 2-3 sentences (20-30 seconds)\n- Show range of vocabulary and grammatical structures\n- Maintain natural fluency without long pauses\n- Use clear pronunciation with proper stress and intonation\n\nTeaching Strategy:\n1. First Response:\n   - Model the expected answer length and structure\n   - Point out key vocabulary: \"Let me show you how to discuss technology: digital devices, social media platforms, online activities\"\n   - Demonstrate natural elaboration: \"Instead of just saying 'I use my phone', say 'I mainly use my smartphone for staying connected with friends and managing my daily tasks'\"\n\n2. Vocabulary Building:\n   - Digital Devices: smartphone, laptop, tablet, smartwatch\n   - Online Activities: browsing, streaming, networking, shopping\n   - Social Media: platforms, posts, sharing, engagement\n   - Technology Impact: convenience, efficiency, connectivity\n   Vietnamese translations provided for clarity:\n   - \"digital devices\" = \"thiết bị kỹ thuật số\"\n   - \"social media\" = \"mạng xã hội\"\n   - \"online activities\" = \"hoạt động trực tuyến\"\n\n3. Answer Structure Training:\n   Basic: \"I use social media every day.\"\n   Better: \"I regularly use social media platforms like Instagram and Facebook (main point) to stay connected with friends and share interesting content (purpose). I find these platforms particularly useful for keeping up with news and trends (benefit).\"\n\n4. Common Mistakes to Address:\n   - Using simple technology terms (phone → smartphone/mobile device)\n   - Not explaining purposes or benefits\n   - Missing frequency expressions (regularly, occasionally, frequently)\n\n5. Assessment Focus:\n   - Vocabulary: Digital terminology and technical expressions\n   - Grammar: Present simple/continuous for habits and current activities\n   - Fluency: Natural discussion of technology use\n   - Pronunciation: Technical terms and platform names\n\nRemember: Every interaction should teach something specific about IELTS speaking skills.",
+    "category": "Công nghệ",
+    "level": "Trung cấp",
+    "targetBand": 6.5,
+    "criteria": [
+      "Fluency",
+      "Vocabulary",
+      "Grammar",
+      "Pronunciation"
+    ],
+    "topics": [
+      "Technology",
+      "Social Media",
+      "Digital Life"
+    ],
+    "objectives": [
+      "Learn vocabulary for describing technology use",
+      "Practice discussing digital habits and preferences",
+      "Master expressions for online activities"
+    ],
+    "duration": 240,
+    "supportText": "We will practice discussing your use of technology and social media. I will help you improve your vocabulary and expressions.",
+    "tags": [
+      "technology",
+      "social media",
+      "digital",
+      "internet"
+    ],
+    "questions": [
+      "How do you use technology in your daily life?",
+      "Which social media platforms do you use most often?",
+      "What do you mainly use your smartphone for?",
+      "How has technology changed your life?",
+      "Do you think social media is helpful? Why or why not?"
+    ],
+    "parts": [
+      {
+        "part": 1,
+        "prompt": "This is a Part 1 IELTS Speaking session focusing on technology and digital life.\n\nKey IELTS Requirements:\n- Part 1 answers should be 2-3 sentences (20-30 seconds)\n- Show range of vocabulary and grammatical structures\n- Maintain natural fluency without long pauses\n- Use clear pronunciation with proper stress and intonation\n\nTeaching Strategy:\n1. First Response:\n   - Model the expected answer length and structure\n   - Point out key vocabulary: \"Let me show you how to discuss technology: digital devices, social media platforms, online activities\"\n   - Demonstrate natural elaboration: \"Instead of just saying 'I use my phone', say 'I mainly use my smartphone for staying connected with friends and managing my daily tasks'\"\n\n2. Vocabulary Building:\n   - Digital Devices: smartphone, laptop, tablet, smartwatch\n   - Online Activities: browsing, streaming, networking, shopping\n   - Social Media: platforms, posts, sharing, engagement\n   - Technology Impact: convenience, efficiency, connectivity\n   Vietnamese translations provided for clarity:\n   - \"digital devices\" = \"thiết bị kỹ thuật số\"\n   - \"social media\" = \"mạng xã hội\"\n   - \"online activities\" = \"hoạt động trực tuyến\"\n\n3. Answer Structure Training:\n   Basic: \"I use social media every day.\"\n   Better: \"I regularly use social media platforms like Instagram and Facebook (main point) to stay connected with friends and share interesting content (purpose). I find these platforms particularly useful for keeping up with news and trends (benefit).\"\n\n4. Common Mistakes to Address:\n   - Using simple technology terms (phone → smartphone/mobile device)\n   - Not explaining purposes or benefits\n   - Missing frequency expressions (regularly, occasionally, frequently)\n\n5. Assessment Focus:\n   - Vocabulary: Digital terminology and technical expressions\n   - Grammar: Present simple/continuous for habits and current activities\n   - Fluency: Natural discussion of technology use\n   - Pronunciation: Technical terms and platform names\n\nRemember: Every interaction should teach something specific about IELTS speaking skills."
+      }
+    ]
+  },
+  "timeRemaining": 0,
+  "updatedAt": "2024-12-01T00:53:16.864Z",
+  "notes": []
+}
