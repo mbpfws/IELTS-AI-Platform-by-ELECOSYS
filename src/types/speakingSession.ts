@@ -33,9 +33,8 @@ export interface Message {
 
 export interface SpeakingTemplate {
   id: string;
-  title: string;
-  titleVi: string;
-  titleEn: string;
+  title: string;  // Primary title (in English)
+  titleVi: string;  // Vietnamese title (same as English for standardization)
   description?: string;
   descriptionVi: string;
   descriptionEn: string;

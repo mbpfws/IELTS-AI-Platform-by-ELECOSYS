@@ -3,8 +3,9 @@ import { SpeakingTemplate } from '@/types/speakingSession';
 export const tutoringLessons: SpeakingTemplate[] = [
   {
     id: 'pronunciation-basics-lesson',
+    title: 'Pronunciation Basics',
+    titleVi: 'Pronunciation Basics',
     titleEn: 'Pronunciation Basics',
-    titleVi: 'Cơ bản về phát âm',
     descriptionEn: 'Practice specific pronunciation patterns and sounds',
     descriptionVi: 'Luyện tập các mẫu phát âm và âm thanh cụ thể',
     taskType: 'lesson',
@@ -27,8 +28,9 @@ export const tutoringLessons: SpeakingTemplate[] = [
   },
   {
     id: 'fluency-builder-lesson',
+    title: 'Fluency Builder',
+    titleVi: 'Fluency Builder',
     titleEn: 'Fluency Builder',
-    titleVi: 'Xây dựng độ trôi chảy',
     descriptionEn: 'Develop natural speaking flow and confidence',
     descriptionVi: 'Phát triển khả năng nói tự nhiên và tự tin',
     taskType: 'lesson',
@@ -51,8 +53,9 @@ export const tutoringLessons: SpeakingTemplate[] = [
   },
   {
     id: 'vocabulary-mastery-lesson',
+    title: 'Vocabulary Mastery',
+    titleVi: 'Vocabulary Mastery',
     titleEn: 'Vocabulary Mastery',
-    titleVi: 'Làm chủ từ vựng',
     descriptionEn: 'Master advanced vocabulary for IELTS topics',
     descriptionVi: 'Làm chủ từ vựng nâng cao cho các chủ đề IELTS',
     taskType: 'lesson',
@@ -75,8 +78,9 @@ export const tutoringLessons: SpeakingTemplate[] = [
   },
   {
     id: 'grammar-mastery-lesson',
+    title: 'Grammar Mastery',
+    titleVi: 'Grammar Mastery',
     titleEn: 'Grammar Mastery',
-    titleVi: 'Thành thạo ngữ pháp',
     descriptionEn: 'Perfect your grammar for higher band scores',
     descriptionVi: 'Hoàn thiện ngữ pháp để đạt điểm cao hơn',
     taskType: 'lesson',
@@ -161,8 +165,9 @@ Start with a warm greeting and then explain that you'll help them practice speak
   },
   {
     id: 'advanced-vocabulary-builder',
+    title: 'Advanced Vocabulary Builder',
+    titleVi: 'Advanced Vocabulary Builder',
     titleEn: 'Advanced Vocabulary Builder',
-    titleVi: 'Nâng cao từ vựng',
     descriptionEn: 'Expand your vocabulary with advanced expressions and collocations',
     descriptionVi: 'Mở rộng vốn từ vựng với các cụm từ và kết hợp từ nâng cao',
     taskType: 'lesson',
@@ -197,8 +202,9 @@ Teaching Approach:
   },
   {
     id: 'complex-grammar-structures',
+    title: 'Complex Grammar Structures',
+    titleVi: 'Complex Grammar Structures',
     titleEn: 'Complex Grammar Structures',
-    titleVi: 'Cấu trúc ngữ pháp phức tạp',
     descriptionEn: 'Master advanced grammar patterns for higher band scores',
     descriptionVi: 'Làm chủ các mẫu ngữ pháp nâng cao để đạt điểm cao hơn',
     taskType: 'lesson',
@@ -233,8 +239,9 @@ Teaching Approach:
   },
   {
     id: 'natural-fluency-development',
+    title: 'Natural Fluency Development',
+    titleVi: 'Natural Fluency Development',
     titleEn: 'Natural Fluency Development',
-    titleVi: 'Phát triển độ trôi chảy tự nhiên',
     descriptionEn: 'Improve your speaking fluency and natural expression',
     descriptionVi: 'Cải thiện độ trôi chảy và cách diễn đạt tự nhiên',
     taskType: 'lesson',
