@@ -3,8 +3,9 @@ import { part1Templates } from '@/data/speakingTemplates/part1';
 import { part2Templates } from '@/data/speakingTemplates/part2';
 import { part3Templates } from '@/data/speakingTemplates/part3';
 import { tutoringLessons } from '@/data/speakingTemplates/tutoring';
-import fs from 'fs/promises';
-import path from 'path';
+import { sessionStorage, SessionData } from '@/services/sessionStorage';
+import { Message, SessionState } from '@/types/speakingSession';
+import { LearningMetrics } from '@/types/learningMetrics';
 
 // Helper function to find template by ID
 function findTemplateById(templateId: string) {
@@ -17,88 +18,52 @@ function findTemplateById(templateId: string) {
   return allTemplates.find(template => template.id === templateId);
 }
 
-// Session storage path
-const SESSION_DIR = path.join(process.cwd(), 'data', 'sessions');
-
-// Ensure session directory exists
-async function ensureSessionDir() {
-  try {
-    await fs.access(SESSION_DIR);
-  } catch {
-    await fs.mkdir(SESSION_DIR, { recursive: true });
-  }
-}
-
-// Save session to file
-async function saveSession(session: any) {
-  await ensureSessionDir();
-  const filePath = path.join(SESSION_DIR, `${session.id}.json`);
-  await fs.writeFile(filePath, JSON.stringify(session, null, 2));
-  return session;
-}
-
-// Get session from file
-async function getSession(sessionId: string) {
-  const filePath = path.join(SESSION_DIR, `${sessionId}.json`);
-  try {
-    const data = await fs.readFile(filePath, 'utf-8');
-    return JSON.parse(data);
-  } catch (error) {
-    return null;
-  }
-}
-
 export async function POST(request: Request) {
   try {
-    const data = await request.json();
+    const body = await request.json();
+    const { templateId, userId, duration } = body;
 
-    // Validate required fields
-    if (!data.templateId) {
-      return NextResponse.json(
-        { error: 'Template ID is required' },
-        { status: 400 }
-      );
-    }
-
-    // Find the template
-    const template = findTemplateById(data.templateId);
-
+    const template = findTemplateById(templateId);
     if (!template) {
-      return NextResponse.json(
-        { error: `Template with ID ${data.templateId} not found` },
-        { status: 404 }
-      );
+      return NextResponse.json({ error: 'Template not found' }, { status: 404 });
     }
 
-    // Create session data
-    const session = {
-      id: `session_${Date.now()}`,
-      templateId: data.templateId,
-      duration: data.duration || 300,
-      createdAt: new Date(),
-      status: 'active',
+    const sessionId = Date.now().toString();
+    const sessionData: Omit<SessionData, 'endTime'> = {
+      id: sessionId,
+      userId,
+      templateId,
+      startTime: new Date(),
+      duration,
+      state: 'active',
       messages: [],
-      metrics: null,
-      feedback: null,
-      template: {
-        ...template,
-        parts: [{
-          part: template.part || 'tutoring',
-          prompt: template.systemPrompt
-        }]
-      }
+      metrics: {
+        sessionId,
+        timestamp: new Date(),
+        duration: 0,
+        energyScore: {
+          engagement: 85,
+          comprehension: 80,
+          progress: 70,
+          confidence: 75
+        },
+        performance: {
+          taskResponse: 6.5,
+          coherenceCohesion: 6.0,
+          lexicalResource: 6.5,
+          grammaticalRange: 6.0,
+          pronunciation: 6.5
+        }
+      },
+      notes: '',
+      transcript: ''
     };
 
-    // Save session to file
-    await saveSession(session);
-
-    return NextResponse.json(session);
+    await sessionStorage.createSession(sessionData);
+    return NextResponse.json({ sessionId });
   } catch (error) {
-    console.error('Error creating session:', error);
-    return NextResponse.json(
-      { error: 'Failed to create session' },
-      { status: 500 }
-    );
+    console.error('Failed to create session:', error);
+    return NextResponse.json({ error: 'Failed to create session' }, { status: 500 });
   }
 }
 
@@ -106,70 +71,83 @@ export async function GET(request: Request) {
   try {
     const { searchParams } = new URL(request.url);
     const sessionId = searchParams.get('sessionId');
+    const userId = searchParams.get('userId');
 
-    if (!sessionId) {
-      return NextResponse.json(
-        { error: 'Session ID is required' },
-        { status: 400 }
-      );
+    if (sessionId) {
+      const session = await sessionStorage.getSession(sessionId);
+      return NextResponse.json(session);
     }
 
-    const session = await getSession(sessionId);
-
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Session not found' },
-        { status: 404 }
-      );
+    if (userId) {
+      const sessions = await sessionStorage.getUserSessions(userId);
+      return NextResponse.json(sessions);
     }
 
-    return NextResponse.json(session);
+    return NextResponse.json({ error: 'Missing sessionId or userId' }, { status: 400 });
   } catch (error) {
-    console.error('Error fetching session:', error);
-    return NextResponse.json(
-      { error: 'Failed to fetch session' },
-      { status: 500 }
-    );
+    console.error('Failed to get session:', error);
+    return NextResponse.json({ error: 'Failed to get session' }, { status: 500 });
   }
 }
 
-// Helper function to update session
 export async function PATCH(request: Request) {
   try {
-    const data = await request.json();
-    const { sessionId, updates } = data;
-
+    const { searchParams } = new URL(request.url);
+    const sessionId = searchParams.get('sessionId');
     if (!sessionId) {
-      return NextResponse.json(
-        { error: 'Session ID is required' },
-        { status: 400 }
-      );
+      return NextResponse.json({ error: 'Missing sessionId' }, { status: 400 });
     }
 
-    const session = await getSession(sessionId);
-    if (!session) {
-      return NextResponse.json(
-        { error: 'Session not found' },
-        { status: 404 }
-      );
+    const body = await request.json();
+    const {
+      message,
+      notes,
+      transcript,
+      metrics,
+      state
+    } = body;
+
+    if (message) {
+      await sessionStorage.addSessionMessage(sessionId, message);
     }
 
-    // Update session with new data
-    const updatedSession = {
-      ...session,
-      ...updates,
-      updatedAt: new Date()
-    };
+    if (notes) {
+      await sessionStorage.updateSessionNotes(sessionId, notes);
+    }
 
-    // Save updated session
-    await saveSession(updatedSession);
+    if (transcript) {
+      await sessionStorage.updateSessionTranscript(sessionId, transcript);
+    }
 
+    if (metrics) {
+      await sessionStorage.updateSessionMetrics(sessionId, metrics);
+    }
+
+    if (state === 'completed') {
+      await sessionStorage.endSession(sessionId);
+    }
+
+    const updatedSession = await sessionStorage.getSession(sessionId);
     return NextResponse.json(updatedSession);
   } catch (error) {
-    console.error('Error updating session:', error);
-    return NextResponse.json(
-      { error: 'Failed to update session' },
-      { status: 500 }
-    );
+    console.error('Failed to update session:', error);
+    return NextResponse.json({ error: 'Failed to update session' }, { status: 500 });
+  }
+}
+
+// New endpoint for generating session reports
+export async function PUT(request: Request) {
+  try {
+    const { searchParams } = new URL(request.url);
+    const sessionId = searchParams.get('sessionId');
+    if (!sessionId) {
+      return NextResponse.json({ error: 'Missing sessionId' }, { status: 400 });
+    }
+
+    const reportPath = await sessionStorage.generateSessionReport(sessionId);
+    return NextResponse.json({ reportPath });
+  } catch (error) {
+    console.error('Failed to generate report:', error);
+    return NextResponse.json({ error: 'Failed to generate report' }, { status: 500 });
   }
 }

@@ -33,6 +33,7 @@ import { part1Templates } from '@/data/speakingTemplates/part1';
 import { part2Templates } from '@/data/speakingTemplates/part2';
 import { part3Templates } from '@/data/speakingTemplates/part3';
 import { tutoringLessons } from '@/data/speakingTemplates/tutoring';
+import { useRouter } from 'next/router';
 
 interface Note {
   id: string;
@@ -82,6 +83,7 @@ type SortOption = 'targetBand' | 'level' | 'difficulty';
 
 const SpeakingPage: React.FC = () => {
   const { theme } = useTheme();
+  const router = useRouter();
   
   // Initialize templates with default empty arrays
   const defaultTemplates: SpeakingTemplate[] = [];
@@ -100,7 +102,7 @@ const SpeakingPage: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState('part1');
   const [selectedTemplate, setSelectedTemplate] = useState<SpeakingTemplate | null>(null);
   const [isSessionDialogOpen, setIsSessionDialogOpen] = useState(false);
-  const [sessionDuration, setSessionDuration] = useState(15);
+  const [sessionDuration, setSessionDuration] = useState(1200); // 20 minutes default
   const [isSessionActive, setIsSessionActive] = useState(false);
   const [messages, setMessages] = useState<any[]>([]);
   const [metrics, setMetrics] = useState<SessionMetrics>({
@@ -405,6 +407,18 @@ const SpeakingPage: React.FC = () => {
     console.log('Selected template:', template);
     setSelectedTemplate(template);
     setIsSessionDialogOpen(true);
+  };
+
+  const handleConfirmSession = () => {
+    if (!selectedTemplate || !userName.trim()) return;
+
+    const params = new URLSearchParams({
+      templateId: selectedTemplate.id,
+      userName: userName.trim(),
+      duration: sessionDuration.toString()
+    });
+
+    router.push(`/agents/speaking/session?${params.toString()}`);
   };
 
   const startSession = async () => {
@@ -897,48 +911,42 @@ const SpeakingPage: React.FC = () => {
         </div>
       </main>
 
-      {/* Session Dialog */}
+      {/* Session Setup Dialog */}
       <Dialog open={isSessionDialogOpen} onOpenChange={setIsSessionDialogOpen}>
         <DialogContent>
           <DialogHeader>
-            <DialogTitle>Bắt đầu phiên mới</DialogTitle>
+            <DialogTitle>Start Practice Session</DialogTitle>
           </DialogHeader>
-          <div className="space-y-4 py-4">
+          <div className="space-y-4 p-4">
             <div className="space-y-2">
-              <label className="text-sm font-medium">Tên của bạn</label>
+              <label htmlFor="userName" className="text-sm font-medium">Your Name</label>
               <Input
-                placeholder="Nhập tên của bạn"
+                id="userName"
                 value={userName}
                 onChange={(e) => setUserName(e.target.value)}
+                placeholder="Enter your name"
               />
             </div>
             <div className="space-y-2">
-              <label className="text-sm font-medium">Thời lượng phiên (phút)</label>
-              <Slider
-                value={[sessionDuration]}
-                onValueChange={(value) => setSessionDuration(value[0])}
-                min={5}
-                max={30}
-                step={5}
-              />
-              <div className="flex justify-between text-xs text-muted-foreground">
-                <span>5 phút</span>
-                <span>30 phút</span>
+              <label htmlFor="duration" className="text-sm font-medium">Session Duration (minutes)</label>
+              <div className="flex items-center gap-4">
+                <Slider
+                  id="duration"
+                  min={5}
+                  max={120}
+                  step={5}
+                  value={[sessionDuration / 60]}
+                  onValueChange={([value]) => setSessionDuration(value * 60)}
+                />
+                <span className="min-w-[4rem] text-right">{sessionDuration / 60}m</span>
               </div>
             </div>
-          </div>
-          <div className="flex justify-end space-x-2">
-            <Button
-              variant="outline"
-              onClick={() => setIsSessionDialogOpen(false)}
+            <Button 
+              className="w-full" 
+              onClick={handleConfirmSession}
+              disabled={!userName.trim()}
             >
-              Hủy bỏ
-            </Button>
-            <Button
-              onClick={startSession}
-              disabled={isLoading || !userName.trim()}
-            >
-              Bắt đầu phiên
+              Start Session
             </Button>
           </div>
         </DialogContent>

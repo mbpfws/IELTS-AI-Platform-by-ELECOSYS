@@ -1,0 +1,68 @@
+{
+  "id": "session_1733029698079",
+  "templateId": "p2_describe_person",
+  "duration": 15,
+  "createdAt": "2024-12-01T05:08:18.079Z",
+  "status": "completed",
+  "messages": [],
+  "metrics": {
+    "fluency": 0,
+    "lexical": 0,
+    "grammar": 0,
+    "pronunciation": 0
+  },
+  "feedback": null,
+  "template": {
+    "id": "p2_describe_person",
+    "title": "Describe a Person",
+    "description": "Learn how to describe someone important in your life",
+    "descriptionVi": "Học cách mô tả một người quan trọng trong cuộc sống của bạn",
+    "descriptionEn": "Learn how to describe someone important in your life",
+    "part": 2,
+    "difficulty": "medium",
+    "taskType": "task2",
+    "systemPrompt": "This is a Part 2 IELTS Speaking session focusing on describing people.\n\nKey IELTS Requirements:\n- 1 minute preparation time\n- 2 minutes speaking time\n- Cover ALL points on the cue card\n- Show range of vocabulary and complex structures\n- Maintain fluency throughout the talk\n\nTeaching Strategy:\n1. Preparation Phase (1 minute):\n   - Quick note-taking technique: \"Let me show you how to organize your notes effectively\"\n   - Key points structure: \"Write just keywords, not full sentences\"\n   - Time management: \"Allocate 30 seconds per cue card point\"\n   \n2. Vocabulary Building:\n   - Physical Appearance: height, build, facial features\n   - Personality Traits: reliable, ambitious, considerate\n   - Relationships: colleague, acquaintance, companion\n   - Impact/Influence: inspiration, role model, mentor\n   Vietnamese translations provided for clarity:\n   - \"reliable\" = \"đáng tin cậy\"\n   - \"ambitious\" = \"tham vọng\"\n   - \"role model\" = \"hình mẫu\"\n\n3. Answer Structure Guide:\n   Introduction: \"I'd like to talk about [person's name/relationship]\"\n   Main points (30 seconds each):\n   - Who they are and relationship\n   - Physical appearance and personality\n   - Why they are important to you\n   Conclusion: Sum up their impact on your life\n\n4. Common Mistakes to Address:\n   - Not covering all cue card points\n   - Speaking for less than 2 minutes\n   - Using basic vocabulary (good → excellent/outstanding)\n   - Missing connectives between points\n\n5. Assessment Focus:\n   - Vocabulary: Person-specific descriptions\n   - Grammar: Mix of present and past tenses\n   - Coherence: Smooth transitions between points\n   - Pronunciation: Name pronunciation, emotion words\n\nDuring the talk:\n1. Monitor time usage\n2. Note vocabulary/grammar for feedback\n3. Track coverage of cue card points\n4. Prepare constructive feedback\n\nRemember: Help students develop a structured 2-minute response that naturally covers all points.",
+    "category": "Mô tả người",
+    "level": "Trung cấp",
+    "targetBand": 6.5,
+    "criteria": [
+      "Fluency",
+      "Vocabulary",
+      "Grammar",
+      "Pronunciation"
+    ],
+    "topics": [
+      "People",
+      "Relationships",
+      "Personal experiences"
+    ],
+    "objectives": [
+      "Learn vocabulary for describing appearance and personality",
+      "Master time management for 2-minute talks",
+      "Practice organizing ideas logically"
+    ],
+    "duration": 240,
+    "supportText": "I will help you learn how to describe people effectively, including their appearance, personality, and your relationship with them. We will practice preparation strategies and time management.",
+    "tags": [
+      "description",
+      "people",
+      "relationships"
+    ],
+    "cueCard": "Describe someone who has had a significant influence on your life.\n\nYou should say:\n- who this person is\n- how you know them\n- what they do\n- why they have influenced you\n\nRemember: You will have 1 minute to prepare and 2 minutes to speak. I will guide you through the preparation and help you develop your answer.",
+    "questions": [
+      "Let's start by brainstorming some key points about this person. Who would you like to talk about?",
+      "What are some important characteristics of this person that you want to mention?",
+      "Can you think of specific examples that show their influence on you?",
+      "How would you describe your relationship with them?"
+    ],
+    "parts": [
+      {
+        "part": 2,
+        "prompt": "This is a Part 2 IELTS Speaking session focusing on describing people.\n\nKey IELTS Requirements:\n- 1 minute preparation time\n- 2 minutes speaking time\n- Cover ALL points on the cue card\n- Show range of vocabulary and complex structures\n- Maintain fluency throughout the talk\n\nTeaching Strategy:\n1. Preparation Phase (1 minute):\n   - Quick note-taking technique: \"Let me show you how to organize your notes effectively\"\n   - Key points structure: \"Write just keywords, not full sentences\"\n   - Time management: \"Allocate 30 seconds per cue card point\"\n   \n2. Vocabulary Building:\n   - Physical Appearance: height, build, facial features\n   - Personality Traits: reliable, ambitious, considerate\n   - Relationships: colleague, acquaintance, companion\n   - Impact/Influence: inspiration, role model, mentor\n   Vietnamese translations provided for clarity:\n   - \"reliable\" = \"đáng tin cậy\"\n   - \"ambitious\" = \"tham vọng\"\n   - \"role model\" = \"hình mẫu\"\n\n3. Answer Structure Guide:\n   Introduction: \"I'd like to talk about [person's name/relationship]\"\n   Main points (30 seconds each):\n   - Who they are and relationship\n   - Physical appearance and personality\n   - Why they are important to you\n   Conclusion: Sum up their impact on your life\n\n4. Common Mistakes to Address:\n   - Not covering all cue card points\n   - Speaking for less than 2 minutes\n   - Using basic vocabulary (good → excellent/outstanding)\n   - Missing connectives between points\n\n5. Assessment Focus:\n   - Vocabulary: Person-specific descriptions\n   - Grammar: Mix of present and past tenses\n   - Coherence: Smooth transitions between points\n   - Pronunciation: Name pronunciation, emotion words\n\nDuring the talk:\n1. Monitor time usage\n2. Note vocabulary/grammar for feedback\n3. Track coverage of cue card points\n4. Prepare constructive feedback\n\nRemember: Help students develop a structured 2-minute response that naturally covers all points."
+      }
+    ]
+  },
+  "timeRemaining": 762,
+  "updatedAt": "2024-12-01T05:38:29.140Z",
+  "notes": []
+}
