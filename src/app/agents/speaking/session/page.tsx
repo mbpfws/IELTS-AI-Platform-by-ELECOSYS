@@ -56,7 +56,8 @@ export default function SpeakingSessionPage() {
         return;
       }
 
-      setSessionId(crypto.randomUUID());
+      const sid = crypto.randomUUID();
+      setSessionId(sid);
       
       // Initialize session state in storage
       const initialState = {
@@ -72,12 +73,31 @@ export default function SpeakingSessionPage() {
         timeRemaining: duration
       };
       
-      sessionStorage.setItem(`session_${sessionId}`, JSON.stringify(initialState));
-      ieltsGeminiService.setSessionId(sessionId);
+      sessionStorage.setItem(`session_${sid}`, JSON.stringify(initialState));
+      
+      try {
+        const response = await ieltsGeminiService.initializeSession({
+          sessionId: sid,
+          templateId,
+          userName,
+          duration
+        });
+
+        if (response && response.message) {
+          setMessages([{
+            role: 'assistant',
+            content: response.message,
+            timestamp: Date.now()
+          }]);
+        }
+      } catch (error) {
+        console.error('Failed to initialize session:', error);
+        router.push('/agents/speaking');
+      }
     };
 
     startNewSession();
-  }, [templateId, userName, router, searchParams]);
+  }, [templateId, userName, router, searchParams, duration]);
 
   // Session timer
   useEffect(() => {

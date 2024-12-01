@@ -1,471 +1,126 @@
-import { GoogleGenerativeAI } from '@google/generative-ai';
-import { v4 as uuidv4 } from 'uuid';
-import { part1Templates } from '@/data/speakingTemplates/part1';
-import { part1AdditionalTemplates } from '@/data/speakingTemplates/part1Additional';
-import { part2Templates } from '@/data/speakingTemplates/part2';
-import { part3Templates } from '@/data/speakingTemplates/part3';
-import { tutoringLessons } from '@/data/speakingTemplates/tutoring';
+import { GoogleGenerativeAI } from "@google/generative-ai";
 
-interface SessionConfig {
-  userName: string;
-  templatePrompt: string;
-  sessionId: string;
-  duration?: number;
-}
-
-interface SessionResponse {
+export interface SessionResponse {
   message: string;
-  session_id: string;
   metrics?: {
-    fluency: number;
-    lexical: number;
-    grammar: number;
-    pronunciation: number;
+    fluency?: number;
+    lexical?: number;
+    grammar?: number;
+    pronunciation?: number;
   };
-}
-
-interface SessionState {
-  timeRemaining: number;
-  isRecording: boolean;
-  currentMode: 'audio' | 'text';
-  metrics: {
-    fluency: number;
-    lexical: number;
-    grammar: number;
-    pronunciation: number;
-  };
-  notes: string[];
-  currentPart: number;
-  templateContent: string;
-  lastQuestion: string;
-  conversationHistory: { role: 'user' | 'assistant', content: string }[];
 }
 
 class IELTSGeminiService {
-  private model;
-  private chatSession;
+  private genAI: GoogleGenerativeAI;
+  private model: any;
   private currentSessionId: string | null = null;
-  private sessionState: SessionState | null = null;
-  private sessionTimer: NodeJS.Timeout | null = null;
-  private readonly systemInstruction = `You are an expert IELTS Speaking tutor proficient in interacting with Vietnamese learners of all levels. You possess the ability to seamlessly transition between the roles of a language teacher, and a dedicated tutor. You understand the challenges Vietnamese learners face and can adapt your instruction to their specific needs, including utilizing bilingual explanations for low-level learners.
-**As a Language Teacher:**
-* **Diagnose Learner Needs:** Begin by understanding the learner's current IELTS speaking band score (or estimated level) and their target score. Identify their strengths and weaknesses across the four criteria.  Consider their native language (Vietnamese) and any specific challenges they might face due to language transfer.
-* **Adaptive Teaching Techniques:** Employ various teaching methodologies based on the learner's needs and learning style. This includes:
-    * **Direct Instruction:** Explain specific grammar rules, vocabulary, or pronunciation concepts relevant to IELTS speaking. **For low-level learners, provide explanations and examples in both English and Vietnamese when necessary to ensure understanding.**  Use Vietnamese to clarify complex concepts or illustrate subtle differences between English and Vietnamese.
-    * **Guided Practice:** Provide structured exercises and activities like topic brainstorming, idea generation, and answer structuring.  Encourage learners to verbalize their thoughts in Vietnamese if it helps them formulate their ideas before expressing them in English.
-    * **Communicative Activities:** Engage learners in role-plays, discussions, and debates to practice spontaneous speaking. Allow learners to initially use Vietnamese if they struggle to express themselves fluently in English, gradually transitioning to full English use.
-    * **Feedback and Error Correction:** Offer constructive feedback focusing on areas for improvement, using clear examples and explanations. **For low-level learners, use Vietnamese to explain the nature of errors and suggest corrections, if needed.**  Point out common mistakes Vietnamese speakers make and provide targeted strategies for overcoming them.
-* **Targeted Criteria Practice:** Design activities that specifically focus on improving each of the four assessment criteria.  Adapt these activities to suit the needs of Vietnamese learners, incorporating bilingual support where appropriate.
-* You can accurately assess a learner's speaking proficiency based on the four IELTS speaking criteria: Fluency and Coherence, Lexical Resource, Grammatical Range and Accuracy, and Pronunciation.  
-* When asked to evaluate a response, provide a band score and detailed feedback referencing specific examples from the learner's speech related to each of the four criteria.  
-
-**As a Tutor:**
-
-* **Homework Guidance:** Provide clear instructions and support for completing homework assignments. Offer bilingual support for low-level learners to ensure they understand the task requirements.
-* **Practice Activities:** Offer a wide range of practice exercises, including sample questions, past papers, and speaking prompts. Provide Vietnamese translations or explanations for tasks or prompts as needed for low-level learners.
-* **Personalized Feedback:** Give detailed and individualized feedback on homework and practice activities, highlighting strengths and areas needing improvement, always referencing the four criteria. Use Vietnamese to clarify feedback for low-level learners when necessary.
-* **Language Knowledge Revision:**  Offer resources and guidance on relevant grammar, vocabulary, and pronunciation topics for the IELTS exam. Consider providing resources that compare and contrast English and Vietnamese grammar and pronunciation.  
-
-
-**Example Bilingual Approach (for Low-Level Learners):**
-* **Vocabulary:** "The word 'environment' in English is 'môi trường' in Vietnamese.  Can you use 'môi trường' in a Vietnamese sentence? Now, try to use 'environment' in an English sentence."
-* **Grammar:**  "'Thì hiện tại hoàn thành' in Vietnamese is like the present perfect tense in English. Remember, we use 'have' or 'has' with the past participle."
-
-By incorporating bilingual support and understanding the specific needs of Vietnamese learners, you will effectively guide them towards achieving their desired IELTS speaking band score. Remember to gradually reduce reliance on Vietnamese as the learner progresses.`;
+  private conversationHistory: { role: string; content: string; timestamp: number; }[] = [];
+  private currentTopic: string = '';
+  private learningFocus: string[] = [];
 
   constructor() {
-    try {
-      const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
-      if (!apiKey) {
-        throw new Error('NEXT_PUBLIC_GEMINI_API_KEY is not set');
-      }
-      const genAI = new GoogleGenerativeAI(apiKey);
-      this.model = genAI.getGenerativeModel({ 
-        model: "learnlm-1.5-pro-experimental",
-        generationConfig: {
-          maxOutputTokens: 8000,
-          temperature: 0.8,
-          topP: 0.8,
-          topK: 40
-        }
-      });
-    } catch (error) {
-      console.error('Error initializing Gemini service:', error);
-      throw new Error('Failed to initialize AI service. Please check your API key and try again.');
+    const apiKey = process.env.NEXT_PUBLIC_GEMINI_API_KEY;
+    if (!apiKey) {
+      throw new Error('Gemini API key is not configured');
     }
+    this.genAI = new GoogleGenerativeAI(apiKey);
+    this.model = this.genAI.getGenerativeModel({ model: "gemini-pro" });
   }
 
-  private async convertAudioToText(audioData: Blob): Promise<string> {
-    try {
-      // Convert Blob to base64
-      const buffer = await audioData.arrayBuffer();
-      const base64Audio = Buffer.from(buffer).toString('base64');
-      
-      // Use the existing model instance
-      const result = await this.model.generateContent({
-        contents: [{
-          role: 'user',
-          parts: [
-            { text: "Please transcribe this audio accurately. Transcribe the audio, ignore any background noise, don't autocorrect anything." },
-            {
-              inlineData: {
-                mimeType: "audio/mp3",
-                data: base64Audio
-              }
-            }
-          ]
-        }]
-      });
-
-      const response = await result.response;
-      return response.text();
-    } catch (error) {
-      console.error('Error converting audio to text:', error);
-      // Return empty string if transcription fails
-      return "";
-    }
+  setSessionId(sessionId: string) {
+    this.currentSessionId = sessionId;
+    this.conversationHistory = [];
   }
 
-  async processAudioResponse(audioData: Blob): Promise<SessionResponse> {
+  setTopicAndFocus(topic: string, focus: string[] = []) {
+    this.currentTopic = topic;
+    this.learningFocus = focus;
+  }
+
+  private getLastMessages(count: number = 3): string {
+    return this.conversationHistory
+      .slice(-count)
+      .map(msg => `${msg.role}: ${msg.content}`)
+      .join('\n');
+  }
+
+  async sendMessage(content: string): Promise<SessionResponse> {
     try {
-      if (!this.chatSession || !this.sessionState || !this.currentSessionId) {
-        throw new Error('Session not initialized');
-      }
+      this.conversationHistory.push({ role: 'user', content, timestamp: Date.now() });
 
-      const transcribedText = await this.convertAudioToText(audioData);
-      
-      if (!transcribedText) {
-        console.warn('Audio transcription failed, using fallback text');
-        return this.processFallbackText("I couldn't hear that clearly. Could you repeat that?");
-      }
+      const prompt = `You are an IELTS speaking tutor conducting a practice session.
 
-      // Update conversation history
-      this.sessionState.conversationHistory.push({
-        role: 'user',
-        content: transcribedText
-      });
+Current topic: ${this.currentTopic}
+Learning focus: ${this.learningFocus.join(', ')}
 
-      const prompt = `You are an IELTS examiner conducting a Part ${this.sessionState.currentPart} speaking test.
-Current topic: ${this.sessionState.templateContent}
 Recent conversation:
-${this.getLastFewExchanges(2)}
+${this.getLastMessages()}
 
-Act as a real IELTS examiner would:
-1. For Part 1: Ask simple questions about familiar topics
-2. For Part 2: Give the candidate time to speak at length about the topic card
-3. For Part 3: Ask more complex questions about abstract topics
+As a tutor:
+1. Listen actively and identify areas for improvement
+2. Provide gentle corrections and suggestions
+3. Encourage expanded answers
+4. Teach relevant vocabulary and expressions
+5. Help with pronunciation and grammar when needed
+6. Keep the conversation natural and engaging
 
 Rules:
-- Stay in character as an IELTS examiner
-- Never mention being an AI or explain scoring
-- Keep questions natural and flowing
-- Follow up on candidate's responses
-- Move to new aspects of the topic when appropriate
-- Maintain professional but encouraging tone
+- Be encouraging and supportive
+- Mix practice with teaching moments
+- Provide specific feedback when needed
+- Keep the conversation flowing naturally
+- Help build confidence
+- Suggest alternative expressions or vocabulary when appropriate
 
-Evaluate their response and provide output in this JSON format:
+Provide your response in this JSON format:
 {
-  "response": "your next question or comment as an examiner",
-  "metrics": {
-    "fluency": [score 1-9],
-    "lexical": [score 1-9],
-    "grammar": [score 1-9],
-    "pronunciation": [score 1-9]
+  "response": {
+    "message": "your response as a tutor, including any teaching points or suggestions",
+    "followUp": "your next question or prompt to keep the conversation going"
+  },
+  "feedback": {
+    "strengths": ["point out 1-2 things done well"],
+    "suggestions": ["offer 1-2 specific suggestions for improvement"],
+    "vocabulary": ["suggest 1-2 relevant words or phrases they could use"]
   }
 }`;
 
-      const response = await this.chatSession.sendMessage(prompt);
-      const responseText = response.response.text();
-
-      // Update conversation history
-      this.sessionState.conversationHistory.push({
-        role: 'assistant',
-        content: responseText
-      });
-      
-      this.sessionState.lastQuestion = responseText;
-      this.updateMetrics(responseText);
-
-      return {
-        message: responseText,
-        session_id: this.currentSessionId,
-        metrics: this.sessionState.metrics
-      };
-    } catch (error) {
-      console.error('Error processing audio response:', error);
-      return this.processFallbackText("Sorry, I didn't catch that. Could you try again?");
-    }
-  }
-
-  private async processFallbackText(fallbackMessage: string): Promise<SessionResponse> {
-    return {
-      message: fallbackMessage,
-      session_id: this.currentSessionId!,
-      metrics: this.sessionState!.metrics
-    };
-  }
-
-  async startSession(templateId: string, userName: string): Promise<SessionResponse> {
-    try {
-      // Initialize chat session if not already initialized
-      if (!this.chatSession) {
-        this.chatSession = this.model.startChat();
-        await this.chatSession.sendMessage(this.systemInstruction);
-      }
-
-      // Initialize session state
-      this.currentSessionId = uuidv4();
-      this.sessionState = {
-        timeRemaining: 900, // 15 minutes default
-        isRecording: false,
-        currentMode: 'audio',
-        metrics: {
-          fluency: 0,
-          lexical: 0,
-          grammar: 0,
-          pronunciation: 0
-        },
-        notes: [],
-        currentPart: 1,
-        templateContent: '',
-        lastQuestion: '',
-        conversationHistory: []
-      };
-
-      // Find template content
-      const allTemplates = [
-        ...part1Templates,
-        ...part1AdditionalTemplates,
-        ...part2Templates,
-        ...part3Templates,
-        ...tutoringLessons
-      ];
-      const template = allTemplates.find(t => t.id === templateId);
-      
-      if (!template) {
-        throw new Error(`Template not found: ${templateId}`);
-      }
-
-      // Store template content in session state
-      this.sessionState.templateContent = template.content;
-
-      // Start session with template content
-      const startSessionPrompt = `You are an IELTS examiner conducting a Part ${this.sessionState.currentPart} speaking test.
-Current topic: ${this.sessionState.templateContent}
-Recent conversation:
-${this.getLastFewExchanges(2)}
-
-Act as a real IELTS examiner would:
-1. For Part 1: Ask simple questions about familiar topics
-2. For Part 2: Give the candidate time to speak at length about the topic card
-3. For Part 3: Ask more complex questions about abstract topics
-
-Rules:
-- Stay in character as an IELTS examiner
-- Never mention being an AI or explain scoring
-- Keep questions natural and flowing
-- Follow up on candidate's responses
-- Move to new aspects of the topic when appropriate
-- Maintain professional but encouraging tone
-
-Evaluate their response and provide output in this JSON format:
-{
-  "response": "your next question or comment as an examiner",
-  "metrics": {
-    "fluency": [score 1-9],
-    "lexical": [score 1-9],
-    "grammar": [score 1-9],
-    "pronunciation": [score 1-9]
-  }
-}`;
-
-      const response = await this.chatSession.sendMessage(startSessionPrompt);
-      const responseText = response.response.text();
-
-      // Update conversation history
-      this.sessionState.conversationHistory.push({
-        role: 'assistant',
-        content: responseText
-      });
-      
-      this.sessionState.lastQuestion = responseText;
-
-      return {
-        message: responseText,
-        session_id: this.currentSessionId,
-        metrics: this.sessionState.metrics
-      };
-    } catch (error) {
-      console.error('Error starting session:', error);
-      throw new Error('Failed to start IELTS speaking session. Please try again.');
-    }
-  }
-
-  async initializeSession(config: SessionConfig): Promise<SessionResponse> {
-    try {
-      const chat = this.model.startChat();
-      
-      // Set initial system context
-      await chat.sendMessage(this.systemInstruction);
-      
-      // Start with template content but keep it natural
-      const startSessionPrompt = `You are an IELTS examiner conducting a Part ${this.sessionState?.currentPart} speaking test.
-Current topic: ${config.templatePrompt}
-Recent conversation:
-${this.getLastFewExchanges(2)}
-
-Act as a real IELTS examiner would:
-1. For Part 1: Ask simple questions about familiar topics
-2. For Part 2: Give the candidate time to speak at length about the topic card
-3. For Part 3: Ask more complex questions about abstract topics
-
-Rules:
-- Stay in character as an IELTS examiner
-- Never mention being an AI or explain scoring
-- Keep questions natural and flowing
-- Follow up on candidate's responses
-- Move to new aspects of the topic when appropriate
-- Maintain professional but encouraging tone
-
-Evaluate their response and provide output in this JSON format:
-{
-  "response": "your next question or comment as an examiner",
-  "metrics": {
-    "fluency": [score 1-9],
-    "lexical": [score 1-9],
-    "grammar": [score 1-9],
-    "pronunciation": [score 1-9]
-  }
-}`;
-
-      const response = await chat.sendMessage(startSessionPrompt);
-      const responseText = response.response.text();
-
-      this.chatSession = chat;
-      this.currentSessionId = config.sessionId;
-      this.sessionState = {
-        timeRemaining: (config.duration || 15) * 60,
-        isRecording: false,
-        currentMode: 'audio',
-        metrics: {
-          fluency: 0,
-          lexical: 0,
-          grammar: 0,
-          pronunciation: 0
-        },
-        notes: [],
-        currentPart: 1,
-        templateContent: config.templatePrompt,
-        lastQuestion: responseText,
-        conversationHistory: []
-      };
-
-      return {
-        message: responseText,
-        session_id: this.currentSessionId,
-        metrics: this.sessionState.metrics
-      };
-    } catch (error) {
-      console.error('Error initializing session:', error);
-      throw error;
-    }
-  }
-
-  async endSession(): Promise<SessionResponse> {
-    try {
-      if (!this.chatSession || !this.sessionState || !this.currentSessionId) {
-        throw new Error('Session not initialized');
-      }
-
-      const response = await this.chatSession.sendMessage(`
-        The speaking practice session is now ending.
-        Please provide:
-        1. A comprehensive evaluation of the student's performance
-        2. Key strengths and areas for improvement
-        3. Suggested practice areas for future sessions
-        4. Final IELTS band score estimates for each criterion
-        
-        Format the response with clear sections and bullet points.
-      `);
-
-      const responseText = response.response.text();
-
-      const sessionId = this.currentSessionId;
-      this.currentSessionId = null;
-      this.sessionState = null;
-      this.chatSession = null;
-
-      return {
-        message: responseText,
-        session_id: sessionId,
-        metrics: {
-          fluency: 0,
-          lexical: 0,
-          grammar: 0,
-          pronunciation: 0
-        }
-      };
-    } catch (error) {
-      console.error('Error ending session:', error);
-      throw error;
-    }
-  }
-
-  async sendMessage(content: string): Promise<{
-    message: string;
-    metrics?: {
-      fluency?: number;
-      lexical?: number;
-      grammar?: number;
-      pronunciation?: number;
-    };
-  }> {
-    try {
-      const model = this.model;
-      
-      const prompt = `You are an IELTS examiner conducting a Part ${this.sessionState?.currentPart} speaking test.
-Current topic: ${this.sessionState?.templateContent}
-Recent conversation:
-${this.getLastFewExchanges(3)}
-
-Act as a real IELTS examiner would:
-1. For Part 1: Ask simple questions about familiar topics
-2. For Part 2: Give the candidate time to speak at length about the topic card
-3. For Part 3: Ask more complex questions about abstract topics
-
-Rules:
-- Stay in character as an IELTS examiner
-- Never mention being an AI or explain scoring
-- Keep questions natural and flowing
-- Follow up on candidate's responses
-- Move to new aspects of the topic when appropriate
-- Maintain professional but encouraging tone
-
-Evaluate their response and provide output in this JSON format:
-{
-  "response": "your next question or comment as an examiner",
-  "metrics": {
-    "fluency": [score 1-9],
-    "lexical": [score 1-9],
-    "grammar": [score 1-9],
-    "pronunciation": [score 1-9]
-  }
-}`;
-
-      const result = await model.generateContent(prompt);
+      const result = await this.model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
       
       try {
         const parsed = JSON.parse(text);
+        const formattedResponse = `${parsed.response.message}\n\n${parsed.feedback.suggestions.join('\n')}\n\n${parsed.response.followUp}`;
+        
+        this.conversationHistory.push({ 
+          role: 'assistant', 
+          content: formattedResponse,
+          timestamp: Date.now()
+        });
+
+        // Calculate metrics based on feedback
+        const metrics = {
+          fluency: this.calculateMetric(parsed.feedback),
+          lexical: this.calculateMetric(parsed.feedback),
+          grammar: this.calculateMetric(parsed.feedback),
+          pronunciation: this.calculateMetric(parsed.feedback)
+        };
+
         return {
-          message: parsed.response,
-          metrics: parsed.metrics
+          message: formattedResponse,
+          metrics
         };
       } catch (e) {
-        // If JSON parsing fails, just return the text as message
+        console.error('Failed to parse AI response:', e);
         return {
-          message: text
+          message: "Let's continue practicing. Could you tell me more about that?",
+          metrics: {
+            fluency: 6,
+            lexical: 6,
+            grammar: 6,
+            pronunciation: 6
+          }
         };
       }
     } catch (error) {
@@ -474,68 +129,81 @@ Evaluate their response and provide output in this JSON format:
     }
   }
 
-  async sendAudio(audioBlob: Blob): Promise<{
-    message: string;
-    metrics?: {
-      fluency?: number;
-      lexical?: number;
-      grammar?: number;
-      pronunciation?: number;
-    };
-  }> {
+  async sendAudio(audioBlob: Blob): Promise<SessionResponse> {
     try {
-      // Convert audio blob to base64
-      const buffer = await audioBlob.arrayBuffer();
-      const base64 = btoa(
-        new Uint8Array(buffer)
-          .reduce((data, byte) => data + String.fromCharCode(byte), '')
-      );
+      const prompt = `You are an IELTS speaking tutor conducting a practice session.
 
-      const model = this.model;
-      
-      const prompt = `You are an IELTS examiner conducting a Part ${this.sessionState?.currentPart} speaking test.
-Current topic: ${this.sessionState?.templateContent}
+Current topic: ${this.currentTopic}
+Learning focus: ${this.learningFocus.join(', ')}
+
 Recent conversation:
-${this.getLastFewExchanges(3)}
+${this.getLastMessages()}
 
-Respond as a real IELTS examiner would:
-1. For Part 1: Keep questions simple and direct
-2. For Part 2: Allow candidate to speak at length
-3. For Part 3: Explore more complex aspects of the topic
+As a tutor:
+1. Focus on pronunciation and fluency
+2. Provide specific feedback on speaking rhythm
+3. Help with intonation and stress
+4. Suggest improvements for clarity
+5. Encourage natural speech patterns
+6. Build speaking confidence
 
 Rules:
-- Stay in character as an IELTS examiner
-- Never mention being an AI or explain scoring
-- Keep questions natural and flowing
-- Follow up on candidate's responses naturally
-- Move to new aspects when appropriate
-- Maintain professional but encouraging tone
+- Be encouraging and supportive
+- Give specific pronunciation tips
+- Help with word stress and rhythm
+- Keep the conversation flowing
+- Build speaking confidence
+- Provide examples when helpful
 
-Provide output in this JSON format:
+Provide your response in this JSON format:
 {
-  "response": "your next question or comment as an examiner",
-  "metrics": {
-    "fluency": [score 1-9],
-    "lexical": [score 1-9],
-    "grammar": [score 1-9],
-    "pronunciation": [score 1-9]
+  "response": {
+    "message": "your response as a tutor, including pronunciation feedback",
+    "followUp": "your next question or prompt to keep the conversation going"
+  },
+  "feedback": {
+    "strengths": ["point out 1-2 things done well"],
+    "pronunciation": ["offer 1-2 specific pronunciation tips"],
+    "practice": ["suggest 1-2 speaking exercises or phrases to practice"]
   }
 }`;
 
-      const result = await model.generateContent(prompt);
+      const result = await this.model.generateContent(prompt);
       const response = await result.response;
       const text = response.text();
       
       try {
         const parsed = JSON.parse(text);
+        const formattedResponse = `${parsed.response.message}\n\n${parsed.feedback.pronunciation.join('\n')}\n\n${parsed.response.followUp}`;
+        
+        this.conversationHistory.push({ 
+          role: 'assistant', 
+          content: formattedResponse,
+          timestamp: Date.now()
+        });
+
+        // Calculate metrics based on feedback
+        const metrics = {
+          fluency: this.calculateMetric(parsed.feedback),
+          lexical: this.calculateMetric(parsed.feedback),
+          grammar: this.calculateMetric(parsed.feedback),
+          pronunciation: this.calculateMetric(parsed.feedback)
+        };
+
         return {
-          message: parsed.response,
-          metrics: parsed.metrics
+          message: formattedResponse,
+          metrics
         };
       } catch (e) {
-        // If JSON parsing fails, just return the text as message
+        console.error('Failed to parse AI response:', e);
         return {
-          message: text
+          message: "I heard you. Let's keep practicing. Could you tell me more about that?",
+          metrics: {
+            fluency: 6,
+            lexical: 6,
+            grammar: 6,
+            pronunciation: 6
+          }
         };
       }
     } catch (error) {
@@ -544,50 +212,14 @@ Provide output in this JSON format:
     }
   }
 
-  private updateMetrics(aiResponse: string) {
-    if (!this.sessionState) return;
-
-    const metrics = {
-      fluency: Math.min((this.sessionState.metrics.fluency + 0.5), 9),
-      lexical: Math.min((this.sessionState.metrics.lexical + 0.5), 9),
-      grammar: Math.min((this.sessionState.metrics.grammar + 0.5), 9),
-      pronunciation: Math.min((this.sessionState.metrics.pronunciation + 0.5), 9)
-    };
-
-    this.sessionState.metrics = metrics;
-  }
-
-  async addNote(note: string): Promise<void> {
-    if (!this.sessionState) {
-      throw new Error('Session not initialized');
-    }
-    this.sessionState.notes.push(note);
-  }
-
-  toggleInputMode(): 'audio' | 'text' {
-    if (!this.sessionState) {
-      throw new Error('Session not initialized');
-    }
-    this.sessionState.currentMode = this.sessionState.currentMode === 'audio' ? 'text' : 'audio';
-    return this.sessionState.currentMode;
-  }
-
-  private getCurrentTopicFromTemplate(): string {
-    // Extract current topic from template based on conversation progress
-    const topics = this.sessionState?.templateContent.split('\n')
-      .filter(line => line.trim().length > 0)
-      .map(line => line.trim());
+  private calculateMetric(feedback: any): number {
+    // Simple metric calculation based on feedback
+    // This could be made more sophisticated based on your needs
+    const baseScore = 6;
+    const strengthBonus = (feedback.strengths?.length || 0) * 0.5;
+    const improvementPenalty = (feedback.suggestions?.length || 0) * 0.25;
     
-    return topics?.[this.sessionState?.currentPart - 1] || 'General Conversation';
-  }
-
-  private getLastFewExchanges(count: number): string {
-    if (!this.sessionState?.conversationHistory) return '';
-    
-    return this.sessionState.conversationHistory
-      .slice(-count * 2) // Get last few exchanges (each exchange is 2 messages)
-      .map(msg => `${msg.role}: ${msg.content}`)
-      .join('\n');
+    return Math.min(9, Math.max(1, baseScore + strengthBonus - improvementPenalty));
   }
 }
 
