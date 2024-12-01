@@ -1,6 +1,7 @@
 {
   "/api/sessions/route": "app/api/sessions/route.js",
   "/api/templates/route": "app/api/templates/route.js",
+  "/_not-found/page": "app/_not-found/page.js",
   "/agents/speaking/page": "app/agents/speaking/page.js",
   "/agents/speaking/session/page": "app/agents/speaking/session/page.js",
   "/page": "app/page.js"

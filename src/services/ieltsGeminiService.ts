@@ -212,6 +212,40 @@ Provide your response in this JSON format:
     }
   }
 
+  async initializeSession(params: { templateId: string; userName: string; duration: number }): Promise<SessionResponse> {
+    const { templateId, userName, duration } = params;
+    
+    // Set a new session ID (using timestamp for uniqueness)
+    const sessionId = `${userName}-${Date.now()}`;
+    this.setSessionId(sessionId);
+    
+    // Initialize with a welcoming message
+    const prompt = `You are an IELTS speaking tutor starting a new practice session.
+Current context:
+- Student Name: ${userName}
+- Session Duration: ${duration} minutes
+- Template ID: ${templateId}
+
+Please provide a warm, welcoming introduction to the student and explain how the practice session will proceed. Keep it brief but encouraging.`;
+
+    try {
+      const result = await this.model.generateContent(prompt);
+      const response = await result.response;
+      const message = response.text();
+      
+      this.conversationHistory.push({
+        role: 'assistant',
+        content: message,
+        timestamp: Date.now()
+      });
+
+      return { message };
+    } catch (error) {
+      console.error('Failed to initialize IELTS speaking session:', error);
+      throw error;
+    }
+  }
+
   private calculateMetric(feedback: any): number {
     // Simple metric calculation based on feedback
     // This could be made more sophisticated based on your needs
