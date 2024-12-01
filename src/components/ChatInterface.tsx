@@ -24,48 +24,55 @@ interface Message {
 
 interface ChatInterfaceProps {
   messages: Message[];
+  onSendMessage: (content: string, isAudio?: boolean) => Promise<void>;
+  isLoading: boolean;
   metrics: {
     fluency: number;
     lexical: number;
     grammar: number;
     pronunciation: number;
   };
-  timeRemaining: number;
-  inputMode: 'audio' | 'text';
+  sessionDuration: number;
+  isSessionActive: boolean;
+  onEndSession: () => void;
+  inputMode: 'text' | 'audio';
   audioState: {
     isRecording: boolean;
     isPaused: boolean;
-    audioUrl?: string | null;
+    audioUrl?: string;
+    duration: number;
   };
   textMessage: string;
-  isLoading: boolean;
-  onEndSession: () => void;
+  onTextMessageChange: (value: string) => void;
   onToggleInputMode: () => void;
   onStartRecording: () => void;
   onStopRecording: () => void;
   onPauseRecording: () => void;
   onResumeRecording: () => void;
-  onSendMessage: (content: string, isAudio?: boolean) => void;
-  onTextMessageChange: (text: string) => void;
+  processingAudio: boolean;
+  timeRemaining: number;
 }
 
-export default function ChatInterface({
+const ChatInterface: React.FC<ChatInterfaceProps> = ({
   messages,
+  onSendMessage,
+  isLoading,
   metrics,
-  timeRemaining,
+  sessionDuration,
+  isSessionActive,
+  onEndSession,
   inputMode,
   audioState,
   textMessage,
-  isLoading,
-  onEndSession,
+  onTextMessageChange,
   onToggleInputMode,
   onStartRecording,
   onStopRecording,
   onPauseRecording,
   onResumeRecording,
-  onSendMessage,
-  onTextMessageChange,
-}: ChatInterfaceProps) {
+  processingAudio,
+  timeRemaining,
+}) => {
   const messagesEndRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -257,3 +264,5 @@ export default function ChatInterface({
     </div>
   );
 }
+
+export default ChatInterface;

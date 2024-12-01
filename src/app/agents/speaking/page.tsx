@@ -16,7 +16,7 @@ import { part1Templates } from '@/data/speakingTemplates/part1';
 import { part2Templates } from '@/data/speakingTemplates/part2';
 import { part3Templates } from '@/data/speakingTemplates/part3';
 import { tutoringTemplates } from '@/data/speakingTemplates/tutoring';
-import ChatInterface from '@/components/ChatInterface';
+import ChatInterface from "@/components/ChatInterface"; // updated import statement
 import { 
   Settings, User, Clock, Send, Mic, MessageSquare, Timer, 
   PauseCircle, PlayCircle, StopCircle, Save, X 
@@ -583,6 +583,17 @@ const SpeakingPage: React.FC = () => {
           sessionDuration={sessionDuration}
           isSessionActive={isSessionActive}
           onEndSession={handleEndSession}
+          inputMode={inputMode}
+          audioState={audioState}
+          textMessage={textMessage}
+          onTextMessageChange={setTextMessage}
+          onToggleInputMode={toggleInputMode}
+          onStartRecording={startRecording}
+          onStopRecording={stopRecording}
+          onPauseRecording={pauseRecording}
+          onResumeRecording={resumeRecording}
+          processingAudio={processingAudio}
+          timeRemaining={timeRemaining}
         />
       </div>
     </div>
